@@ -1600,45 +1600,83 @@ check_and_restore_backup() {
         echo -e "${CYAN}╚══════════════════════════════════════════════════════════════════╝${NC}"
         echo ""
 
-        read -p "   🔄 Restore from this backup? (Y/n) " -n 1 -r
-        echo ""
+        # Read from /dev/tty to work even when piped from curl
+        local REPLY=""
+        if [ -t 0 ]; then
+            # stdin is a terminal
+            read -p "   🔄 Restore from this backup? (Y/n) " -n 1 -r
+            echo ""
+        elif [ -e /dev/tty ]; then
+            # stdin is not a terminal, but /dev/tty exists
+            echo -n "   🔄 Restore from this backup? (Y/n) "
+            read -n 1 -r REPLY < /dev/tty
+            echo ""
+        else
+            # No terminal available, default to Yes
+            echo -e "   🔄 Restore from this backup? ${GREEN}(Auto: Yes)${NC}"
+            REPLY="y"
+        fi
 
         if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
             echo ""
-            print_step "📦 Restoring from backup..."
+
+            # Fun restore animation
+            echo -e "${MAGENTA}   📦 Unpacking your memories...${NC}"
+            sleep 0.3 2>/dev/null || true
 
             # Restore vault contents
             if [ -d "$latest_backup/vault" ]; then
                 mkdir -p "$VAULT_DIR"
                 cp -r "$latest_backup/vault/"* "$VAULT_DIR/" 2>/dev/null || true
-                print_success "Vault restored"
+                echo -e "   ${GREEN}✓${NC} Vault restored"
+                sleep 0.2 2>/dev/null || true
             fi
 
             # Restore CLAUDE.md
             if [ -f "$latest_backup/CLAUDE.md" ]; then
                 mkdir -p "$CLAUDE_DIR"
                 cp "$latest_backup/CLAUDE.md" "$CLAUDE_MD"
-                print_success "CLAUDE.md restored"
+                echo -e "   ${GREEN}✓${NC} CLAUDE.md restored"
+                sleep 0.2 2>/dev/null || true
             fi
 
             # Restore commands
             if [ -d "$latest_backup/commands" ]; then
                 mkdir -p "$COMMANDS_DIR"
                 cp -r "$latest_backup/commands/"* "$COMMANDS_DIR/" 2>/dev/null || true
-                print_success "Commands restored"
+                echo -e "   ${GREEN}✓${NC} Commands restored"
+                sleep 0.2 2>/dev/null || true
             fi
+
+            echo ""
+
+            # Celebration animation
+            local frames=("🎉" "✨" "🎊" "💫" "🌟")
+            for i in {1..3}; do
+                for frame in "${frames[@]}"; do
+                    printf "\r   ${frame} Restoration complete! ${frame}  "
+                    sleep 0.1 2>/dev/null || true
+                done
+            done
+            printf "\n"
 
             echo ""
             echo -e "${GREEN}╔══════════════════════════════════════════════════════════════════╗${NC}"
             echo -e "${GREEN}║${NC}                                                                  ${GREEN}║${NC}"
-            echo -e "${GREEN}║${NC}   ${BOLD}${WHITE}✅ ContextVault Restored from Backup!${NC}                        ${GREEN}║${NC}"
+            echo -e "${GREEN}║${NC}   ${BOLD}${WHITE}🏰 ContextVault Restored from Backup!${NC}                        ${GREEN}║${NC}"
+            echo -e "${GREEN}║${NC}                                                                  ${GREEN}║${NC}"
+            echo -e "${GREEN}║${NC}   ${DIM}Your knowledge is back where it belongs.${NC}                     ${GREEN}║${NC}"
             echo -e "${GREEN}║${NC}                                                                  ${GREEN}║${NC}"
             echo -e "${GREEN}╚══════════════════════════════════════════════════════════════════╝${NC}"
             echo ""
-            echo -e "   Your documents and settings have been restored."
-            echo -e "   Run ${CYAN}/ctx-status${NC} in Claude Code to verify."
+            echo -e "   📍 Location: ${CYAN}~/.claude/${NC}"
+            echo -e "   📝 Run ${CYAN}/ctx-status${NC} in Claude Code to verify."
             echo ""
             return 0  # Backup was restored
+        else
+            echo ""
+            echo -e "   ${YELLOW}Skipping restore.${NC} Starting fresh install..."
+            echo ""
         fi
     fi
     return 1  # No backup restored
@@ -1657,8 +1695,21 @@ install_contextvault() {
     if [ -f "$CLAUDE_MD" ] && [ -f "$VAULT_DIR/index.md" ]; then
         print_warning "ContextVault is already installed!"
         echo ""
-        read -p "   🔄 Reinstall? (This will backup existing files) (y/N) " -n 1 -r
-        echo ""
+
+        # Read from /dev/tty to work even when piped from curl
+        local REPLY=""
+        if [ -t 0 ]; then
+            read -p "   🔄 Reinstall? (This will backup existing files) (y/N) " -n 1 -r
+            echo ""
+        elif [ -e /dev/tty ]; then
+            echo -n "   🔄 Reinstall? (This will backup existing files) (y/N) "
+            read -n 1 -r REPLY < /dev/tty
+            echo ""
+        else
+            echo -e "   🔄 Reinstall? ${YELLOW}(Auto: No - keeping existing)${NC}"
+            REPLY="n"
+        fi
+
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
             echo ""
             echo -e "${GREEN}👍 Keeping existing installation. You're all set!${NC}"
