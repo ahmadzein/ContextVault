@@ -1620,42 +1620,52 @@ check_and_restore_backup() {
         if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
             echo ""
 
-            # Fun restore animation
-            echo -e "${MAGENTA}   📦 Unpacking your memories...${NC}"
+            # Rocket launch animation (same as fresh install!)
+            rocket_launch
+
+            # Create directories first
+            mkdir -p "$CLAUDE_DIR"
+            mkdir -p "$VAULT_DIR"
+            mkdir -p "$COMMANDS_DIR"
+
+            # Fun restore animation with progress
+            print_step "📦 Unpacking your memories..."
+            echo ""
             sleep 0.3 2>/dev/null || true
 
             # Restore vault contents
             if [ -d "$latest_backup/vault" ]; then
-                mkdir -p "$VAULT_DIR"
+                printf "   ${DIM}🏰${NC} Vault"
                 cp -r "$latest_backup/vault/"* "$VAULT_DIR/" 2>/dev/null || true
-                echo -e "   ${GREEN}✓${NC} Vault restored"
-                sleep 0.2 2>/dev/null || true
+                printf " ${GREEN}✓${NC}\n"
+                sleep 0.15 2>/dev/null || true
             fi
 
             # Restore CLAUDE.md
             if [ -f "$latest_backup/CLAUDE.md" ]; then
-                mkdir -p "$CLAUDE_DIR"
+                printf "   ${DIM}📄${NC} CLAUDE.md"
                 cp "$latest_backup/CLAUDE.md" "$CLAUDE_MD"
-                echo -e "   ${GREEN}✓${NC} CLAUDE.md restored"
-                sleep 0.2 2>/dev/null || true
+                printf " ${GREEN}✓${NC}\n"
+                sleep 0.15 2>/dev/null || true
             fi
 
             # Restore commands
             if [ -d "$latest_backup/commands" ]; then
-                mkdir -p "$COMMANDS_DIR"
+                printf "   ${DIM}⚡${NC} Commands"
                 cp -r "$latest_backup/commands/"* "$COMMANDS_DIR/" 2>/dev/null || true
-                echo -e "   ${GREEN}✓${NC} Commands restored"
-                sleep 0.2 2>/dev/null || true
+                printf " ${GREEN}✓${NC}\n"
+                sleep 0.15 2>/dev/null || true
             fi
 
             echo ""
+            sleep 0.3 2>/dev/null || true
 
             # Celebration animation
-            local frames=("🎉" "✨" "🎊" "💫" "🌟")
+            local restore_frames=("🎉" "✨" "🎊" "💫" "🌟" "🏰")
             for i in {1..3}; do
-                for frame in "${frames[@]}"; do
+                for frame in "${restore_frames[@]}"; do
                     printf "\r   ${frame} Restoration complete! ${frame}  "
-                    sleep 0.1 2>/dev/null || true
+                    sleep 0.08 2>/dev/null || true
                 done
             done
             printf "\n"
@@ -1663,14 +1673,27 @@ check_and_restore_backup() {
             echo ""
             echo -e "${GREEN}╔══════════════════════════════════════════════════════════════════╗${NC}"
             echo -e "${GREEN}║${NC}                                                                  ${GREEN}║${NC}"
-            echo -e "${GREEN}║${NC}   ${BOLD}${WHITE}🏰 ContextVault Restored from Backup!${NC}                        ${GREEN}║${NC}"
+            echo -e "${GREEN}║${NC}   ${BOLD}${WHITE}🎉 ContextVault Restored from Backup! 🎉${NC}                     ${GREEN}║${NC}"
             echo -e "${GREEN}║${NC}                                                                  ${GREEN}║${NC}"
             echo -e "${GREEN}║${NC}   ${DIM}Your knowledge is back where it belongs.${NC}                     ${GREEN}║${NC}"
             echo -e "${GREEN}║${NC}                                                                  ${GREEN}║${NC}"
             echo -e "${GREEN}╚══════════════════════════════════════════════════════════════════╝${NC}"
             echo ""
-            echo -e "   📍 Location: ${CYAN}~/.claude/${NC}"
-            echo -e "   📝 Run ${CYAN}/ctx-status${NC} in Claude Code to verify."
+            echo -e "${BOLD}📦 What was restored:${NC}"
+            echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
+            echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
+            echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(9 slash commands)${NC}"
+            echo ""
+            echo -e "${BOLD}🚀 Quick Start:${NC}"
+            echo -e "   1. Start Claude Code: ${CYAN}claude${NC}"
+            echo -e "   2. Check status:      ${YELLOW}/ctx-status${NC}"
+            echo -e "   3. See all commands:  ${YELLOW}/ctx-help${NC}"
+            echo ""
+            echo -e "${DIM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e "${DIM}Backup source: $latest_backup${NC}"
+            echo -e "${DIM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo ""
+            echo -e "${MAGENTA}✨ Your context will never be lost again! ✨${NC}"
             echo ""
             return 0  # Backup was restored
         else
