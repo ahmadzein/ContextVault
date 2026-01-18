@@ -50,6 +50,7 @@ DIM='\033[2m'
 CLAUDE_DIR="$HOME/.claude"
 VAULT_DIR="$CLAUDE_DIR/vault"
 COMMANDS_DIR="$CLAUDE_DIR/commands"
+HOOKS_DIR="$CLAUDE_DIR/hooks"
 CLAUDE_MD="$CLAUDE_DIR/CLAUDE.md"
 SETTINGS_JSON="$CLAUDE_DIR/settings.json"
 
@@ -238,6 +239,21 @@ backup_existing() {
         fi
     fi
 
+    if [ -d "$HOOKS_DIR" ]; then
+        mkdir -p "$backup_dir/hooks"
+        local hook_count=0
+        for hook in ctx-session-start.sh ctx-session-end.sh; do
+            if [ -f "$HOOKS_DIR/$hook" ]; then
+                cp "$HOOKS_DIR/$hook" "$backup_dir/hooks/"
+                ((hook_count++))
+            fi
+        done
+        if [ $hook_count -gt 0 ]; then
+            ((backed_up++))
+            print_success "Backed up $hook_count hook scripts"
+        fi
+    fi
+
     if [ -f "$SETTINGS_JSON" ]; then
         cp "$SETTINGS_JSON" "$backup_dir/"
         ((backed_up++))
@@ -286,8 +302,20 @@ uninstall() {
 
     # Check if settings.json has ContextVault hooks
     local has_hooks="no"
-    if [ -f "$SETTINGS_JSON" ] && grep -q "ContextVault" "$SETTINGS_JSON" 2>/dev/null; then
-        has_hooks="yes"
+    if [ -f "$SETTINGS_JSON" ]; then
+        if grep -q "ctx-session-start" "$SETTINGS_JSON" 2>/dev/null || grep -q "ContextVault" "$SETTINGS_JSON" 2>/dev/null; then
+            has_hooks="yes"
+        fi
+    fi
+
+    # Check for hooks directory
+    local has_hooks_dir="no"
+    local hooks_count=0
+    if [ -d "$HOOKS_DIR" ]; then
+        hooks_count=$(find "$HOOKS_DIR" -name "ctx-*.sh" 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$hooks_count" -gt 0 ]; then
+            has_hooks_dir="yes"
+        fi
     fi
 
     echo -e "${BOLD}📋 What will be removed:${NC}"
@@ -295,8 +323,11 @@ uninstall() {
     echo -e "  ${RED}•${NC} ~/.claude/CLAUDE.md ${DIM}(global instructions)${NC}"
     echo -e "  ${RED}•${NC} ~/.claude/vault/ ${DIM}($doc_count documents)${NC}"
     echo -e "  ${RED}•${NC} ~/.claude/commands/ctx-*.md ${DIM}($cmd_count commands)${NC}"
+    if [ "$has_hooks_dir" = "yes" ]; then
+        echo -e "  ${RED}•${NC} ~/.claude/hooks/ ${DIM}($hooks_count hook scripts)${NC}"
+    fi
     if [ "$has_hooks" = "yes" ]; then
-        echo -e "  ${RED}•${NC} ~/.claude/settings.json ${DIM}(ContextVault hooks)${NC}"
+        echo -e "  ${RED}•${NC} ~/.claude/settings.json ${DIM}(ContextVault hooks config)${NC}"
     fi
     echo ""
     echo -e "${YELLOW}⚠️  Your global documentation will be removed!${NC}"
@@ -388,8 +419,34 @@ uninstall() {
         ((removed_count++))
     fi
 
+    # Remove hooks directory
+    if [ -d "$HOOKS_DIR" ]; then
+        local hooks_removed=0
+        for hook in ctx-session-start.sh ctx-session-end.sh; do
+            if [ -f "$HOOKS_DIR/$hook" ]; then
+                if rm "$HOOKS_DIR/$hook" 2>/dev/null; then
+                    ((hooks_removed++))
+                else
+                    ((errors++))
+                fi
+            fi
+        done
+        if [ $hooks_removed -gt 0 ]; then
+            print_success "Removed $hooks_removed hook scripts"
+            ((removed_count++))
+        fi
+        # Remove hooks dir if empty
+        rmdir "$HOOKS_DIR" 2>/dev/null
+    fi
+
     # Remove settings.json hooks (only if it contains ContextVault hooks)
-    if [ -f "$SETTINGS_JSON" ] && grep -q "ContextVault" "$SETTINGS_JSON" 2>/dev/null; then
+    local has_ctx_hooks=false
+    if [ -f "$SETTINGS_JSON" ]; then
+        if grep -q "ctx-session-start" "$SETTINGS_JSON" 2>/dev/null || grep -q "ContextVault" "$SETTINGS_JSON" 2>/dev/null; then
+            has_ctx_hooks=true
+        fi
+    fi
+    if [ "$has_ctx_hooks" = true ]; then
         # Check if settings.json ONLY contains ContextVault hooks (safe to delete entirely)
         # by checking if it has other top-level keys besides "hooks"
         if command -v jq &> /dev/null; then

@@ -197,6 +197,28 @@ print_sparkle() {
     echo -e "${MAGENTA}✨${NC} $1"
 }
 
+# Detect installed version
+get_installed_version() {
+    local installed_version=""
+
+    # Try to get version from hook script first (most reliable)
+    if [ -f "$CLAUDE_DIR/hooks/ctx-session-start.sh" ]; then
+        installed_version=$(grep -m1 'VERSION=' "$CLAUDE_DIR/hooks/ctx-session-start.sh" 2>/dev/null | cut -d'"' -f2)
+    fi
+
+    # Fallback: try to detect from CLAUDE.md patterns
+    if [ -z "$installed_version" ] && [ -f "$CLAUDE_MD" ]; then
+        # Check for known version markers
+        if grep -q "PRE-WORK CHECKLIST" "$CLAUDE_MD" 2>/dev/null; then
+            installed_version="1.4.0"  # Has the new checklists
+        elif grep -q "ContextVault" "$CLAUDE_MD" 2>/dev/null; then
+            installed_version="1.3.x"  # Older version
+        fi
+    fi
+
+    echo "$installed_version"
+}
+
 #===============================================================================
 # HOOKS CONFIGURATION
 #===============================================================================
@@ -211,7 +233,7 @@ create_session_start_script() {
 # ContextVault Session Start Hook
 # Shows status, version, and checks for updates
 
-VERSION="1.4.0"
+VERSION="__VERSION_PLACEHOLDER__"
 VAULT_DIR="$HOME/.claude/vault"
 PROJECT_VAULT="./.claude/vault"
 SESSION_FILE="/tmp/ctx_session_$$"
@@ -254,6 +276,8 @@ echo "   📖 Read indexes now! Use /ctx-status for details"
 echo ""
 SCRIPT_EOF
 
+    # Replace version placeholder with actual version
+    sed -i.bak "s/__VERSION_PLACEHOLDER__/$VERSION/g" "$script_path" && rm -f "${script_path}.bak"
     chmod +x "$script_path"
 }
 
@@ -371,7 +395,7 @@ create_global_hooks() {
 
     # Check if settings.json already exists
     if [ -f "$settings_file" ]; then
-        # Check if it already has ContextVault hooks
+        # Check if it already has the NEW-style ContextVault hooks (script-based)
         if grep -q "ctx-session-start" "$settings_file" 2>/dev/null; then
             print_info "Global hooks already configured"
             return 0
@@ -382,11 +406,17 @@ create_global_hooks() {
 
         # Try to merge hooks with existing settings using jq if available
         if command -v jq &> /dev/null; then
-            # Merge hooks into existing settings
+            # Replace SessionStart and Stop hooks with ours, preserve other settings
             local existing=$(cat "$settings_file")
-            local merged=$(echo "$existing" | jq --argjson new_hooks "$hooks_json" '.hooks = ($new_hooks.hooks + (.hooks // {}))')
+            local merged=$(echo "$existing" | jq --argjson new_hooks "$hooks_json" '
+                # Preserve all non-hooks settings
+                . as $orig |
+                # Replace SessionStart and Stop with our hooks
+                .hooks.SessionStart = $new_hooks.hooks.SessionStart |
+                .hooks.Stop = $new_hooks.hooks.Stop
+            ')
             echo "$merged" > "$settings_file"
-            print_success "Global hooks merged with existing settings"
+            print_success "Global hooks updated to v${VERSION}"
         else
             # No jq, warn user and create new file
             print_warning "jq not found - creating new settings (backup saved)"
@@ -2209,16 +2239,40 @@ install_contextvault() {
 
     # Check for existing installation
     if [ -f "$CLAUDE_MD" ] && [ -f "$VAULT_DIR/index.md" ]; then
-        print_warning "ContextVault is already installed!"
+        local installed_ver=$(get_installed_version)
+
+        if [ -n "$installed_ver" ]; then
+            if [ "$installed_ver" = "$VERSION" ]; then
+                print_warning "ContextVault v${VERSION} is already installed!"
+                echo ""
+                echo -e "   ${DIM}Current: v${installed_ver}${NC}"
+            else
+                print_warning "ContextVault upgrade available!"
+                echo ""
+                echo -e "   ${YELLOW}Current:${NC} v${installed_ver}"
+                echo -e "   ${GREEN}New:${NC}     v${VERSION}"
+            fi
+        else
+            print_warning "ContextVault is already installed!"
+            echo ""
+            echo -e "   ${DIM}Installing: v${VERSION}${NC}"
+        fi
         echo ""
 
         # Read from /dev/tty to work even when piped from curl
         local REPLY=""
+        local prompt_text="   🔄 "
+        if [ -n "$installed_ver" ] && [ "$installed_ver" != "$VERSION" ]; then
+            prompt_text="${prompt_text}Upgrade to v${VERSION}? (y/N) "
+        else
+            prompt_text="${prompt_text}Reinstall? (This will backup existing files) (y/N) "
+        fi
+
         if [ -t 0 ]; then
-            read -p "   🔄 Reinstall? (This will backup existing files) (y/N) " -n 1 -r
+            read -p "$prompt_text" -n 1 -r
             echo ""
         elif [ -e /dev/tty ]; then
-            echo -n "   🔄 Reinstall? (This will backup existing files) (y/N) "
+            echo -n "$prompt_text"
             read -n 1 -r REPLY < /dev/tty
             echo ""
         else
