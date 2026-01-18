@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.5.3"
+VERSION="1.6.0"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -2105,6 +2105,18 @@ When this command is invoked, display:
 │  /ctx-snippet   Save reusable code snippet with context          │
 │  /ctx-decision  Log decision with rationale and alternatives     │
 │                                                                  │
+│  VAULT MAINTENANCE                                               │
+│  ─────────────────────────────────────────────────────────────  │
+│  /ctx-health    Diagnose vault health issues                     │
+│  /ctx-note      Quick one-liner notes (no full doc needed)       │
+│  /ctx-changelog Generate changelog from doc history              │
+│  /ctx-link      Analyze and create doc bidirectional links       │
+│                                                                  │
+│  KNOWLEDGE TOOLS                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│  /ctx-quiz      Quiz yourself on project knowledge               │
+│  /ctx-explain   Generate comprehensive project explanation       │
+│                                                                  │
 │  MODE OPTIONS (/ctx-mode)                                        │
 │  ─────────────────────────────────────────────────────────────  │
 │  local    Project-only, global OFF (default)                    │
@@ -3813,6 +3825,621 @@ Run /ctx-status to verify.
 CMD_EOF
 }
 
+create_cmd_ctx_health() {
+    cat << 'CMD_EOF'
+# /ctx-health
+
+Diagnose ContextVault health issues. Finds stale docs, over-limit files, orphaned entries, and structural problems.
+
+## Usage
+
+```
+/ctx-health
+```
+
+---
+
+## What This Checks
+
+| Check | Description |
+|-------|-------------|
+| **Stale docs** | Documents not updated in >30 days |
+| **Over-limit** | Docs exceeding 100 line limit |
+| **Orphaned index** | Index entries with missing doc files |
+| **Missing index** | Doc files not listed in index |
+| **Structure** | Missing required sections in docs |
+
+---
+
+## Instructions
+
+### Step 1: Read Both Indexes
+
+Read global index (`~/.claude/vault/index.md`) and project index (`./.claude/vault/index.md` if exists).
+
+### Step 2: List All Doc Files
+
+```bash
+ls -la ~/.claude/vault/*.md ./.claude/vault/*.md 2>/dev/null | grep -v index | grep -v _template
+```
+
+### Step 3: Check Each Document
+
+For each doc file:
+1. Check line count: `wc -l < file` (warn if >100)
+2. Check last updated date from header
+3. Verify required sections exist:
+   - Summary
+   - Current Understanding OR Key Points
+   - History
+
+### Step 4: Cross-Reference Index
+
+For each index entry:
+- Verify doc file exists
+- Note any mismatches
+
+For each doc file:
+- Verify index entry exists
+
+### Step 5: Output Health Report
+
+```
+🏥 ContextVault Health Report
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 Summary:
+   Global:  X docs | Project: Y docs
+
+✅ Healthy: X documents
+⚠️  Issues: Y documents
+
+Issues Found:
+─────────────────────────────────────────
+🔸 P001: Over limit (125 lines > 100)
+🔸 G002: Stale (last updated 45 days ago)
+🔸 P003: Missing from index
+🔸 G004: Orphaned (doc file not found)
+
+Recommendations:
+─────────────────────────────────────────
+• Split P001 into smaller docs
+• Review and update G002
+• Add P003 to index with /ctx-update
+• Remove G004 from index
+
+Overall Health: ⚠️ NEEDS ATTENTION
+```
+
+---
+
+## Health Levels
+
+| Level | Icon | Meaning |
+|-------|------|---------|
+| Healthy | ✅ | No issues found |
+| Warning | ⚠️ | Minor issues, vault still functional |
+| Critical | ❌ | Major issues requiring immediate fix |
+CMD_EOF
+}
+
+create_cmd_ctx_note() {
+    cat << 'CMD_EOF'
+# /ctx-note
+
+Quick one-liner notes without full document structure. For small learnings that don't need their own doc.
+
+## Usage
+
+```
+/ctx-note "Your quick note here"
+/ctx-note Redis needs restart after config change
+```
+
+---
+
+## How It Works
+
+Notes are stored in `vault/notes.md` as timestamped entries.
+
+---
+
+## Instructions
+
+### Step 1: Determine Vault Location
+
+Check settings for mode (local/global/full):
+- local/full → Use `./.claude/vault/notes.md`
+- global → Use `~/.claude/vault/notes.md`
+
+### Step 2: Create or Append to notes.md
+
+If `notes.md` doesn't exist, create with header:
+
+```markdown
+# Quick Notes
+
+> Fast captures. No full doc needed.
+> Review periodically - promote important ones to full docs!
+
+---
+
+## Notes
+
+| Date | Note | Tags |
+|------|------|------|
+```
+
+### Step 3: Add the Note
+
+Append to the table:
+
+```markdown
+| 2026-01-18 | [User's note content] | #tag |
+```
+
+Auto-detect tags from keywords:
+- "error", "bug", "fix" → #bug
+- "config", "setup" → #config
+- "todo", "later" → #todo
+- "tip", "trick" → #tip
+
+### Step 4: Confirm
+
+```
+📝 Note captured!
+
+→ [Note content preview...]
+
+Saved to: ./.claude/vault/notes.md
+Total notes: X
+
+💡 Review notes periodically with /ctx-read notes
+   Promote important ones to full docs with /ctx-new
+```
+
+---
+
+## Example Output
+
+```
+📝 Note captured!
+
+→ "Redis needs restart after config change"
+
+Saved to: ./.claude/vault/notes.md
+Total notes: 12
+Tags: #config
+
+💡 Review notes periodically with /ctx-read notes
+```
+CMD_EOF
+}
+
+create_cmd_ctx_changelog() {
+    cat << 'CMD_EOF'
+# /ctx-changelog
+
+Generate a changelog from document history entries across all vault docs.
+
+## Usage
+
+```
+/ctx-changelog              # Full changelog
+/ctx-changelog 7            # Last 7 days
+/ctx-changelog 2026-01-01   # Since specific date
+```
+
+---
+
+## Instructions
+
+### Step 1: Scan All Documents
+
+Read all docs from:
+- `~/.claude/vault/*.md` (global)
+- `./.claude/vault/*.md` (project, if exists)
+
+Skip: index.md, _template.md, notes.md
+
+### Step 2: Extract History Sections
+
+For each doc, find the "## History" section and extract entries:
+- Parse date and change description
+- Associate with doc ID
+
+### Step 3: Aggregate by Date
+
+Group all changes by date, newest first.
+
+### Step 4: Apply Date Filter (if provided)
+
+If user specified days or date, filter entries.
+
+### Step 5: Output Formatted Changelog
+
+```
+📜 ContextVault Changelog
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## 2026-01-18
+
+### Global Vault
+- G001: Updated authentication patterns
+- G002: Added Docker best practices
+
+### Project Vault (kalta)
+- P001: Initial project setup
+- P003: Fixed installer patterns
+- P004: Completed v1.5.3 roadmap
+
+---
+
+## 2026-01-17
+
+### Global Vault
+- G001: Initial creation
+
+---
+
+📊 Summary: 6 changes across 5 documents
+🗓️  Date range: 2026-01-17 to 2026-01-18
+```
+
+---
+
+## Options
+
+| Argument | Effect |
+|----------|--------|
+| (none) | Full changelog, all time |
+| Number | Last N days |
+| Date | Since YYYY-MM-DD |
+CMD_EOF
+}
+
+create_cmd_ctx_link() {
+    cat << 'CMD_EOF'
+# /ctx-link
+
+Analyze and create bidirectional links between related documents.
+
+## Usage
+
+```
+/ctx-link              # Analyze all docs for links
+/ctx-link P001         # Show links for specific doc
+```
+
+---
+
+## What This Does
+
+1. Scans documents for references to other doc IDs (G###, P###)
+2. Creates "Related Docs" sections automatically
+3. Builds a relationship map
+4. Warns when updating docs that others depend on
+
+---
+
+## Instructions
+
+### Step 1: Scan All Documents
+
+Read all docs from both vaults.
+
+### Step 2: Find References
+
+For each doc, search content for patterns:
+- `G###` (global doc references)
+- `P###` (project doc references)
+- Explicit mentions like "see G001" or "related to P003"
+
+### Step 3: Build Link Map
+
+Create bidirectional relationships:
+```
+P001 → references → G001, P003
+G001 ← referenced by ← P001, P002
+P003 ← referenced by ← P001
+```
+
+### Step 4: Output Link Report
+
+```
+🔗 Document Link Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 Link Statistics:
+   Total docs: 8
+   With links: 5
+   Orphaned:   3 (no incoming or outgoing links)
+
+🕸️  Link Map:
+─────────────────────────────────────────
+
+G001 (ContextVault System)
+  ├── Referenced by: P001, P002, P004
+  └── References: (none)
+
+P001 (Project Setup)
+  ├── Referenced by: P003
+  └── References: G001
+
+P003 (Installer Patterns)
+  ├── Referenced by: (none)
+  └── References: P001
+
+⚠️  Orphaned Documents (no links):
+   • G002 - Consider linking or archiving
+   • P002 - Consider linking or archiving
+
+💡 Tip: Add "See also: G001" to create explicit links
+```
+
+### Step 5: Optionally Update Docs
+
+If user confirms, add "## Related Docs" section to documents:
+
+```markdown
+## Related Docs
+
+| Doc | Relationship |
+|-----|--------------|
+| G001 | References |
+| P003 | Referenced by |
+```
+CMD_EOF
+}
+
+create_cmd_ctx_quiz() {
+    cat << 'CMD_EOF'
+# /ctx-quiz
+
+Quiz yourself on project knowledge to verify documentation accuracy and recall.
+
+## Usage
+
+```
+/ctx-quiz              # Random questions from all docs
+/ctx-quiz P001         # Questions about specific doc
+/ctx-quiz 5            # Generate 5 questions
+```
+
+---
+
+## How It Works
+
+Generates questions from document content to test knowledge retention.
+Fun way to verify that docs are accurate and useful!
+
+---
+
+## Instructions
+
+### Step 1: Select Documents
+
+Based on arguments:
+- No args → Random sample from all docs
+- Doc ID → Questions from that specific doc
+- Number → That many questions total
+
+### Step 2: Read Document Content
+
+Extract key facts from:
+- "Current Understanding" sections
+- "Key Points" sections
+- "Gotchas" sections
+
+### Step 3: Generate Questions
+
+Create questions like:
+
+```
+🎯 Question 1/5
+
+According to your docs, what authentication method
+does this project use?
+
+   a) Session cookies
+   b) JWT tokens
+   c) OAuth2
+   d) Basic auth
+
+Source: P001 (Auth System)
+```
+
+### Step 4: Interactive Quiz
+
+Present questions one at a time:
+- Show question and options
+- Wait for user answer
+- Reveal correct answer with doc reference
+
+### Step 5: Show Results
+
+```
+🏆 Quiz Complete!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Score: 4/5 (80%)
+
+✅ Correct:
+   • Auth method: JWT tokens (P001)
+   • Database: PostgreSQL (P002)
+   • Cache: Redis (P001)
+   • Deploy: Docker (G003)
+
+❌ Missed:
+   • API rate limit: 1000/hour (P004)
+     → You said: 500/hour
+     → Review P004 for refresh
+
+📚 Knowledge Level: GOOD
+
+💡 Recommendation: Review P004 for rate limiting details
+```
+
+---
+
+## Question Types
+
+| Type | Example |
+|------|---------|
+| Fact recall | "What database does this project use?" |
+| Gotcha check | "What's the gotcha with Redis config?" |
+| Decision recall | "Why was React chosen over Vue?" |
+CMD_EOF
+}
+
+create_cmd_ctx_explain() {
+    cat << 'CMD_EOF'
+# /ctx-explain
+
+Generate a comprehensive project explanation from all documentation.
+
+## Usage
+
+```
+/ctx-explain                    # Full project explanation
+/ctx-explain --onboarding       # New team member format
+/ctx-explain --architecture     # Technical deep-dive
+```
+
+---
+
+## What This Does
+
+Combines all vault documents into a cohesive narrative that explains the entire project.
+Perfect for onboarding or creating project overviews.
+
+---
+
+## Instructions
+
+### Step 1: Read All Documents
+
+Load all docs from both vaults:
+- Global vault (reusable patterns)
+- Project vault (project-specific)
+
+### Step 2: Categorize Content
+
+Group information by topic:
+- **Overview**: What is this project?
+- **Architecture**: How is it built?
+- **Key Decisions**: Why was it built this way?
+- **Gotchas**: What to watch out for?
+- **Setup**: How to get started?
+
+### Step 3: Generate Narrative
+
+Create flowing explanation:
+
+```markdown
+# Project Explanation: [Project Name]
+
+> Auto-generated from ContextVault documentation
+> Generated: 2026-01-18
+
+---
+
+## Overview
+
+[Synthesized from P001 and other overview docs]
+
+This project is a [description]. It was built to solve [problem].
+
+---
+
+## Architecture
+
+[Synthesized from architecture-related docs]
+
+### Tech Stack
+- **Backend**: Node.js with Express
+- **Database**: PostgreSQL with Redis cache
+- **Frontend**: React with TypeScript
+
+### Key Components
+1. **Auth System** (P001): JWT-based authentication
+2. **API Layer** (P003): RESTful endpoints
+3. **Cache** (P001): Redis for session storage
+
+---
+
+## Key Decisions
+
+[Synthesized from decision docs and history]
+
+| Decision | Rationale | Doc |
+|----------|-----------|-----|
+| JWT over sessions | Stateless, scalable | P001 |
+| PostgreSQL | ACID compliance needed | P002 |
+
+---
+
+## Gotchas & Tips
+
+[Aggregated from all Gotchas sections]
+
+⚠️ **Watch Out For:**
+- Redis needs restart after config changes (P001)
+- Rate limit is 1000/hour, not 500 (P004)
+
+💡 **Pro Tips:**
+- Always run migrations before deploy
+- Use `npm run dev:debug` for verbose logs
+
+---
+
+## Getting Started
+
+[If setup docs exist]
+
+1. Clone the repo
+2. Run `npm install`
+3. Copy `.env.example` to `.env`
+4. Run `docker-compose up`
+
+---
+
+## Document Sources
+
+This explanation was generated from:
+- G001: ContextVault System
+- P001: Auth System
+- P002: Database Setup
+- P003: API Patterns
+- P004: Decisions Log
+
+---
+
+*Generated by /ctx-explain on 2026-01-18*
+```
+
+### Step 4: Output Options
+
+Based on flags:
+- `--onboarding`: Focus on setup and getting started
+- `--architecture`: Deep technical details
+- Default: Balanced overview
+
+### Step 5: Offer Export
+
+```
+📖 Project Explanation Generated!
+
+Would you like to:
+1. View in terminal (shown above)
+2. Save to ./PROJECT_EXPLAINED.md
+3. Copy to clipboard
+
+This explanation combines 8 documents into one narrative.
+```
+CMD_EOF
+}
+
 #===============================================================================
 # INSTALLATION FUNCTIONS
 #===============================================================================
@@ -3935,7 +4562,7 @@ check_and_restore_backup() {
             echo -e "${BOLD}📦 What was restored:${NC}"
             echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
             echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
-            echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(17 slash commands)${NC}"
+            echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(23 slash commands)${NC}"
             echo ""
             echo -e "${BOLD}🚀 Quick Start:${NC}"
             echo -e "   1. Start Claude Code: ${CYAN}claude${NC}"
@@ -4084,6 +4711,12 @@ install_contextvault() {
         "ctx-snippet:📎"
         "ctx-decision:⚖️"
         "ctx-upgrade:⬆️"
+        "ctx-health:🏥"
+        "ctx-note:📝"
+        "ctx-changelog:📜"
+        "ctx-link:🔗"
+        "ctx-quiz:🎯"
+        "ctx-explain:📖"
     )
 
     for cmd_info in "${commands[@]}"; do
@@ -4108,6 +4741,12 @@ install_contextvault() {
             ctx-snippet) create_cmd_ctx_snippet > "$COMMANDS_DIR/ctx-snippet.md" ;;
             ctx-decision) create_cmd_ctx_decision > "$COMMANDS_DIR/ctx-decision.md" ;;
             ctx-upgrade) create_cmd_ctx_upgrade > "$COMMANDS_DIR/ctx-upgrade.md" ;;
+            ctx-health) create_cmd_ctx_health > "$COMMANDS_DIR/ctx-health.md" ;;
+            ctx-note) create_cmd_ctx_note > "$COMMANDS_DIR/ctx-note.md" ;;
+            ctx-changelog) create_cmd_ctx_changelog > "$COMMANDS_DIR/ctx-changelog.md" ;;
+            ctx-link) create_cmd_ctx_link > "$COMMANDS_DIR/ctx-link.md" ;;
+            ctx-quiz) create_cmd_ctx_quiz > "$COMMANDS_DIR/ctx-quiz.md" ;;
+            ctx-explain) create_cmd_ctx_explain > "$COMMANDS_DIR/ctx-explain.md" ;;
         esac
 
         printf " ${GREEN}✓${NC}\n"
@@ -4115,7 +4754,7 @@ install_contextvault() {
     done
 
     echo ""
-    print_success "17 commands installed"
+    print_success "23 commands installed"
 
     # Install global hooks
     echo ""
@@ -4135,7 +4774,7 @@ install_contextvault() {
     echo -e "${BOLD}📦 What was installed:${NC}"
     echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
     echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
-    echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(17 slash commands)${NC}"
+    echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(23 slash commands)${NC}"
     echo -e "   ${CYAN}🪝${NC} ~/.claude/settings.json      ${DIM}(Auto-hooks: SessionStart + Stop)${NC}"
     echo ""
     echo -e "${BOLD}🪝 Hooks installed:${NC}"

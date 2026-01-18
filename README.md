@@ -20,7 +20,7 @@
 
 **Give Claude Code a persistent memory across ALL your projects** 🧠
 
-[![Version](https://img.shields.io/badge/version-1.5.2-blue.svg)](https://github.com/ahmadzein/ContextVault)
+[![Version](https://img.shields.io/badge/version-1.6.0-blue.svg)](https://github.com/ahmadzein/ContextVault)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude-Code-blueviolet)](https://claude.ai)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ahmadzein/ContextVault/pulls)
@@ -162,7 +162,7 @@ Global + Project knowledge
 <td align="center" width="25%">
 
 ### ⚡
-**16 Commands**
+**23 Commands**
 
 Full control at your fingertips
 
@@ -233,11 +233,18 @@ Never lose your docs
 │   ├── ctx-read.md
 │   ├── ctx-share.md
 │   ├── ctx-import.md
-│   ├── ctx-handoff.md           # NEW in v1.5.2
-│   ├── ctx-intel.md             # NEW in v1.5.2
-│   ├── ctx-error.md             # NEW in v1.5.2
-│   ├── ctx-snippet.md           # NEW in v1.5.2
-│   └── ctx-decision.md          # NEW in v1.5.2
+│   ├── ctx-handoff.md           # v1.5.2
+│   ├── ctx-intel.md             # v1.5.2
+│   ├── ctx-error.md             # v1.5.2
+│   ├── ctx-snippet.md           # v1.5.2
+│   ├── ctx-decision.md          # v1.5.2
+│   ├── ctx-upgrade.md           # v1.5.3
+│   ├── ctx-health.md            # NEW in v1.6.0
+│   ├── ctx-note.md              # NEW in v1.6.0
+│   ├── ctx-changelog.md         # NEW in v1.6.0
+│   ├── ctx-link.md              # NEW in v1.6.0
+│   ├── ctx-quiz.md              # NEW in v1.6.0
+│   └── ctx-explain.md           # NEW in v1.6.0
 └── 📁 vault/                    # Global knowledge storage
     ├── index.md                 # 📇 Quick lookup table
     ├── settings.json            # ⚙️ Mode & limits config
@@ -265,7 +272,7 @@ your-project/
 
 ## 🎮 Commands Reference
 
-After installation, you get **16 powerful slash commands** in Claude Code:
+After installation, you get **23 powerful slash commands** in Claude Code:
 
 ### 🏠 Setup & Status
 
@@ -299,7 +306,7 @@ After installation, you get **16 powerful slash commands** in Claude Code:
 | `/ctx-share` | 📤 Export vault to ZIP (with `-upload` for link) | Share knowledge with team |
 | `/ctx-import` | 📥 Import vault from ZIP | Receive shared knowledge |
 
-### 🧠 Session & Codebase (NEW in v1.5.2!)
+### 🧠 Session & Codebase (v1.5.2)
 
 | Command | Description | When to Use |
 |---------|-------------|-------------|
@@ -308,6 +315,22 @@ After installation, you get **16 powerful slash commands** in Claude Code:
 | `/ctx-error` | 🐛 Capture error and solution | After fixing a tricky bug |
 | `/ctx-snippet` | 📎 Save reusable code snippet | Found code worth reusing |
 | `/ctx-decision` | ⚖️ Log decision with rationale | Made architectural choice |
+
+### 🏥 Vault Maintenance (NEW in v1.6.0!)
+
+| Command | Description | When to Use |
+|---------|-------------|-------------|
+| `/ctx-health` | 🏥 Diagnose vault health issues | Check for stale docs, over-limit files, orphans |
+| `/ctx-note` | 📝 Quick one-liner notes | Small learnings that don't need full docs |
+| `/ctx-changelog` | 📜 Generate changelog from history | See all doc changes over time |
+| `/ctx-link` | 🔗 Analyze doc bidirectional links | Find relationships between docs |
+
+### 🎯 Knowledge Tools (NEW in v1.6.0!)
+
+| Command | Description | When to Use |
+|---------|-------------|-------------|
+| `/ctx-quiz` | 🎯 Quiz yourself on project knowledge | Verify documentation accuracy |
+| `/ctx-explain` | 📖 Generate project explanation | Create onboarding docs, project overview |
 
 ---
 
@@ -323,7 +346,7 @@ Usage: /ctx-help
 ```
 
 When you run this, you'll see a beautiful command reference card with:
-- All 17 commands and their purposes
+- All 23 commands and their purposes
 - Mode options explained
 - Quick reference for limits and rules
 - Routing guide (global vs project)
@@ -686,7 +709,7 @@ ContextVault is a two-tier documentation system:
 - Global tier (~/.claude/vault/) for cross-project knowledge
 - Project tier (./.claude/vault/) for project-specific docs
 - Default mode is "local" (project-focused)
-- 16 slash commands: ctx-init, ctx-status, ctx-mode, ctx-handoff, etc.
+- 23 slash commands: ctx-init, ctx-status, ctx-mode, ctx-handoff, etc.
 
 ## Key Commands
 

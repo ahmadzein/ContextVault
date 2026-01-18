@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] - 2026-01-18
+
+### Added
+- **6 New Commands - Vault Maintenance & Knowledge Tools:**
+  - `/ctx-health` - Diagnose vault health issues (stale docs, over-limit files, orphaned entries)
+  - `/ctx-note` - Quick one-liner notes without full document structure
+  - `/ctx-changelog` - Generate changelog from document history entries
+  - `/ctx-link` - Analyze and create bidirectional links between documents
+  - `/ctx-quiz` - Quiz yourself on project knowledge to verify documentation accuracy
+  - `/ctx-explain` - Generate comprehensive project explanation from all docs
+
+### Changed
+- Total commands: 17 → 23
+- Updated `/ctx-help` with new "VAULT MAINTENANCE" and "KNOWLEDGE TOOLS" sections
+- Updated README with v1.6.0 features and command reference
+- Updated uninstaller to handle all 23 commands
+
+### Technical
+- All new commands follow established patterns from P003 (installer patterns)
+- Commands documented in P005 (v1.6.0 Feature Ideas)
+
+---
+
 ## [1.5.3] - 2026-01-18
 
 ### Added
