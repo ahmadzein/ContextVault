@@ -122,17 +122,17 @@ Changed your mind? No hard feelings! 😢
 
 **One-liner (no prompts):**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/uninstall-contextvault.sh | bash -s -- --force
+curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/uninstall-contextvault.sh -o /tmp/uninstall.sh && bash /tmp/uninstall.sh --force
 ```
 
 **Interactive (asks for confirmation):**
 ```bash
-curl -O https://raw.githubusercontent.com/ahmadzein/ContextVault/main/uninstall-contextvault.sh
-chmod +x uninstall-contextvault.sh
-./uninstall-contextvault.sh
+curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/uninstall-contextvault.sh -o /tmp/uninstall.sh && bash /tmp/uninstall.sh
 ```
 
-> 💡 Don't worry - we create a backup before removing anything!
+> 💡 Don't worry - we create a backup at `~/.contextvault_backup_*` before removing anything!
+>
+> 💡 When you reinstall, ContextVault will detect your backup and offer to restore it!
 
 </details>
 

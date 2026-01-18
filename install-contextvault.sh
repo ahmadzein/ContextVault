@@ -1497,6 +1497,75 @@ backup_existing() {
     fi
 }
 
+check_and_restore_backup() {
+    # Find the most recent backup
+    local latest_backup=$(ls -dt "$HOME"/.contextvault_backup_* 2>/dev/null | head -1)
+
+    if [ -n "$latest_backup" ] && [ -d "$latest_backup" ]; then
+        local backup_date=$(basename "$latest_backup" | sed 's/\.contextvault_backup_//' | sed 's/_/ /')
+
+        echo ""
+        echo -e "${CYAN}╔══════════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${CYAN}║${NC}  ${BOLD}📦 Previous Backup Found!${NC}                                       ${CYAN}║${NC}"
+        echo -e "${CYAN}╠══════════════════════════════════════════════════════════════════╣${NC}"
+        echo -e "${CYAN}║${NC}                                                                  ${CYAN}║${NC}"
+        echo -e "${CYAN}║${NC}  Location: ${DIM}$latest_backup${NC}"
+        echo -e "${CYAN}║${NC}                                                                  ${CYAN}║${NC}"
+
+        # Show what's in the backup
+        if [ -d "$latest_backup/vault" ]; then
+            local doc_count=$(ls -1 "$latest_backup/vault/"*.md 2>/dev/null | grep -v "_template\|index" | wc -l | tr -d ' ')
+            echo -e "${CYAN}║${NC}  Contains: ${GREEN}$doc_count document(s)${NC} in vault                         ${CYAN}║${NC}"
+        fi
+
+        echo -e "${CYAN}║${NC}                                                                  ${CYAN}║${NC}"
+        echo -e "${CYAN}╚══════════════════════════════════════════════════════════════════╝${NC}"
+        echo ""
+
+        read -p "   🔄 Restore from this backup? (Y/n) " -n 1 -r
+        echo ""
+
+        if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+            echo ""
+            print_step "📦 Restoring from backup..."
+
+            # Restore vault contents
+            if [ -d "$latest_backup/vault" ]; then
+                mkdir -p "$VAULT_DIR"
+                cp -r "$latest_backup/vault/"* "$VAULT_DIR/" 2>/dev/null || true
+                print_success "Vault restored"
+            fi
+
+            # Restore CLAUDE.md
+            if [ -f "$latest_backup/CLAUDE.md" ]; then
+                mkdir -p "$CLAUDE_DIR"
+                cp "$latest_backup/CLAUDE.md" "$CLAUDE_MD"
+                print_success "CLAUDE.md restored"
+            fi
+
+            # Restore commands
+            if [ -d "$latest_backup/commands" ]; then
+                mkdir -p "$COMMANDS_DIR"
+                cp -r "$latest_backup/commands/"* "$COMMANDS_DIR/" 2>/dev/null || true
+                print_success "Commands restored"
+            fi
+
+            echo ""
+            echo -e "${GREEN}╔══════════════════════════════════════════════════════════════════╗${NC}"
+            echo -e "${GREEN}║${NC}                                                                  ${GREEN}║${NC}"
+            echo -e "${GREEN}║${NC}   ${BOLD}${WHITE}✅ ContextVault Restored from Backup!${NC}                        ${GREEN}║${NC}"
+            echo -e "${GREEN}║${NC}                                                                  ${GREEN}║${NC}"
+            echo -e "${GREEN}╚══════════════════════════════════════════════════════════════════╝${NC}"
+            echo ""
+            echo -e "   Your documents and settings have been restored."
+            echo -e "   Run ${CYAN}/ctx-status${NC} in Claude Code to verify."
+            echo ""
+            return 0  # Backup was restored
+        fi
+    fi
+    return 1  # No backup restored
+}
+
 install_contextvault() {
     print_header
 
@@ -1521,6 +1590,12 @@ install_contextvault() {
         echo ""
         backup_existing
         echo ""
+    else
+        # No existing installation - check for backups to restore
+        if check_and_restore_backup; then
+            # Backup was restored, we're done
+            exit 0
+        fi
     fi
 
     # Fun animation

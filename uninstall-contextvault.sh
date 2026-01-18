@@ -13,7 +13,10 @@
 #     ./uninstall-contextvault.sh -y        # Same as --force
 #
 #   One-liner (non-interactive):
-#     curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/uninstall-contextvault.sh | bash -s -- --force
+#     curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/uninstall-contextvault.sh -o /tmp/uninstall.sh && bash /tmp/uninstall.sh --force
+#
+#   Note: Your data is backed up to ~/.contextvault_backup_* before removal.
+#         When you reinstall, ContextVault will offer to restore from backup!
 #
 #===============================================================================
 
