@@ -215,9 +215,10 @@ Never lose your docs
 
 ## 📦 What Gets Installed
 
+### Global Installation (by installer)
 ```
 ~/.claude/
-├── 📄 CLAUDE.md                 # Global brain instructions
+├── 📄 CLAUDE.md                 # Global instructions (all projects)
 ├── 📁 commands/                 # Your new superpowers ⚡
 │   ├── ctx-init.md
 │   ├── ctx-status.md
@@ -234,6 +235,21 @@ Never lose your docs
     ├── _template.md             # 📝 Doc template
     └── G001_contextvault.md     # 📚 First doc!
 ```
+
+### Project Installation (by `/ctx-init`)
+```
+your-project/
+├── 📄 CLAUDE.md                 # ⚠️ Project instructions (FORCES ctx usage!)
+└── 📁 .claude/
+    └── 📁 vault/                # Project knowledge storage
+        ├── index.md             # 📇 Project lookup table
+        ├── _template.md         # 📝 Doc template
+        └── P001_*.md            # 📚 Project docs
+```
+
+> **Important:** There are TWO separate CLAUDE.md files:
+> - `~/.claude/CLAUDE.md` - Global (created by installer)
+> - `./CLAUDE.md` - Project root (created by `/ctx-init`) - **This is what forces ctx usage!**
 
 ---
 
@@ -650,6 +666,24 @@ Document loaded! How can I help you with this?
 ---
 
 ## 🏗️ How It Works
+
+### The Setup Flow
+
+```
+1️⃣  INSTALL (one time)
+    curl ... | bash
+    └── Creates ~/.claude/ with global CLAUDE.md, commands, vault
+
+2️⃣  INIT PROJECT (once per project)
+    /ctx-init
+    ├── Creates ./CLAUDE.md (FORCES ctx in this project!)
+    └── Creates ./.claude/vault/ (project docs)
+
+3️⃣  EVERY SESSION (automatic)
+    Claude reads ./CLAUDE.md → Sees "ContextVault MANDATORY"
+    Claude reads ./.claude/vault/index.md → Knows project context
+    Claude documents automatically → No asking!
+```
 
 ### The Two-Tier System
 
