@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.3.0"
+VERSION="1.4.0"
 
 # Colors
 RED='\033[0;31m'
@@ -299,118 +299,277 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.3.0
+**Version:** 1.4.0
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
 
 ---
 
-## ⚠️ FIRST THING TO DO - EVERY SESSION (MANDATORY)
+## ⚠️ BEFORE STARTING ANY WORK (MANDATORY)
 
-**Before doing ANYTHING else, you MUST:**
+**At the START of every session, BEFORE doing anything else:**
 
 ```
-1. CHECK: Does ./.claude/vault/index.md exist?
-   │
-   ├─→ YES (Project initialized):
-   │     • Read ~/.claude/vault/settings.json for mode
-   │     • Read index(es) based on mode
-   │     • You now have project context - USE IT
-   │     • Document all learnings to vault AUTOMATICALLY
-   │
-   └─→ NO (Project NOT initialized):
-        • Global vault still applies
-        • Suggest: "Run /ctx-init to enable project documentation"
-        • Continue with global-only mode
+┌─────────────────────────────────────────────────────────────────┐
+│                    PRE-WORK CHECKLIST                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  STEP 1: Read settings                                          │
+│  ────────────────────                                           │
+│  → Read ~/.claude/vault/settings.json                           │
+│  → Note the mode: local | full | global                         │
+│                                                                 │
+│  STEP 2: Read index(es) based on mode                           │
+│  ────────────────────────────────────                           │
+│  → local mode:  Read ./.claude/vault/index.md ONLY              │
+│  → full mode:   Read BOTH global + project indexes              │
+│  → global mode: Read ~/.claude/vault/index.md ONLY              │
+│                                                                 │
+│  STEP 3: Note existing knowledge                                │
+│  ───────────────────────────────                                │
+│  → What docs exist? What do they cover?                         │
+│  → Use this knowledge throughout the session                    │
+│                                                                 │
+│  STEP 4: Check if project initialized                           │
+│  ─────────────────────────────────────                          │
+│  → Does ./.claude/vault/index.md exist?                         │
+│  → If NO: Suggest "/ctx-init" once, then continue               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-**This check is AUTOMATIC and SILENT. Do not announce it.**
+**This is AUTOMATIC and SILENT. Do not announce these steps.**
 
 ---
 
-## MANDATORY: AUTO-DOCUMENTATION BEHAVIOR
+## ⚠️ AFTER COMPLETING ANY WORK (MANDATORY)
 
-**YOU MUST AUTOMATICALLY document knowledge to ContextVault. This is NOT optional.**
-
-### ⚡ The Golden Rule:
+**After EVERY task, bug fix, exploration, or decision:**
 
 ```
-IF you learned something → DOCUMENT IT (don't ask)
-IF you found something → DOCUMENT IT (don't ask)
-IF you fixed something → DOCUMENT IT (don't ask)
-IF you decided something → DOCUMENT IT (don't ask)
+┌─────────────────────────────────────────────────────────────────┐
+│                   POST-WORK CHECKLIST                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  STEP 1: Assess - Did I learn something?                        │
+│  ───────────────────────────────────────                        │
+│  Ask yourself:                                                  │
+│  □ Did I understand how something works?                        │
+│  □ Did I find a bug and fix it?                                 │
+│  □ Did I make a decision with reasoning?                        │
+│  □ Did I discover a pattern or best practice?                   │
+│  □ Did I configure or set up something?                         │
+│  □ Did I find a gotcha, edge case, or quirk?                    │
+│  □ Did I explore code and learn the architecture?               │
+│                                                                 │
+│  → If ANY checkbox = YES → MUST DOCUMENT                        │
+│  → If ALL checkboxes = NO → Skip documentation                  │
+│                                                                 │
+│  STEP 2: Search - Does related doc exist?                       │
+│  ─────────────────────────────────────────                      │
+│  → Search index for: exact topic, related terms, synonyms       │
+│  → Examples: auth/login/signin = SAME topic                     │
+│              docker/container/image = SAME topic                │
+│                                                                 │
+│  STEP 3: Decide - UPDATE or CREATE?                             │
+│  ──────────────────────────────────                             │
+│                                                                 │
+│       ┌─── Related doc EXISTS? ───┐                             │
+│       │                           │                             │
+│      YES                         NO                             │
+│       │                           │                             │
+│       ▼                           ▼                             │
+│    UPDATE IT                   CREATE NEW                       │
+│    (Rule 2: No duplicates)     (with proper routing)            │
+│                                                                 │
+│  STEP 4: Route - Global or Project?                             │
+│  ──────────────────────────────────                             │
+│  (Only if creating NEW doc)                                     │
+│                                                                 │
+│       ┌─── Reusable in OTHER projects? ───┐                     │
+│       │                                    │                    │
+│      YES                                  NO                    │
+│       │                                    │                    │
+│       ▼                                    ▼                    │
+│    GLOBAL (G###)                      PROJECT (P###)            │
+│    ~/.claude/vault/                   ./.claude/vault/          │
+│    • Patterns                         • This codebase only      │
+│    • Best practices                   • Architecture here       │
+│    • Tool configs                     • Local decisions         │
+│    • Reusable knowledge               • Project-specific        │
+│                                                                 │
+│  STEP 5: Save - Write the document                              │
+│  ─────────────────────────────────                              │
+│  → Follow document template structure                           │
+│  → Max 100 lines per document                                   │
+│  → Be concise, factual, actionable                              │
+│                                                                 │
+│  STEP 6: Index - Update the index IMMEDIATELY                   │
+│  ─────────────────────────────────────────────                  │
+│  → Add/update entry in the correct index                        │
+│  → Summary: max 15 words, reflect current state                 │
+│  → Update "Last updated" date                                   │
+│                                                                 │
+│  STEP 7: Confirm - Brief notification                           │
+│  ────────────────────────────────────                           │
+│  → Tell user: "Documented to P001_topic.md"                     │
+│  → Do NOT ask permission, just confirm it's done                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### When to Auto-Document (DO THIS AUTOMATICALLY):
+---
 
-1. **After completing ANY task** → Run /ctx-doc mentally and save learnings
-2. **After exploring/understanding code** → Document architecture, patterns found
-3. **After fixing bugs** → Document the issue and solution
-4. **After making decisions** → Document the reasoning
-5. **After discovering project structure** → Document it to P### docs
-6. **After learning reusable patterns** → Document it to G### docs
-
-### How to Auto-Document:
-
-1. Check mode in `~/.claude/vault/settings.json`
-2. Read the appropriate index(es) based on mode
-3. Search for existing related docs
-4. If exists → UPDATE that doc
-5. If not exists → CREATE new doc with proper routing
-6. ALWAYS update the index after changes
-
-### NEVER Ask "Should I document this?" - JUST DO IT!
+## 🚫 NEVER DO THESE THINGS
 
 ```
-❌ WRONG: "Want me to document this to ContextVault?"
-❌ WRONG: "Should I save this to the vault?"
-❌ WRONG: "I could create a P001 doc for this..."
-
-✅ RIGHT: *silently documents* "I've documented the frontend architecture to P001."
-✅ RIGHT: *silently updates* "I've updated G003 with the new Docker pattern."
-✅ RIGHT: "Documented to P002_auth_system.md"
+❌ NEVER ask: "Should I document this?"
+❌ NEVER ask: "Want me to save this to the vault?"
+❌ NEVER ask: "I could create a doc for this..."
+❌ NEVER create a doc without checking if one exists
+❌ NEVER forget to update the index after changes
+❌ NEVER create duplicates (same topic, different doc)
+❌ NEVER append contradicting info (replace outdated info)
+❌ NEVER load multiple docs "just in case"
 ```
 
-### Session Start Behavior (AUTOMATIC):
+---
 
-At the START of every session or when entering a new project:
+## ✅ ALWAYS DO THESE THINGS
 
-1. **Read** `~/.claude/vault/settings.json` to check current mode
-2. **Read** indexes based on mode:
-   - `local` mode → Only `./.claude/vault/index.md`
-   - `full` mode → Both global and project indexes
-   - `global` mode → Only `~/.claude/vault/index.md`
-3. **Silently note** what knowledge exists for this project
-4. **Use** existing knowledge to inform your responses
-
-### Session End / Task Completion (AUTOMATIC):
-
-Before ending a session or after completing significant tasks:
-
-1. **Identify** new knowledge gained during the session
-2. **Check** if related docs exist
-3. **Create or Update** docs as needed
-4. **Confirm** to user: "Documented to [ID]" (brief, not asking permission)
-
-### 🎯 What to Document (Assessment Criteria):
-
-**ALWAYS document if:**
-- [ ] You explored/read code and understood something new
-- [ ] You found a bug and fixed it
-- [ ] You made an architectural decision
-- [ ] You discovered how something works
-- [ ] You learned a pattern that could be reused
-- [ ] You set up or configured something
-- [ ] You found a gotcha or edge case
-
-**Routing decision:**
 ```
-Is this knowledge REUSABLE in other projects?
-  YES → Global (G###) : patterns, tools, best practices
-  NO  → Project (P###) : this codebase's specifics
+✅ ALWAYS read indexes at session start
+✅ ALWAYS search before creating
+✅ ALWAYS update existing docs instead of creating duplicates
+✅ ALWAYS update the index after any doc change
+✅ ALWAYS use correct prefix (G### global, P### project)
+✅ ALWAYS keep docs under 100 lines
+✅ ALWAYS keep summaries under 15 words
+✅ ALWAYS confirm: "Documented to [ID]" (don't ask, just inform)
 ```
 
-### 📊 Respect Settings
+---
+
+## 📝 HOW TO UPDATE AN EXISTING DOCUMENT
+
+When you find a related doc exists, UPDATE it like this:
+
+```
+1. READ the existing document fully
+2. IDENTIFY what section needs updating:
+   → New info? Add to "Current Understanding"
+   → Outdated info? Replace it, move old to "History"
+   → Bug fix? Add to "Gotchas" or "History"
+3. PRESERVE the document structure
+4. UPDATE the "Last Updated" date
+5. UPDATE the index summary if meaning changed
+```
+
+**Example update:**
+```markdown
+## Current Understanding
+- Auth uses JWT tokens (15min expiry)     ← EXISTING
+- Refresh tokens stored in Redis          ← EXISTING
+- Added: Password reset uses email link   ← NEW (you add this)
+
+## History
+- 2026-01-18: Added password reset flow   ← LOG THE CHANGE
+- 2026-01-15: Initial auth documentation
+```
+
+---
+
+## 📝 HOW TO CREATE A NEW DOCUMENT
+
+When no related doc exists, CREATE new:
+
+```
+1. DETERMINE routing:
+   → Reusable? → Global G### in ~/.claude/vault/
+   → Project-only? → Project P### in ./.claude/vault/
+
+2. GET next ID:
+   → Read index, find highest ID, increment
+   → Global: G001, G002, G003...
+   → Project: P001, P002, P003...
+
+3. CREATE file with template structure:
+   → Location: [vault]/[ID]_topic_name.md
+   → Example: ./.claude/vault/P003_payment_integration.md
+
+4. WRITE content:
+   → Summary (1 paragraph)
+   → Current Understanding (the facts)
+   → Key Points (bullet points)
+   → Gotchas (if any)
+   → History (creation date)
+
+5. UPDATE index:
+   → Add row to "Active Documents" table
+   → Add related terms to "Related Terms Map"
+   → Update "Quick Stats" count
+
+6. CONFIRM to user:
+   → "Created P003_payment_integration.md"
+```
+
+---
+
+## 📊 DOCUMENT TEMPLATE
+
+Every document should follow this structure:
+
+```markdown
+# [ID] - [Topic Title]
+
+> **Status:** Active
+> **Created:** YYYY-MM-DD
+> **Last Updated:** YYYY-MM-DD
+
+---
+
+## Summary
+
+[One paragraph: What is this about? Why does it matter?]
+
+---
+
+## Current Understanding
+
+[The current, accurate facts. Always up-to-date truth.]
+
+### Key Points
+- Point 1
+- Point 2
+- Point 3
+
+### Details
+[Deeper explanation if needed]
+
+---
+
+## Gotchas & Edge Cases
+
+[Things that surprised you, bugs found, quirks]
+
+- Gotcha 1: explanation
+- Edge case: how to handle
+
+---
+
+## History
+
+| Date | Change |
+|------|--------|
+| YYYY-MM-DD | Initial creation |
+| YYYY-MM-DD | Added X, updated Y |
+
+---
+```
+
+---
+
+## 📊 Respect Settings
 
 Always check `~/.claude/vault/settings.json`:
 
@@ -628,7 +787,7 @@ This is an independent implementation and is not affiliated with or endorsed by 
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.3.0 | $(date +%Y-%m-%d) | Initial ContextVault installation with hooks |
+| 1.4.0 | $(date +%Y-%m-%d) | Enhanced instructions with clear checklists |
 CLAUDE_MD_EOF
 }
 
