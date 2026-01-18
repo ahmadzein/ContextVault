@@ -15,7 +15,7 @@
 #     ./install-contextvault.sh status    # Check installation status
 #
 #   Or via curl:
-#     curl -fsSL https://raw.githubusercontent.com/YOUR_REPO/install-contextvault.sh | bash
+#     curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash
 #
 #===============================================================================
 
@@ -1437,7 +1437,7 @@ show_help() {
     echo "  ./install-contextvault.sh status    # Check status"
     echo ""
     echo -e "${BOLD}One-liner install:${NC}"
-    echo "  curl -fsSL https://raw.githubusercontent.com/YOUR_REPO/install-contextvault.sh | bash"
+    echo "  curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash"
     echo ""
 }
 
