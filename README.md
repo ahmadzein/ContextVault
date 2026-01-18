@@ -585,46 +585,48 @@ claude
 
 ## 💡 Pro Tips
 
+> **🤖 Good news!** The commands handle most of this automatically. These tips help you understand *why* things work the way they do.
+
 ### 🎨 Naming Documents
 
-Good names are searchable:
+**Handled by:** `/ctx-new` and `/ctx-doc` — they auto-generate proper names!
+
 ```
+Auto-generated names look like:
 ✅ G001_docker_compose_patterns.md
 ✅ P001_user_authentication_flow.md
 ✅ G002_typescript_utility_types.md
 
-❌ G001_stuff.md
-❌ P001_notes.md
-❌ G002_misc.md
+You just provide the topic, we handle the rest!
 ```
 
 ### 🔄 When to Update vs Create New
 
+**Handled by:** `/ctx-doc` — it searches first and asks you!
+
 ```
-Ask yourself: "Is this the SAME topic?"
+When you run /ctx-doc, it will:
+1. 🔍 Search for existing related docs
+2. 📋 Show you what it found
+3. ❓ Ask: "Update existing or create new?"
 
-YES → /ctx-update [ID]
-NO  → /ctx-new [topic]
-
-Examples:
-• "More Docker tips" → Update existing Docker doc
-• "Kubernetes basics" → New doc (different topic!)
+No need to remember - just run /ctx-doc!
 ```
 
 ### 🌍 Global vs Project Decision
 
+**Handled by:** `/ctx-new` — it shows you a routing guide!
+
 ```
-Will I use this in OTHER projects?
-│
-├─→ YES: Global (G###)
-│   • Design patterns
-│   • Tool knowledge
-│   • Language features
-│
-└─→ NO: Project (P###)
-    • This app's architecture
-    • Specific configs
-    • Local decisions
+When you run /ctx-new, it asks:
+┌─────────────────────────────────────────┐
+│   WHERE SHOULD THIS DOCUMENT GO?        │
+├─────────────────────────────────────────┤
+│   [1] GLOBAL - Use in ALL projects      │
+│   [2] PROJECT - Only here               │
+└─────────────────────────────────────────┘
+
+The command guides you through it!
 ```
 
 ---
