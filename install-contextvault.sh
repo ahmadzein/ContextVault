@@ -1456,59 +1456,85 @@ CMD_EOF
 }
 
 create_cmd_ctx_status() {
-    cat << 'CMD_EOF'
+    # Use unquoted CMD_EOF to allow VERSION substitution
+    cat << CMD_EOF
 # /ctx-status
 
-Show current ContextVault documentation system status.
+Show current ContextVault documentation system status with version and update check.
 
 ## Usage
 
-```
+\`\`\`
 /ctx-status
-```
+\`\`\`
 
 ## Instructions
 
 When this command is invoked, perform the following:
 
-### Step 1: Check Global ContextVault
+### Step 1: Get Version Info
 
-Read `~/.claude/vault/index.md` and report:
-- Number of global documents (G### entries)
+Current installed version: **v${VERSION}**
+
+Check for updates by reading \`~/.claude/hooks/ctx-session-start.sh\` and extracting the VERSION.
+Then check if newer version is available at GitHub (optional - only if user asks).
+
+### Step 2: Check Current Mode
+
+Read the mode from \`~/.claude/CLAUDE.md\` (look for MODE: line) or default to "local".
+Modes: \`full\` (both), \`local\` (project only), \`global\` (global only)
+
+### Step 3: Check Global ContextVault
+
+Read \`~/.claude/vault/index.md\` and report:
+- Number of global documents (G### entries in the Active Documents table)
 - Status of global system
 
-### Step 2: Check Project ContextVault
+### Step 4: Check Project ContextVault
 
-Check if `.claude/vault/index.md` exists in current project:
+Check if \`.claude/vault/index.md\` exists in current project:
 - If EXISTS: Read and report number of project documents (P### entries)
-- If NOT EXISTS: Report "Project ContextVault not initialized. Run /ctx-init to set up."
+- If NOT EXISTS: Report "Not initialized - run /ctx-init"
 
-### Step 3: Display Status Summary
+### Step 5: Display Status Summary
 
 Format output like:
 
-```
+\`\`\`
 ┌─────────────────────────────────────────────────────────────┐
-│                   CONTEXTVAULT STATUS                        │
+│  🏰 CONTEXTVAULT STATUS                          v${VERSION}  │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
-│  GLOBAL (~/.claude/vault/)                                  │
+│  ⚙️  MODE: local (project-focused)                          │
+│                                                              │
+│  📚 GLOBAL (~/.claude/vault/)                               │
 │  ├── Status: Active                                         │
 │  ├── Documents: X / 50 max                                  │
 │  └── Last updated: YYYY-MM-DD                               │
 │                                                              │
-│  PROJECT (./.claude/vault/)                                 │
+│  📂 PROJECT (./.claude/vault/)                              │
 │  ├── Status: Active / Not Initialized                       │
 │  ├── Documents: X / 50 max                                  │
 │  └── Last updated: YYYY-MM-DD                               │
 │                                                              │
+│  🔄 UPDATE: ✅ Up to date / ⬆️ v1.X.X available             │
+│                                                              │
 │  QUICK ACTIONS:                                              │
+│  • /ctx-mode     - Change mode (full/local/global)          │
 │  • /ctx-init     - Initialize project ContextVault          │
 │  • /ctx-new      - Create new document                      │
 │  • /ctx-search   - Search both indexes                      │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
-```
+\`\`\`
+
+### Step 6: Check for Updates (Optional)
+
+If checking for updates, fetch the latest version from:
+\`https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh\`
+
+Look for the VERSION= line and compare with current v${VERSION}.
+If newer version available, show upgrade command.
 CMD_EOF
 }
 
