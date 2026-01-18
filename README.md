@@ -20,6 +20,7 @@
 
 **Give Claude Code a persistent memory across ALL your projects** 🧠
 
+[![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](https://github.com/ahmadzein/ContextVault)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude-Code-blueviolet)](https://claude.ai)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ahmadzein/ContextVault/pulls)
@@ -194,10 +195,10 @@ Full / Local / Global
 </td>
 <td align="center">
 
-### 📇
-**Auto-Indexing**
+### 🪝
+**Auto-Hooks**
 
-Always organized
+SessionStart + Stop
 
 </td>
 <td align="center">
@@ -219,6 +220,7 @@ Never lose your docs
 ```
 ~/.claude/
 ├── 📄 CLAUDE.md                 # Global instructions (all projects)
+├── 📄 settings.json             # 🪝 Global hooks (SessionStart + Stop)
 ├── 📁 commands/                 # Your new superpowers ⚡
 │   ├── ctx-init.md
 │   ├── ctx-status.md
@@ -241,6 +243,7 @@ Never lose your docs
 your-project/
 ├── 📄 CLAUDE.md                 # ⚠️ Project instructions (FORCES ctx usage!)
 └── 📁 .claude/
+    ├── 📄 settings.json         # 🪝 Project hooks (SessionStart + Stop)
     └── 📁 vault/                # Project knowledge storage
         ├── index.md             # 📇 Project lookup table
         ├── _template.md         # 📝 Doc template
@@ -365,8 +368,9 @@ What it does:
 2. Creates `.claude/vault/` folder in your project
 3. Sets up the project index
 4. Copies the document template
+5. **Creates `.claude/settings.json`** with project hooks (SessionStart + Stop)
 
-**The key:** It adds ContextVault instructions to your project's `./CLAUDE.md` which **forces** Claude to use ctx!
+**The key:** It adds ContextVault instructions to your project's `./CLAUDE.md` AND installs hooks that **force** Claude to use ctx!
 
 **Sample usage:**
 ```
@@ -378,12 +382,17 @@ Claude:
 ✅ ContextVault initialized for this project!
 
 Created/Updated:
-├── ./CLAUDE.md              (ctx instructions added - FORCES ctx usage!)
-├── .claude/vault/index.md   (project index)
-└── .claude/vault/_template.md
+├── ./CLAUDE.md                ← ContextVault instructions (FORCES ctx usage!)
+├── .claude/vault/index.md     ← Project documentation index
+├── .claude/vault/_template.md ← Document template
+└── .claude/settings.json      ← Project hooks (SessionStart + Stop)
+
+🪝 Hooks installed:
+   SessionStart → Reminds to read project vault
+   Stop         → Reminds to document learnings
 
 Claude will now AUTOMATICALLY:
-• Read project vault at session start
+• Read project vault at session start (enforced by hook!)
 • Document findings without asking
 • Use P### prefix for project docs
 
@@ -672,16 +681,20 @@ Document loaded! How can I help you with this?
 ```
 1️⃣  INSTALL (one time)
     curl ... | bash
-    └── Creates ~/.claude/ with global CLAUDE.md, commands, vault
+    ├── Creates ~/.claude/ with CLAUDE.md, commands, vault
+    └── Installs global hooks (SessionStart + Stop) 🪝
 
 2️⃣  INIT PROJECT (once per project)
     /ctx-init
     ├── Creates ./CLAUDE.md (FORCES ctx in this project!)
-    └── Creates ./.claude/vault/ (project docs)
+    ├── Creates ./.claude/vault/ (project docs)
+    └── Installs project hooks (SessionStart + Stop) 🪝
 
-3️⃣  EVERY SESSION (automatic)
-    Claude reads ./CLAUDE.md → Sees "ContextVault MANDATORY"
-    Claude reads ./.claude/vault/index.md → Knows project context
+3️⃣  EVERY SESSION (automatic via hooks!)
+    🪝 SessionStart hook fires → "Read vault indexes now!"
+    Claude reads indexes → Knows your context
+    You work on your task → Claude helps
+    🪝 Stop hook fires → "Document learnings!"
     Claude documents automatically → No asking!
 ```
 
@@ -728,6 +741,47 @@ Maximum in context at any time:
 │  vs loading EVERYTHING: 💥🔥😱      │
 └─────────────────────────────────────┘
 ```
+
+### 🪝 Automatic Hooks (v1.3.0+)
+
+**Claude Code hooks enforce ContextVault automatically!**
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                     GLOBAL HOOKS                              │
+│              ~/.claude/settings.json                          │
+├──────────────────────────────────────────────────────────────┤
+│                                                               │
+│  SessionStart → 🔐 ContextVault Active                        │
+│                 📚 MANDATORY: Read vault indexes now!         │
+│                    Global:  ~/.claude/vault/index.md          │
+│                    Project: ./.claude/vault/index.md          │
+│                                                               │
+│  Stop         → 📝 ContextVault Reminder                      │
+│                 Did you learn something worth saving?         │
+│                 Run /ctx-doc to document it!                  │
+│                                                               │
+└──────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────┐
+│                    PROJECT HOOKS                              │
+│              .claude/settings.json                            │
+├──────────────────────────────────────────────────────────────┤
+│                                                               │
+│  SessionStart → 📂 Project ContextVault                       │
+│                 📖 Read: ./.claude/vault/index.md             │
+│                 🏷️  Use P### prefix for project docs          │
+│                                                               │
+│  Stop         → 💾 Project Documentation Reminder             │
+│                 Document project-specific learnings!          │
+│                 Use /ctx-doc with P### prefix                 │
+│                                                               │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Two layers of enforcement:**
+- **Global hooks** → Installed by the installer, apply to ALL projects
+- **Project hooks** → Installed by `/ctx-init`, apply to THIS project
 
 ### 📏 Size Limits (Configurable!)
 

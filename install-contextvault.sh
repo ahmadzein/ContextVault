@@ -299,7 +299,7 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.2.0
+**Version:** 1.3.0
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
 
@@ -628,7 +628,7 @@ This is an independent implementation and is not affiliated with or endorsed by 
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.0.0 | $(date +%Y-%m-%d) | Initial ContextVault installation |
+| 1.3.0 | $(date +%Y-%m-%d) | Initial ContextVault installation with hooks |
 CLAUDE_MD_EOF
 }
 
