@@ -10,11 +10,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.5.2] - 2026-01-18
 
 ### Added
-- Complete version history documentation
+- **5 New Commands:**
+  - `/ctx-handoff` - Generate session handoff summaries for seamless continuation
+  - `/ctx-intel` - Generate codebase intelligence file (tech stack, architecture, key files)
+  - `/ctx-error` - Capture errors and solutions to searchable database
+  - `/ctx-snippet` - Save reusable code snippets with context and gotchas
+  - `/ctx-decision` - Log architectural decisions with rationale and alternatives
+- **Git Pre-Commit Hook** integration in `/ctx-init` (Step 6)
+  - Reminds Claude to document when committing code
+  - Shows staged files count and names
+  - Non-blocking (always allows commit to proceed)
+- Session-end hook now prompts for `/ctx-handoff`
 - CHANGELOG.md file for GitHub release tracking
 
 ### Changed
-- Updated version references across all files
+- Total commands: 11 → 16
+- Updated `/ctx-help` with new "SESSION & CODEBASE" section
+- Updated uninstaller to handle all 16 commands
+- `/ctx-init` now has 7 steps (added git hook installation)
 
 ---
 
