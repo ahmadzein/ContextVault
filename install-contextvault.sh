@@ -204,15 +204,47 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.1.0
+**Version:** 1.2.0
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
+
+---
+
+## ⚠️ FIRST THING TO DO - EVERY SESSION (MANDATORY)
+
+**Before doing ANYTHING else, you MUST:**
+
+```
+1. CHECK: Does ./.claude/vault/index.md exist?
+   │
+   ├─→ YES (Project initialized):
+   │     • Read ~/.claude/vault/settings.json for mode
+   │     • Read index(es) based on mode
+   │     • You now have project context - USE IT
+   │     • Document all learnings to vault AUTOMATICALLY
+   │
+   └─→ NO (Project NOT initialized):
+        • Global vault still applies
+        • Suggest: "Run /ctx-init to enable project documentation"
+        • Continue with global-only mode
+```
+
+**This check is AUTOMATIC and SILENT. Do not announce it.**
 
 ---
 
 ## MANDATORY: AUTO-DOCUMENTATION BEHAVIOR
 
 **YOU MUST AUTOMATICALLY document knowledge to ContextVault. This is NOT optional.**
+
+### ⚡ The Golden Rule:
+
+```
+IF you learned something → DOCUMENT IT (don't ask)
+IF you found something → DOCUMENT IT (don't ask)
+IF you fixed something → DOCUMENT IT (don't ask)
+IF you decided something → DOCUMENT IT (don't ask)
+```
 
 ### When to Auto-Document (DO THIS AUTOMATICALLY):
 
@@ -264,6 +296,45 @@ Before ending a session or after completing significant tasks:
 2. **Check** if related docs exist
 3. **Create or Update** docs as needed
 4. **Confirm** to user: "Documented to [ID]" (brief, not asking permission)
+
+### 🎯 What to Document (Assessment Criteria):
+
+**ALWAYS document if:**
+- [ ] You explored/read code and understood something new
+- [ ] You found a bug and fixed it
+- [ ] You made an architectural decision
+- [ ] You discovered how something works
+- [ ] You learned a pattern that could be reused
+- [ ] You set up or configured something
+- [ ] You found a gotcha or edge case
+
+**Routing decision:**
+```
+Is this knowledge REUSABLE in other projects?
+  YES → Global (G###) : patterns, tools, best practices
+  NO  → Project (P###) : this codebase's specifics
+```
+
+### 📊 Respect Settings
+
+Always check `~/.claude/vault/settings.json`:
+
+```json
+{
+  "mode": "local",      ← Determines what indexes to read/write
+  "limits": {
+    "max_global_docs": 50,    ← Don't exceed these
+    "max_project_docs": 50,
+    "max_doc_lines": 100,
+    "max_summary_words": 15
+  }
+}
+```
+
+**Mode behavior:**
+- `local` (default): Only use project vault, ignore global
+- `full`: Use both global and project vaults
+- `global`: Only use global vault, ignore project
 
 ---
 
