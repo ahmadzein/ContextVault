@@ -1,5 +1,6 @@
 # ContextVault user data (project-specific, not to be shared)
 .claude/
+ctx-export/
 
 # OS files
 .DS_Store

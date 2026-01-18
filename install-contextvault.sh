@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.5.0"
+VERSION="1.5.1"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -440,7 +440,8 @@ if [ -n "$update_msg" ]; then
     echo -e "$update_msg"
 fi
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "   📖 Read indexes now! Use /ctx-status for details"
+echo "   📖 Read indexes now!"
+echo "   ✍️  DOCUMENT after each task! (Don't wait!)"
 echo ""
 SCRIPT_EOF
 
@@ -689,9 +690,27 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.4.0
+**Version:** 1.5.1
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
+
+---
+
+# ⚡ CRITICAL: DOCUMENT AS YOU WORK ⚡
+
+```
+╔═══════════════════════════════════════════════════════════════════╗
+║  AFTER *EVERY* COMPLETED TASK — ASK YOURSELF:                     ║
+║                                                                   ║
+║  Did I learn something? Fix a bug? Make a decision? Find a quirk?║
+║                                                                   ║
+║  → If YES: DOCUMENT IT NOW. Not later. NOW.                       ║
+║  → Search index → UPDATE existing OR CREATE new                   ║
+║  → Tell user: "Documented to [ID]_topic.md"                       ║
+║                                                                   ║
+║  ⚠️  DO NOT WAIT until session end. Document IMMEDIATELY.         ║
+╚═══════════════════════════════════════════════════════════════════╝
+```
 
 ---
 
@@ -2457,7 +2476,7 @@ Create manifest.json with metadata:
 
 ```json
 {
-  "contextvault_version": "1.5.0",
+  "contextvault_version": "1.5.1",
   "export_version": "1.1",
   "exported_at": "2026-01-18T12:34:56Z",
   "scope": "all",
@@ -2680,7 +2699,7 @@ Display what will be imported:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Source: contextvault_export_20260118_123456.zip
 Exported: 2026-01-18 12:34:56
-Version: 1.5.0
+Version: 1.5.1
 
 📚 Contents:
 ├── Global: X documents
