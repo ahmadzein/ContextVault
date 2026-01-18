@@ -162,7 +162,7 @@ Global + Project knowledge
 <td align="center" width="25%">
 
 ### ⚡
-**11 Commands**
+**16 Commands**
 
 Full control at your fingertips
 
@@ -232,7 +232,12 @@ Never lose your docs
 │   ├── ctx-search.md
 │   ├── ctx-read.md
 │   ├── ctx-share.md
-│   └── ctx-import.md
+│   ├── ctx-import.md
+│   ├── ctx-handoff.md           # NEW in v1.5.2
+│   ├── ctx-intel.md             # NEW in v1.5.2
+│   ├── ctx-error.md             # NEW in v1.5.2
+│   ├── ctx-snippet.md           # NEW in v1.5.2
+│   └── ctx-decision.md          # NEW in v1.5.2
 └── 📁 vault/                    # Global knowledge storage
     ├── index.md                 # 📇 Quick lookup table
     ├── settings.json            # ⚙️ Mode & limits config
@@ -260,7 +265,7 @@ your-project/
 
 ## 🎮 Commands Reference
 
-After installation, you get **11 powerful slash commands** in Claude Code:
+After installation, you get **16 powerful slash commands** in Claude Code:
 
 ### 🏠 Setup & Status
 
@@ -293,6 +298,16 @@ After installation, you get **11 powerful slash commands** in Claude Code:
 | `/ctx-share` | 📤 Export vault to ZIP (with `-upload` for link) | Share knowledge with team |
 | `/ctx-import` | 📥 Import vault from ZIP | Receive shared knowledge |
 
+### 🧠 Session & Codebase (NEW in v1.5.2!)
+
+| Command | Description | When to Use |
+|---------|-------------|-------------|
+| `/ctx-handoff` | 🤝 Generate session handoff summary | Before ending session, for seamless continuation |
+| `/ctx-intel` | 🧠 Generate codebase intelligence file | First time in new codebase, understand structure |
+| `/ctx-error` | 🐛 Capture error and solution | After fixing a tricky bug |
+| `/ctx-snippet` | 📎 Save reusable code snippet | Found code worth reusing |
+| `/ctx-decision` | ⚖️ Log decision with rationale | Made architectural choice |
+
 ---
 
 <details>
@@ -307,7 +322,7 @@ Usage: /ctx-help
 ```
 
 When you run this, you'll see a beautiful command reference card with:
-- All 11 commands and their purposes
+- All 16 commands and their purposes
 - Mode options explained
 - Quick reference for limits and rules
 - Routing guide (global vs project)
@@ -378,6 +393,7 @@ What it does:
 3. Sets up the project index
 4. Copies the document template
 5. **Creates `.claude/settings.json`** with project hooks (SessionStart + Stop)
+6. **Installs Git pre-commit hook** (v1.5.2+) - reminds Claude to document when you commit!
 
 **The key:** It adds ContextVault instructions to your project's `./CLAUDE.md` AND installs hooks that **force** Claude to use ctx!
 
@@ -394,11 +410,13 @@ Created/Updated:
 ├── ./CLAUDE.md                ← ContextVault instructions (FORCES ctx usage!)
 ├── .claude/vault/index.md     ← Project documentation index
 ├── .claude/vault/_template.md ← Document template
-└── .claude/settings.json      ← Project hooks (SessionStart + Stop)
+├── .claude/settings.json      ← Project hooks (SessionStart + Stop)
+└── .git/hooks/pre-commit      ← Git hook (documentation reminder)
 
 🪝 Hooks installed:
    SessionStart → Reminds to read project vault
    Stop         → Reminds to document learnings
+   Git Commit   → Reminds to document changes
 
 Claude will now AUTOMATICALLY:
 • Read project vault at session start (enforced by hook!)
@@ -667,7 +685,7 @@ ContextVault is a two-tier documentation system:
 - Global tier (~/.claude/vault/) for cross-project knowledge
 - Project tier (./.claude/vault/) for project-specific docs
 - Default mode is "local" (project-focused)
-- 11 slash commands: ctx-init, ctx-status, ctx-mode, etc.
+- 16 slash commands: ctx-init, ctx-status, ctx-mode, ctx-handoff, etc.
 
 ## Key Commands
 
