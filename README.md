@@ -685,17 +685,63 @@ chmod +x uninstall-contextvault.sh
 
 ---
 
-## 📋 Requirements
+## 📋 Requirements & Platform Support
 
-Just **3 things**:
+### Requirements
 
 | # | Requirement | Status |
 |---|-------------|--------|
 | 1 | Claude Code CLI installed | ✅ |
-| 2 | Bash shell (macOS, Linux, WSL) | ✅ |
+| 2 | Bash shell | ✅ |
 | 3 | A desire for organized knowledge | ✅ |
 
-**That's it!** No dependencies. No config files. No hassle.
+### Platform Support
+
+| Platform | Support | Install Location |
+|----------|---------|------------------|
+| **macOS** | ✅ Native | `~/.claude` |
+| **Linux** | ✅ Native | `~/.claude` |
+| **Windows + WSL** | ✅ Full | `~/.claude` (in WSL) |
+| **Windows + Git Bash** | ✅ Full | `~/.claude` |
+| **Windows Native (CMD/PowerShell)** | ⚠️ See below | N/A |
+
+### 🪟 Windows Users
+
+**Recommended: Use WSL (Windows Subsystem for Linux)**
+
+Claude Code works best with WSL. Here's how to set up:
+
+```powershell
+# 1. Install WSL (run in PowerShell as Admin)
+wsl --install
+
+# 2. Restart your computer
+
+# 3. Open WSL terminal and install ContextVault
+curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash
+```
+
+**Alternative: Use Git Bash**
+
+If you have [Git for Windows](https://git-scm.com/download/win) installed:
+
+```bash
+# Open Git Bash and run:
+curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash
+```
+
+> 💡 **Note:** Native Windows (CMD/PowerShell without WSL or Git Bash) is not supported because the installer is a bash script. WSL is recommended for the best Claude Code experience on Windows anyway!
+
+### Where Does It Install?
+
+```
+macOS:      /Users/yourname/.claude/
+Linux:      /home/yourname/.claude/
+WSL:        /home/yourname/.claude/
+Git Bash:   C:\Users\yourname\.claude\
+```
+
+**That's it!** No extra dependencies. No config files. No hassle.
 
 ---
 
