@@ -352,6 +352,39 @@ get_installed_version() {
     fi
 }
 
+# Compare two semver versions: returns 0 if v1 > v2, 1 if v1 = v2, 2 if v1 < v2
+# Usage: version_compare "1.5.1" "1.5.0" -> returns 0 (1.5.1 is newer)
+version_compare() {
+    local v1="$1"
+    local v2="$2"
+
+    # Split versions into arrays
+    IFS='.' read -r v1_major v1_minor v1_patch <<< "$v1"
+    IFS='.' read -r v2_major v2_minor v2_patch <<< "$v2"
+
+    # Compare major
+    if [ "$v1_major" -gt "$v2_major" ] 2>/dev/null; then return 0; fi
+    if [ "$v1_major" -lt "$v2_major" ] 2>/dev/null; then return 2; fi
+
+    # Compare minor
+    if [ "$v1_minor" -gt "$v2_minor" ] 2>/dev/null; then return 0; fi
+    if [ "$v1_minor" -lt "$v2_minor" ] 2>/dev/null; then return 2; fi
+
+    # Compare patch
+    if [ "$v1_patch" -gt "$v2_patch" ] 2>/dev/null; then return 0; fi
+    if [ "$v1_patch" -lt "$v2_patch" ] 2>/dev/null; then return 2; fi
+
+    # Equal
+    return 1
+}
+
+# Check if version1 is newer than version2
+# Usage: is_newer_version "1.5.1" "1.5.0" && echo "yes"
+is_newer_version() {
+    version_compare "$1" "$2"
+    [ $? -eq 0 ]
+}
+
 # Check for updates with proper error handling
 check_for_updates() {
     local current_version="$1"
@@ -2999,11 +3032,18 @@ install_contextvault() {
                 print_warning "ContextVault v${VERSION} is already installed!"
                 echo ""
                 echo -e "   ${DIM}Current: v${installed_ver}${NC}"
-            else
+            elif is_newer_version "$VERSION" "$installed_ver"; then
+                # Script version is newer than installed
                 print_warning "ContextVault upgrade available!"
                 echo ""
                 echo -e "   ${YELLOW}Current:${NC} v${installed_ver}"
                 echo -e "   ${GREEN}New:${NC}     v${VERSION}"
+            else
+                # Installed version is newer (user has newer local install)
+                print_warning "ContextVault is already installed (newer version)!"
+                echo ""
+                echo -e "   ${GREEN}Current:${NC} v${installed_ver}"
+                echo -e "   ${DIM}Script:${NC}  v${VERSION}"
             fi
         else
             print_warning "ContextVault is already installed!"
@@ -3015,7 +3055,7 @@ install_contextvault() {
         # Read from /dev/tty to work even when piped from curl
         local REPLY=""
         local prompt_text="   🔄 "
-        if [ -n "$installed_ver" ] && [ "$installed_ver" != "$VERSION" ]; then
+        if [ -n "$installed_ver" ] && is_newer_version "$VERSION" "$installed_ver"; then
             prompt_text="${prompt_text}Upgrade to v${VERSION}? (y/N) "
         else
             prompt_text="${prompt_text}Reinstall? (This will backup existing files) (y/N) "
