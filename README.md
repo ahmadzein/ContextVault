@@ -20,7 +20,7 @@
 
 **Give Claude Code a persistent memory across ALL your projects** 🧠
 
-[![Version](https://img.shields.io/badge/version-1.4.2-blue.svg)](https://github.com/ahmadzein/ContextVault)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/ahmadzein/ContextVault)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude-Code-blueviolet)](https://claude.ai)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ahmadzein/ContextVault/pulls)
@@ -162,7 +162,7 @@ Global + Project knowledge
 <td align="center" width="25%">
 
 ### ⚡
-**9 Commands**
+**11 Commands**
 
 Full control at your fingertips
 
@@ -230,7 +230,9 @@ Never lose your docs
 │   ├── ctx-doc.md
 │   ├── ctx-update.md
 │   ├── ctx-search.md
-│   └── ctx-read.md
+│   ├── ctx-read.md
+│   ├── ctx-share.md
+│   └── ctx-import.md
 └── 📁 vault/                    # Global knowledge storage
     ├── index.md                 # 📇 Quick lookup table
     ├── settings.json            # ⚙️ Mode & limits config
@@ -258,7 +260,7 @@ your-project/
 
 ## 🎮 Commands Reference
 
-After installation, you get **9 powerful slash commands** in Claude Code:
+After installation, you get **11 powerful slash commands** in Claude Code:
 
 ### 🏠 Setup & Status
 
@@ -284,6 +286,13 @@ After installation, you get **9 powerful slash commands** in Claude Code:
 | `/ctx-search` | 🔎 Search all indexes | Find if something exists |
 | `/ctx-read` | 📖 Read doc by ID | Load specific document |
 
+### 📤 Sharing & Import
+
+| Command | Description | When to Use |
+|---------|-------------|-------------|
+| `/ctx-share` | 📤 Export vault to ZIP | Share knowledge with team |
+| `/ctx-import` | 📥 Import vault from ZIP | Receive shared knowledge |
+
 ---
 
 <details>
@@ -298,7 +307,7 @@ Usage: /ctx-help
 ```
 
 When you run this, you'll see a beautiful command reference card with:
-- All 9 commands and their purposes
+- All 11 commands and their purposes
 - Mode options explained
 - Quick reference for limits and rules
 - Routing guide (global vs project)
@@ -658,7 +667,7 @@ ContextVault is a two-tier documentation system:
 - Global tier (~/.claude/vault/) for cross-project knowledge
 - Project tier (./.claude/vault/) for project-specific docs
 - Default mode is "local" (project-focused)
-- 9 slash commands: ctx-init, ctx-status, ctx-mode, etc.
+- 11 slash commands: ctx-init, ctx-status, ctx-mode, etc.
 
 ## Key Commands
 
@@ -669,6 +678,120 @@ ContextVault is a two-tier documentation system:
 
 Document loaded! How can I help you with this?
 ```
+
+---
+
+### `/ctx-share` 📤
+
+**Export your vault to a ZIP file for sharing.**
+
+```
+Usage: /ctx-share [-local] [-global] [-all]
+
+Options:
+  -local   Export project vault only (default)
+  -global  Export global vault only
+  -all     Export both vaults
+```
+
+What it creates:
+- 📦 A ZIP file with your vault contents
+- 📋 A manifest.json with metadata
+- 📇 Includes indexes and all documents
+
+**Sample usage:**
+```
+You: /ctx-share -all
+
+Claude:
+📤 Exporting ContextVault...
+
+Options detected: -all (both global and project)
+
+📦 Creating export package...
+   ├── manifest.json (metadata)
+   ├── global/
+   │   ├── index.md
+   │   └── G001_contextvault.md
+   └── project/
+       ├── index.md
+       └── P001_auth_system.md
+
+✅ Export created: ~/Desktop/contextvault_export_20260118_143022.zip
+
+Share this file with your team! They can import it with /ctx-import
+```
+
+**Use cases:**
+- 🤝 Share project knowledge with teammates
+- 💾 Backup your vault before major changes
+- 🔄 Transfer knowledge between machines
+
+---
+
+### `/ctx-import` 📥
+
+**Import a vault from a shared ZIP file.**
+
+```
+Usage: /ctx-import <path-to-zip>
+
+Examples:
+  /ctx-import ~/Desktop/contextvault_export_20260118_143022.zip
+  /ctx-import /path/to/team-context.zip
+  /ctx-import ./shared-knowledge.zip
+```
+
+What it does:
+1. 📖 Reads the ZIP and validates the manifest
+2. 🔍 Detects what's inside (global, project, or both)
+3. ⚠️ Checks for conflicts with existing docs
+4. ❓ Asks how to handle conflicts (if any)
+
+**Conflict Resolution Options:**
+
+| Option | What It Does |
+|--------|--------------|
+| **Skip** | Keep existing, ignore incoming |
+| **Overwrite** | Replace existing with incoming |
+| **Merge** | Combine both (adds to existing) |
+| **Backup & Overwrite** | Backup existing, then overwrite |
+
+**Sample usage:**
+```
+You: /ctx-import ~/Desktop/team-context.zip
+
+Claude:
+📥 Importing ContextVault export...
+
+📦 Reading: team-context.zip
+   ├── manifest.json ✓
+   ├── global/ (3 docs)
+   └── project/ (2 docs)
+
+⚠️  Conflicts detected:
+   • G001 exists locally (different content)
+   • P001 exists locally (different content)
+
+How would you like to handle conflicts?
+  [1] Skip     - Keep my existing docs
+  [2] Overwrite - Replace with incoming
+  [3] Merge    - Combine both versions
+  [4] Backup & Overwrite - Backup mine, then replace
+
+You: 3
+
+Claude:
+✅ Import complete!
+
+   Imported: 5 documents
+   Merged: 2 documents (G001, P001)
+   Skipped: 0 documents
+
+📇 Indexes updated automatically.
+```
+
+**Perfect for:** Receiving knowledge from team members or restoring backups!
 
 </details>
 
@@ -842,6 +965,8 @@ claude
 ├─→ Work on your task... # Do the thing!
 │
 ├─→ /ctx-doc             # Capture what you learned
+│
+├─→ /ctx-share (optional) # Share with team
 │
 └─→ Done! 🎉
 ```
