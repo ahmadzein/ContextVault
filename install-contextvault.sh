@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.5.2"
+VERSION="1.5.3"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -473,8 +473,13 @@ if [ -n "$update_msg" ]; then
     echo -e "$update_msg"
 fi
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "   📖 Read indexes now!"
-echo "   ✍️  DOCUMENT after each task! (Don't wait!)"
+echo "   📖 Read indexes NOW before starting work!"
+echo ""
+echo "   🚨 AFTER EVERY TASK:"
+echo "   → Fixed bug?      /ctx-error"
+echo "   → Decision?       /ctx-decision"
+echo "   → Learned?        /ctx-doc"
+echo "   → Ending?         /ctx-handoff"
 echo ""
 SCRIPT_EOF
 
@@ -532,9 +537,13 @@ fi
 # If no session file or invalid timestamp, just show reminder
 if [ -z "$session_start" ] || [ "$session_start" = "0" ]; then
     echo ""
-    echo "📝 ContextVault"
+    echo "📝 ContextVault - Session End"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "   Did you document your learnings?"
+    echo "   ⚠️  Did you document your learnings?"
+    echo ""
+    echo "   Quick commands:"
+    echo "   → /ctx-doc       Document what you learned"
+    echo "   → /ctx-handoff   Create session summary"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     exit 0
@@ -574,12 +583,15 @@ if [ -n "$modified_global" ] || [ -n "$modified_project" ]; then
         echo "      Project:$modified_project"
     fi
 else
-    echo "   ℹ️  No docs modified this session"
-    echo "   💡 Use /ctx-doc to capture learnings"
+    echo "   ⚠️  NO DOCS MODIFIED THIS SESSION!"
+    echo ""
+    echo "   Did you learn anything? Document it!"
+    echo "   → /ctx-doc       Quick documentation"
+    echo "   → /ctx-error     Bug fix you did"
+    echo "   → /ctx-decision  Choice you made"
 fi
 echo ""
-echo "   🤝 Run /ctx-handoff to create session summary"
-echo "      (helps next session pick up where you left off)"
+echo "   🤝 /ctx-handoff → Create session summary for next time"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 SCRIPT_EOF
@@ -1503,26 +1515,41 @@ Use the **Write tool** to create `./CLAUDE.md` with this EXACT content:
 ```markdown
 # Project Instructions
 
-## ContextVault - MANDATORY
+## 🚨 CONTEXTVAULT - MANDATORY (DO NOT SKIP!) 🚨
 
-**This project uses ContextVault. You MUST follow these rules.**
+**STOP. READ THIS. FOLLOW IT.**
 
-### AUTOMATIC BEHAVIOR (Do not ask, just do):
+### ⚡ AFTER EVERY TASK - DOCUMENT IMMEDIATELY ⚡
 
-1. **Session Start**: Read `./.claude/vault/index.md` immediately
-2. **After Tasks**: Document findings to vault automatically
-3. **After Exploring Code**: Document architecture/patterns found
-4. **After Fixing Bugs**: Document the issue and solution
-5. **After Decisions**: Document the reasoning
+┌─────────────────────────────────────────────────────────────────┐
+│  COMPLETED A TASK? → DOCUMENT IT NOW!                           │
+│                                                                 │
+│  ✅ Fixed a bug?        → /ctx-error or /ctx-doc                │
+│  ✅ Made a decision?    → /ctx-decision                         │
+│  ✅ Learned something?  → /ctx-doc                              │
+│  ✅ Found useful code?  → /ctx-snippet                          │
+│  ✅ Explored codebase?  → /ctx-intel or /ctx-doc                │
+│  ✅ Ending session?     → /ctx-handoff                          │
+│                                                                 │
+│  🚫 NEVER ask "Should I document?"                              │
+│  🚫 NEVER wait until later                                      │
+│  🚫 NEVER skip documentation                                    │
+└─────────────────────────────────────────────────────────────────┘
+
+### SESSION START (AUTOMATIC):
+1. Read `./.claude/vault/index.md` immediately
+2. Review what's already documented
+3. Use that knowledge in your work
 
 ### RULES:
 - NEVER ask "Should I document this?" → Just document it
 - NEVER ask "Want me to save this?" → Just save it
 - Project docs → `./.claude/vault/` with P### prefix
-- Update index after every change
+- ALWAYS update index after every change
+- DOCUMENT FIRST, then move to next task
 
 ### COMMANDS:
-`/ctx-status` `/ctx-new` `/ctx-doc` `/ctx-update` `/ctx-search` `/ctx-read`
+`/ctx-doc` `/ctx-error` `/ctx-decision` `/ctx-snippet` `/ctx-handoff` `/ctx-intel` `/ctx-status`
 ```
 
 #### OPTION 2: If ./CLAUDE.md EXISTS but has NO "ContextVault" section → APPEND TO IT
@@ -1535,26 +1562,41 @@ Use the **Write tool** to create `./CLAUDE.md` with this EXACT content:
 
 ---
 
-## ContextVault - MANDATORY
+## 🚨 CONTEXTVAULT - MANDATORY (DO NOT SKIP!) 🚨
 
-**This project uses ContextVault. You MUST follow these rules.**
+**STOP. READ THIS. FOLLOW IT.**
 
-### AUTOMATIC BEHAVIOR (Do not ask, just do):
+### ⚡ AFTER EVERY TASK - DOCUMENT IMMEDIATELY ⚡
 
-1. **Session Start**: Read `./.claude/vault/index.md` immediately
-2. **After Tasks**: Document findings to vault automatically
-3. **After Exploring Code**: Document architecture/patterns found
-4. **After Fixing Bugs**: Document the issue and solution
-5. **After Decisions**: Document the reasoning
+┌─────────────────────────────────────────────────────────────────┐
+│  COMPLETED A TASK? → DOCUMENT IT NOW!                           │
+│                                                                 │
+│  ✅ Fixed a bug?        → /ctx-error or /ctx-doc                │
+│  ✅ Made a decision?    → /ctx-decision                         │
+│  ✅ Learned something?  → /ctx-doc                              │
+│  ✅ Found useful code?  → /ctx-snippet                          │
+│  ✅ Explored codebase?  → /ctx-intel or /ctx-doc                │
+│  ✅ Ending session?     → /ctx-handoff                          │
+│                                                                 │
+│  🚫 NEVER ask "Should I document?"                              │
+│  🚫 NEVER wait until later                                      │
+│  🚫 NEVER skip documentation                                    │
+└─────────────────────────────────────────────────────────────────┘
+
+### SESSION START (AUTOMATIC):
+1. Read `./.claude/vault/index.md` immediately
+2. Review what's already documented
+3. Use that knowledge in your work
 
 ### RULES:
 - NEVER ask "Should I document this?" → Just document it
 - NEVER ask "Want me to save this?" → Just save it
 - Project docs → `./.claude/vault/` with P### prefix
-- Update index after every change
+- ALWAYS update index after every change
+- DOCUMENT FIRST, then move to next task
 
 ### COMMANDS:
-`/ctx-status` `/ctx-new` `/ctx-doc` `/ctx-update` `/ctx-search` `/ctx-read`
+`/ctx-doc` `/ctx-error` `/ctx-decision` `/ctx-snippet` `/ctx-handoff` `/ctx-intel` `/ctx-status`
 ```
 
 #### OPTION 3: If ./CLAUDE.md EXISTS and ALREADY has "ContextVault" section → SKIP
@@ -2034,6 +2076,7 @@ When this command is invoked, display:
 │  SETUP & STATUS                                                  │
 │  ─────────────────────────────────────────────────────────────  │
 │  /ctx-init      Initialize ContextVault in current project      │
+│  /ctx-upgrade   Upgrade existing project to latest version      │
 │  /ctx-status    Show status of global and project vault         │
 │  /ctx-mode      Toggle mode: full / local / global              │
 │  /ctx-help      Show this help message                          │
@@ -3592,6 +3635,184 @@ Status: Active
 CMD_EOF
 }
 
+create_cmd_ctx_upgrade() {
+    cat << 'CMD_EOF'
+# /ctx-upgrade
+
+Upgrade ContextVault in the current project to the latest version. Updates instructions and hooks while preserving your documents.
+
+## Usage
+
+```
+/ctx-upgrade
+```
+
+---
+
+## What This Does
+
+1. **Updates `./CLAUDE.md`** with latest, stronger enforcement instructions
+2. **Updates `.claude/settings.json`** with latest hooks
+3. **Installs missing hooks** (like git pre-commit)
+4. **Preserves ALL your existing documents** (P### files untouched!)
+
+---
+
+## CRITICAL INSTRUCTIONS
+
+**You MUST complete ALL steps. Your documents are SAFE - only instructions are updated.**
+
+---
+
+## Step 1: Backup Current Instructions (Safety)
+
+First, note what exists:
+```bash
+ls -la ./CLAUDE.md .claude/settings.json .git/hooks/pre-commit 2>/dev/null
+```
+
+---
+
+## Step 2: Update ./CLAUDE.md with STRONGER Enforcement
+
+**REPLACE** the ContextVault section in `./CLAUDE.md` (or create if missing) with this STRONGER version:
+
+Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if other content exists, preserve it and add this at the TOP):
+
+```markdown
+# Project Instructions
+
+## 🚨 CONTEXTVAULT - MANDATORY (DO NOT SKIP!) 🚨
+
+**STOP. READ THIS. FOLLOW IT.**
+
+### ⚡ AFTER EVERY TASK - DOCUMENT IMMEDIATELY ⚡
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  COMPLETED A TASK? → DOCUMENT IT NOW!                           │
+│                                                                 │
+│  ✅ Fixed a bug?        → /ctx-error                            │
+│  ✅ Made a decision?    → /ctx-decision                         │
+│  ✅ Learned something?  → /ctx-doc                              │
+│  ✅ Found useful code?  → /ctx-snippet                          │
+│  ✅ Explored codebase?  → /ctx-intel                            │
+│                                                                 │
+│  🚫 NEVER ask "Should I document?"                              │
+│  🚫 NEVER wait until later                                      │
+│  🚫 NEVER skip documentation                                    │
+│                                                                 │
+│  ✅ Just DO IT. Then say: "Documented to [file]"                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 📖 Session Start (AUTOMATIC)
+1. Read `./.claude/vault/index.md` immediately
+2. Note what docs exist
+
+### 📝 Session End
+1. Run `/ctx-handoff` to create handoff summary
+
+### 🏷️ Project Docs
+- Location: `./.claude/vault/`
+- Prefix: P### (P001, P002, etc.)
+- Update index after EVERY change
+
+### Commands
+`/ctx-doc` `/ctx-error` `/ctx-snippet` `/ctx-decision` `/ctx-intel` `/ctx-handoff` `/ctx-search` `/ctx-read`
+```
+
+---
+
+## Step 3: Update .claude/settings.json
+
+**REPLACE** `.claude/settings.json` with this content:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"\\n🚨 ContextVault ACTIVE - Document as you work!\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n📖 Read: ./.claude/vault/index.md NOW\\n✍️  Document IMMEDIATELY after each task\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"\\n📝 SESSION ENDING - Did you document?\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n🤝 Run /ctx-handoff NOW for session summary\\n⚠️  Don't lose your work - document it!\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Step 4: Install Git Pre-Commit Hook
+
+Check if git repo and install hook:
+
+```bash
+[ -d .git ] && echo "IS_GIT_REPO" || echo "NOT_GIT_REPO"
+```
+
+If IS_GIT_REPO, create `.git/hooks/pre-commit`:
+
+```bash
+#!/bin/bash
+# ContextVault Pre-Commit Documentation Reminder
+
+STAGED_COUNT=$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
+
+if [ "$STAGED_COUNT" -gt 0 ]; then
+    echo ""
+    echo "📝 ContextVault: Committing $STAGED_COUNT file(s)"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "   ✍️  Did you document what you changed?"
+    echo "   💡 Run /ctx-doc if not!"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+fi
+exit 0
+```
+
+Then: `chmod +x .git/hooks/pre-commit`
+
+---
+
+## Step 5: Confirm Upgrade
+
+Output:
+```
+✅ ContextVault Upgraded!
+
+Updated:
+├── ./CLAUDE.md           ← Stronger enforcement instructions
+├── .claude/settings.json ← Enhanced hooks
+└── .git/hooks/pre-commit ← Git commit reminder
+
+Your documents are SAFE:
+└── .claude/vault/*.md    ← All P### docs preserved!
+
+Claude will now:
+• Document IMMEDIATELY after tasks (not optionally!)
+• Show stronger reminders at session start/end
+• Remind you when committing code
+
+Run /ctx-status to verify.
+```
+CMD_EOF
+}
+
 #===============================================================================
 # INSTALLATION FUNCTIONS
 #===============================================================================
@@ -3714,7 +3935,7 @@ check_and_restore_backup() {
             echo -e "${BOLD}📦 What was restored:${NC}"
             echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
             echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
-            echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(16 slash commands)${NC}"
+            echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(17 slash commands)${NC}"
             echo ""
             echo -e "${BOLD}🚀 Quick Start:${NC}"
             echo -e "   1. Start Claude Code: ${CYAN}claude${NC}"
@@ -3862,6 +4083,7 @@ install_contextvault() {
         "ctx-error:🐛"
         "ctx-snippet:📎"
         "ctx-decision:⚖️"
+        "ctx-upgrade:⬆️"
     )
 
     for cmd_info in "${commands[@]}"; do
@@ -3885,6 +4107,7 @@ install_contextvault() {
             ctx-error) create_cmd_ctx_error > "$COMMANDS_DIR/ctx-error.md" ;;
             ctx-snippet) create_cmd_ctx_snippet > "$COMMANDS_DIR/ctx-snippet.md" ;;
             ctx-decision) create_cmd_ctx_decision > "$COMMANDS_DIR/ctx-decision.md" ;;
+            ctx-upgrade) create_cmd_ctx_upgrade > "$COMMANDS_DIR/ctx-upgrade.md" ;;
         esac
 
         printf " ${GREEN}✓${NC}\n"
@@ -3892,7 +4115,7 @@ install_contextvault() {
     done
 
     echo ""
-    print_success "16 commands installed"
+    print_success "17 commands installed"
 
     # Install global hooks
     echo ""
@@ -3912,7 +4135,7 @@ install_contextvault() {
     echo -e "${BOLD}📦 What was installed:${NC}"
     echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
     echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
-    echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(16 slash commands)${NC}"
+    echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(17 slash commands)${NC}"
     echo -e "   ${CYAN}🪝${NC} ~/.claude/settings.json      ${DIM}(Auto-hooks: SessionStart + Stop)${NC}"
     echo ""
     echo -e "${BOLD}🪝 Hooks installed:${NC}"
@@ -3976,7 +4199,7 @@ uninstall_contextvault() {
         print_success "Removed vault directory"
     fi
 
-    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision; do
+    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-upgrade; do
         if [ -f "$COMMANDS_DIR/$cmd.md" ]; then
             rm "$COMMANDS_DIR/$cmd.md"
         fi
@@ -4019,10 +4242,10 @@ check_status() {
     if [ -d "$COMMANDS_DIR" ]; then
         print_success "Commands directory exists"
         local cmd_count=0
-        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision; do
+        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-upgrade; do
             [ -f "$COMMANDS_DIR/$cmd.md" ] && ((cmd_count++))
         done
-        [ $cmd_count -eq 16 ] && print_success "  └── All 16 commands ✓" || print_warning "  └── $cmd_count/16 commands"
+        [ $cmd_count -eq 17 ] && print_success "  └── All 17 commands ✓" || print_warning "  └── $cmd_count/17 commands"
     else
         print_error "Commands directory not found"
         installed=false

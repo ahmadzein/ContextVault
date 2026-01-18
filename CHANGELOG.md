@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.3] - 2026-01-18
+
+### Added
+- **`/ctx-upgrade` command** - Upgrade existing project installations to latest ContextVault version
+  - Updates `./CLAUDE.md` with stronger enforcement language
+  - Refreshes project hooks and settings
+  - Preserves existing documentation
+
+### Changed
+- **Stronger enforcement in `/ctx-init` template**
+  - New visual box showing documentation commands after each task type
+  - Explicit "NEVER ask, NEVER wait, NEVER skip" rules
+  - Command quick-reference for bug fixes, decisions, learnings
+- **More forceful session hooks**
+  - Start hook now shows command reminders for each task type
+  - End hook warns when no docs were modified
+  - Clearer prompts for `/ctx-handoff` at session end
+- Total commands: 16 → 17
+
+---
+
 ## [1.5.2] - 2026-01-18
 
 ### Added
@@ -125,6 +146,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.5.3]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.5.3
 [1.5.2]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.5.2
 [1.5.1]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.5.1
 [1.5.0]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.5.0

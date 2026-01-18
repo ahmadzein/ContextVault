@@ -274,6 +274,7 @@ After installation, you get **16 powerful slash commands** in Claude Code:
 | `/ctx-help` | 📖 Show all commands | When you forget what's available |
 | `/ctx-status` | 📊 Check vault status | Start of session, see what exists |
 | `/ctx-init` | 🎬 Initialize project vault | First time in a new project |
+| `/ctx-upgrade` | ⬆️ Upgrade project to latest | After ContextVault update |
 | `/ctx-mode` | 🔄 Switch modes & limits | Change mode or configure limits |
 
 ### 📝 Documentation
@@ -322,7 +323,7 @@ Usage: /ctx-help
 ```
 
 When you run this, you'll see a beautiful command reference card with:
-- All 16 commands and their purposes
+- All 17 commands and their purposes
 - Mode options explained
 - Quick reference for limits and rules
 - Routing guide (global vs project)
