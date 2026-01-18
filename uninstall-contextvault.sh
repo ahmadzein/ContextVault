@@ -22,7 +22,7 @@
 
 set -e
 
-VERSION="1.5.1"
+VERSION="1.5.2"
 
 # Parse arguments
 FORCE_MODE=false
@@ -265,7 +265,7 @@ backup_existing() {
     if [ -d "$COMMANDS_DIR" ]; then
         mkdir -p "$backup_dir/commands"
         local cmd_count=0
-        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import; do
+        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision; do
             if [ -f "$COMMANDS_DIR/$cmd.md" ]; then
                 cp "$COMMANDS_DIR/$cmd.md" "$backup_dir/commands/"
                 ((cmd_count++))
@@ -332,7 +332,7 @@ uninstall() {
         doc_count=$(find "$VAULT_DIR" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
     fi
 
-    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import; do
+    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision; do
         if [ -f "$COMMANDS_DIR/$cmd.md" ]; then
             ((cmd_count++))
         fi
@@ -442,7 +442,7 @@ uninstall() {
 
     # Remove commands
     local removed_cmds=0
-    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import; do
+    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision; do
         if [ -f "$COMMANDS_DIR/$cmd.md" ]; then
             if rm "$COMMANDS_DIR/$cmd.md" 2>/dev/null; then
                 ((removed_cmds++))

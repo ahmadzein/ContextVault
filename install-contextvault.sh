@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.5.1"
+VERSION="1.5.2"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -353,7 +353,7 @@ get_installed_version() {
 }
 
 # Compare two semver versions: returns 0 if v1 > v2, 1 if v1 = v2, 2 if v1 < v2
-# Usage: version_compare "1.5.1" "1.5.0" -> returns 0 (1.5.1 is newer)
+# Usage: version_compare "1.5.2" "1.5.0" -> returns 0 (1.5.2 is newer)
 version_compare() {
     local v1="$1"
     local v2="$2"
@@ -379,7 +379,7 @@ version_compare() {
 }
 
 # Check if version1 is newer than version2
-# Usage: is_newer_version "1.5.1" "1.5.0" && echo "yes"
+# Usage: is_newer_version "1.5.2" "1.5.0" && echo "yes"
 is_newer_version() {
     version_compare "$1" "$2"
     [ $? -eq 0 ]
@@ -577,6 +577,9 @@ else
     echo "   ℹ️  No docs modified this session"
     echo "   💡 Use /ctx-doc to capture learnings"
 fi
+echo ""
+echo "   🤝 Run /ctx-handoff to create session summary"
+echo "      (helps next session pick up where you left off)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 SCRIPT_EOF
@@ -723,7 +726,7 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.5.1
+**Version:** 1.5.2
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
 
@@ -1689,9 +1692,71 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
 
 ---
 
-## Step 6: Display completion message
+## Step 6: Install Git Pre-Commit Hook (Documentation Reminder)
 
-**Only show this AFTER you have completed Steps 1-5:**
+> **Purpose**: Automatically remind Claude to document when user commits code
+
+**A) Check if this is a git repository:**
+
+Use Bash tool to run:
+```bash
+[ -d .git ] && echo "IS_GIT_REPO" || echo "NOT_GIT_REPO"
+```
+
+**B) If IS_GIT_REPO → Install the pre-commit hook:**
+
+Use the **Write tool** to create `.git/hooks/pre-commit` with this EXACT content:
+
+```bash
+#!/bin/bash
+# ContextVault Pre-Commit Documentation Reminder
+# This hook reminds Claude to document changes being committed
+
+# Get summary of staged changes
+STAGED_FILES=$(git diff --cached --name-only 2>/dev/null | head -10)
+STAGED_COUNT=$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
+
+if [ "$STAGED_COUNT" -gt 0 ]; then
+    echo ""
+    echo "📝 ContextVault Documentation Reminder"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "   Committing $STAGED_COUNT file(s):"
+    echo "$STAGED_FILES" | sed 's/^/   • /'
+    [ "$STAGED_COUNT" -gt 10 ] && echo "   ... and $((STAGED_COUNT - 10)) more"
+    echo ""
+    echo "   ✍️  Did you document what you learned/changed?"
+    echo "   💡 If not, run /ctx-doc after this commit"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+fi
+
+# Always allow commit to proceed
+exit 0
+```
+
+Then make it executable:
+```bash
+chmod +x .git/hooks/pre-commit
+```
+
+**C) If NOT_GIT_REPO → Skip this step:**
+
+Inform user: "Not a git repository - skipping pre-commit hook installation"
+
+**D) If `.git/hooks/pre-commit` already exists:**
+
+1. Read the existing file
+2. Check if "ContextVault" appears in it
+3. If NOT found, BACKUP the existing hook and create a wrapper:
+   - Rename existing to `.git/hooks/pre-commit.original`
+   - Create new pre-commit that runs BOTH the original AND the ContextVault reminder
+4. If "ContextVault" already present, inform user: "Git hook already installed"
+
+---
+
+## Step 7: Display completion message
+
+**Only show this AFTER you have completed Steps 1-6:**
 
 ```
 ✅ ContextVault initialized for this project!
@@ -1700,16 +1765,19 @@ Created/Updated:
 ├── ./CLAUDE.md                ← ContextVault instructions (FORCES ctx usage!)
 ├── .claude/vault/index.md     ← Project documentation index
 ├── .claude/vault/_template.md ← Document template
-└── .claude/settings.json      ← Project hooks (SessionStart + Stop)
+├── .claude/settings.json      ← Project hooks (SessionStart + Stop)
+└── .git/hooks/pre-commit      ← Git hook (documentation reminder on commit)
 
 🪝 Hooks installed:
    SessionStart → Reminds to read project vault
    Stop         → Reminds to document learnings
+   Git Commit   → Reminds to document changes (shows in Claude's context!)
 
 Claude will now AUTOMATICALLY:
 • Read project vault at session start (enforced by hook!)
 • Document findings without asking
 • Use P### prefix for project docs
+• See documentation reminder when you run git commit
 
 Run /ctx-status to verify setup.
 ```
@@ -1724,6 +1792,7 @@ Before reporting success, confirm ALL of these are true:
 - [ ] `.claude/vault/index.md` exists
 - [ ] `.claude/vault/_template.md` exists
 - [ ] `.claude/settings.json` exists AND contains project hooks
+- [ ] `.git/hooks/pre-commit` exists (if this is a git repo)
 
 **If any checkbox is false, go back and complete that step!**
 CMD_EOF
@@ -1984,6 +2053,14 @@ When this command is invoked, display:
 │  ─────────────────────────────────────────────────────────────  │
 │  /ctx-share     Export vault to ZIP (-local/-global/-all)       │
 │  /ctx-import    Import vault from shared ZIP file               │
+│                                                                  │
+│  SESSION & CODEBASE                                              │
+│  ─────────────────────────────────────────────────────────────  │
+│  /ctx-handoff   Generate session handoff summary                 │
+│  /ctx-intel     Generate codebase intelligence file              │
+│  /ctx-error     Capture error and solution to database           │
+│  /ctx-snippet   Save reusable code snippet with context          │
+│  /ctx-decision  Log decision with rationale and alternatives     │
 │                                                                  │
 │  MODE OPTIONS (/ctx-mode)                                        │
 │  ─────────────────────────────────────────────────────────────  │
@@ -2509,7 +2586,7 @@ Create manifest.json with metadata:
 
 ```json
 {
-  "contextvault_version": "1.5.1",
+  "contextvault_version": "1.5.2",
   "export_version": "1.1",
   "exported_at": "2026-01-18T12:34:56Z",
   "scope": "all",
@@ -2732,7 +2809,7 @@ Display what will be imported:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Source: contextvault_export_20260118_123456.zip
 Exported: 2026-01-18 12:34:56
-Version: 1.5.1
+Version: 1.5.2
 
 📚 Contents:
 ├── Global: X documents
@@ -2869,6 +2946,652 @@ rm -rf /tmp/ctx_import_${timestamp}
 CMD_EOF
 }
 
+create_cmd_ctx_handoff() {
+    cat << 'CMD_EOF'
+# /ctx-handoff
+
+Generate a session handoff summary before ending your work. This ensures the next session (or another team member) can pick up exactly where you left off.
+
+## Usage
+
+```
+/ctx-handoff
+```
+
+---
+
+## When to Use
+
+Run this command:
+- Before ending a long session
+- When switching context to another task
+- Before handing off to another team member
+- When context is getting too long and you need to compact
+
+---
+
+## CRITICAL INSTRUCTIONS
+
+**You MUST generate a handoff summary. This is NOT optional.**
+
+---
+
+## Step 1: Gather Session Context
+
+Review your conversation to identify:
+1. **What was completed** - List finished tasks
+2. **What's in progress** - List unfinished work with current state
+3. **Key decisions made** - Important choices and WHY
+4. **Blockers/Issues** - Problems encountered and status
+5. **Next steps** - Clear action items for continuation
+
+---
+
+## Step 2: Write Handoff Document
+
+Use the **Write tool** to create/update `.claude/vault/session_handoff.md`:
+
+```markdown
+# Session Handoff
+
+**Last Updated:** [TODAY'S DATE AND TIME]
+**Session Focus:** [Brief description]
+
+---
+
+## Completed This Session
+
+- [Task 1]: [Brief outcome]
+- [Task 2]: [Brief outcome]
+
+---
+
+## In Progress
+
+- [Task]: [Current state, what's left to do]
+  - Files touched: [list]
+  - Next action: [specific]
+
+---
+
+## Key Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| [What] | [Why] |
+
+---
+
+## Blockers / Issues
+
+- [Issue]: [Status and workaround if any]
+
+---
+
+## Next Steps
+
+1. [ ] [Specific action item]
+2. [ ] [Specific action item]
+3. [ ] [Specific action item]
+
+---
+
+## Files Modified This Session
+
+- `path/to/file.ext` - [what changed]
+
+---
+
+## Notes for Next Session
+
+[Any context that would help the next session start quickly]
+```
+
+---
+
+## Step 3: Confirm Completion
+
+After writing the handoff document, output:
+
+```
+✅ Session Handoff Complete!
+
+📄 Saved to: .claude/vault/session_handoff.md
+
+Summary:
+• Completed: X tasks
+• In Progress: Y tasks
+• Next Steps: Z action items
+
+💡 The next session can read this file to continue seamlessly.
+```
+
+---
+
+## Important Notes
+
+- This file is ALWAYS overwritten (not appended) - it's the CURRENT state
+- Keep it concise - max 80 lines
+- Focus on actionable information
+- Include file paths when relevant
+- Be specific about next steps
+CMD_EOF
+}
+
+create_cmd_ctx_intel() {
+    cat << 'CMD_EOF'
+# /ctx-intel
+
+Generate a codebase intelligence file that helps Claude understand the project structure instantly.
+
+## Usage
+
+```
+/ctx-intel
+```
+
+---
+
+## What This Creates
+
+A `.claude/codebase.md` file containing:
+1. **Languages & Frameworks** - What tech stack is used
+2. **Key Files** - Entry points, configs, important files
+3. **Architecture** - How the code is organized
+4. **Patterns** - Common patterns used in the codebase
+5. **Dependencies** - Key packages and their purposes
+
+---
+
+## CRITICAL INSTRUCTIONS
+
+**You MUST analyze the codebase and generate an intelligence file.**
+
+---
+
+## Step 1: Detect Languages and Frameworks
+
+Analyze the project to identify:
+
+**Languages** (check file extensions):
+- `.js`, `.ts`, `.tsx` → JavaScript/TypeScript
+- `.py` → Python
+- `.go` → Go
+- `.rs` → Rust
+- `.java` → Java
+- `.rb` → Ruby
+- `.php` → PHP
+- `.cs` → C#
+- `.sh` → Shell
+
+**Frameworks** (check package files and patterns):
+- `package.json` → Check for React, Vue, Next.js, Express, etc.
+- `requirements.txt`, `pyproject.toml` → Django, Flask, FastAPI
+- `go.mod` → Check imports
+- `Cargo.toml` → Check dependencies
+- `Gemfile` → Rails, Sinatra
+
+---
+
+## Step 2: Map Key Files
+
+Identify and list:
+- **Entry points**: main.*, index.*, app.*, server.*
+- **Configuration**: .env, config/, settings.*
+- **Package files**: package.json, requirements.txt, go.mod, etc.
+- **Build config**: webpack.*, vite.config.*, tsconfig.json
+- **CI/CD**: .github/workflows/, .gitlab-ci.yml, Dockerfile
+
+---
+
+## Step 3: Understand Architecture
+
+Determine:
+- **Project type**: CLI, API, Web app, Library, Monorepo
+- **Directory structure**: src/, lib/, app/, components/, etc.
+- **State management**: Redux, Context, Zustand, etc.
+- **Data layer**: ORM, raw SQL, API calls
+- **Testing**: Jest, Pytest, Go test, etc.
+
+---
+
+## Step 4: Write Intelligence File
+
+Use the **Write tool** to create `.claude/codebase.md`:
+
+```markdown
+# Codebase Intelligence
+
+**Generated:** [TODAY'S DATE]
+**Project:** [Project name from package.json or directory]
+
+---
+
+## Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| Language | [Primary language] |
+| Framework | [Main framework] |
+| Runtime | [Node, Python, etc.] |
+| Package Manager | [npm, yarn, pip, etc.] |
+
+---
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `[path]` | [What it does] |
+| `[path]` | [What it does] |
+
+---
+
+## Directory Structure
+
+```
+[Show relevant directory tree]
+```
+
+### Purpose of Key Directories
+- `src/` - [Purpose]
+- `lib/` - [Purpose]
+- `tests/` - [Purpose]
+
+---
+
+## Architecture Patterns
+
+- **[Pattern]**: [Where/how it's used]
+- **[Pattern]**: [Where/how it's used]
+
+---
+
+## Dependencies (Key)
+
+| Package | Purpose |
+|---------|---------|
+| [name] | [What it's used for] |
+
+---
+
+## Entry Points
+
+- **Main**: `[file]` - [What happens here]
+- **API**: `[file]` - [Endpoints defined here]
+- **Build**: `[command]` - [What it does]
+
+---
+
+## Common Tasks
+
+| Task | Command |
+|------|---------|
+| Run dev | `[command]` |
+| Build | `[command]` |
+| Test | `[command]` |
+
+---
+
+## Notes
+
+[Any quirks, gotchas, or important context]
+```
+
+---
+
+## Step 5: Confirm Completion
+
+Output:
+```
+✅ Codebase Intelligence Generated!
+
+📄 Saved to: .claude/codebase.md
+
+Detected:
+• Language: [Primary language]
+• Framework: [Main framework]
+• Type: [API/Web/CLI/Library]
+• Key files: [Count] mapped
+
+💡 Claude will now understand this codebase instantly!
+```
+
+---
+
+## When to Run
+
+- After cloning a new repo
+- When starting work on unfamiliar codebase
+- After major architectural changes
+- When onboarding new team members
+CMD_EOF
+}
+
+create_cmd_ctx_error() {
+    cat << 'CMD_EOF'
+# /ctx-error
+
+Capture an error and its solution for future reference. Build a searchable database of problems you've solved.
+
+## Usage
+
+```
+/ctx-error [brief error description]
+```
+
+---
+
+## When to Use
+
+Run this command when:
+- You fixed a tricky bug
+- An error took time to diagnose
+- The solution wasn't obvious
+- You want to remember this fix for next time
+
+---
+
+## CRITICAL INSTRUCTIONS
+
+**Capture errors systematically so they can be found later!**
+
+---
+
+## Step 1: Gather Error Information
+
+Identify and collect:
+1. **Error message** - The exact error text
+2. **Context** - What you were doing when it occurred
+3. **Root cause** - What actually caused the problem
+4. **Solution** - How you fixed it
+5. **Keywords** - Terms someone might search for
+
+---
+
+## Step 2: Check for Existing Error Doc
+
+Check if `.claude/vault/errors.md` exists:
+- If YES: Read it and append new entry
+- If NO: Create it with the template below
+
+---
+
+## Step 3: Add Error Entry
+
+Use the **Edit tool** (or Write if creating new) to add to `.claude/vault/errors.md`:
+
+```markdown
+# Error Solutions Database
+
+**Last Updated:** [TODAY'S DATE]
+
+> Quick reference for solved problems. Search by error message or keyword.
+
+---
+
+## Errors
+
+### [Error Type/Name] - [Brief Description]
+**Date:** [TODAY]
+**Keywords:** `keyword1`, `keyword2`, `keyword3`
+
+**Error:**
+```
+[Exact error message]
+```
+
+**Context:**
+[What you were doing]
+
+**Cause:**
+[Root cause of the error]
+
+**Solution:**
+[How to fix it - be specific!]
+
+**Prevention:**
+[How to avoid this in future, if applicable]
+
+---
+
+### [Next Error Entry...]
+```
+
+---
+
+## Step 4: Update Index
+
+After adding an error, check if the project index has an entry for the errors file:
+- If NO entry exists for errors.md, add one to the index
+- Summary: "Error solutions database with [N] entries"
+
+---
+
+## Step 5: Confirm Capture
+
+Output:
+```
+✅ Error Captured!
+
+📄 Added to: .claude/vault/errors.md
+🏷️  Keywords: [keywords]
+
+Error: [Brief description]
+Solution: [1-line summary]
+
+💡 Search errors.md when you see similar issues!
+```
+
+---
+
+## Searching Errors
+
+To find a previously solved error, read `.claude/vault/errors.md` and search for:
+- The error message text
+- Keywords that describe the problem
+- The technology/framework involved
+
+---
+
+## Best Practices
+
+- Use specific, searchable keywords
+- Include the EXACT error message
+- Be specific about the solution steps
+- Add prevention tips when relevant
+- Keep entries concise but complete
+CMD_EOF
+}
+
+create_cmd_ctx_snippet() {
+    cat << 'CMD_EOF'
+# /ctx-snippet
+
+Save a reusable code snippet with context about when and how to use it.
+
+## Usage
+
+```
+/ctx-snippet [brief description]
+```
+
+---
+
+## When to Use
+
+- You wrote code you'll want to reuse
+- Found a useful pattern worth remembering
+- Solved something that took research to figure out
+- Created a utility function others might need
+
+---
+
+## Step 1: Check for Existing Snippets File
+
+Check if `.claude/vault/snippets.md` exists:
+- If YES: Read it and append new entry
+- If NO: Create it with the template below
+
+---
+
+## Step 2: Add Snippet Entry
+
+Use the **Edit tool** (or Write if creating new) to add to `.claude/vault/snippets.md`:
+
+```markdown
+# Code Snippets Library
+
+**Last Updated:** [TODAY'S DATE]
+
+> Reusable code patterns with context. Search by language or keyword.
+
+---
+
+## Snippets
+
+### [Title] - [Language]
+**Date:** [TODAY]
+**Keywords:** `keyword1`, `keyword2`
+
+**When to use:**
+[Describe the situation where this is useful]
+
+**Code:**
+```[language]
+[The actual code snippet]
+```
+
+**Usage example:**
+```[language]
+[How to use it in context]
+```
+
+**Gotchas:**
+- [Things to watch out for]
+
+---
+
+### [Next Snippet...]
+```
+
+---
+
+## Step 3: Confirm Save
+
+Output:
+```
+✅ Snippet Saved!
+
+📄 Added to: .claude/vault/snippets.md
+🏷️  Keywords: [keywords]
+🔤 Language: [language]
+
+Title: [title]
+
+💡 Search snippets.md when you need reusable code!
+```
+CMD_EOF
+}
+
+create_cmd_ctx_decision() {
+    cat << 'CMD_EOF'
+# /ctx-decision
+
+Log a decision with its rationale and alternatives considered. Track WHY, not just WHAT.
+
+## Usage
+
+```
+/ctx-decision [brief description]
+```
+
+---
+
+## When to Use
+
+- Made an architectural choice
+- Chose between multiple approaches
+- Selected a library or tool
+- Decided on a design pattern
+- Made a tradeoff decision
+
+---
+
+## Step 1: Check for Existing Decisions File
+
+Check if `.claude/vault/decisions.md` exists:
+- If YES: Read it and append new entry
+- If NO: Create it with the template below
+
+---
+
+## Step 2: Add Decision Entry
+
+Use the **Edit tool** (or Write if creating new) to add to `.claude/vault/decisions.md`:
+
+```markdown
+# Decision Log
+
+**Last Updated:** [TODAY'S DATE]
+
+> Architectural decisions and their rationale. Remember WHY we chose what we chose.
+
+---
+
+## Decisions
+
+### [Decision Title]
+**Date:** [TODAY]
+**Status:** Active | Superseded | Revisit
+**Keywords:** `keyword1`, `keyword2`
+
+**Context:**
+[What problem were we trying to solve?]
+
+**Decision:**
+[What did we decide?]
+
+**Alternatives Considered:**
+| Option | Pros | Cons |
+|--------|------|------|
+| [Chosen] | + [pro] | - [con] |
+| [Alt 1] | + [pro] | - [con] |
+| [Alt 2] | + [pro] | - [con] |
+
+**Rationale:**
+[WHY did we choose this option?]
+
+**Consequences:**
+- [What are the implications?]
+- [What constraints does this create?]
+
+**Revisit When:**
+[Conditions that might make us reconsider]
+
+---
+
+### [Next Decision...]
+```
+
+---
+
+## Step 3: Confirm Log
+
+Output:
+```
+✅ Decision Logged!
+
+📄 Added to: .claude/vault/decisions.md
+
+Decision: [title]
+Status: Active
+
+💡 Review decisions.md when architecture questions arise!
+```
+CMD_EOF
+}
+
 #===============================================================================
 # INSTALLATION FUNCTIONS
 #===============================================================================
@@ -2991,7 +3714,7 @@ check_and_restore_backup() {
             echo -e "${BOLD}📦 What was restored:${NC}"
             echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
             echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
-            echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(11 slash commands)${NC}"
+            echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(16 slash commands)${NC}"
             echo ""
             echo -e "${BOLD}🚀 Quick Start:${NC}"
             echo -e "   1. Start Claude Code: ${CYAN}claude${NC}"
@@ -3134,6 +3857,11 @@ install_contextvault() {
         "ctx-read:📖"
         "ctx-share:📤"
         "ctx-import:📥"
+        "ctx-handoff:🤝"
+        "ctx-intel:🧠"
+        "ctx-error:🐛"
+        "ctx-snippet:📎"
+        "ctx-decision:⚖️"
     )
 
     for cmd_info in "${commands[@]}"; do
@@ -3152,6 +3880,11 @@ install_contextvault() {
             ctx-read) create_cmd_ctx_read > "$COMMANDS_DIR/ctx-read.md" ;;
             ctx-share) create_cmd_ctx_share > "$COMMANDS_DIR/ctx-share.md" ;;
             ctx-import) create_cmd_ctx_import > "$COMMANDS_DIR/ctx-import.md" ;;
+            ctx-handoff) create_cmd_ctx_handoff > "$COMMANDS_DIR/ctx-handoff.md" ;;
+            ctx-intel) create_cmd_ctx_intel > "$COMMANDS_DIR/ctx-intel.md" ;;
+            ctx-error) create_cmd_ctx_error > "$COMMANDS_DIR/ctx-error.md" ;;
+            ctx-snippet) create_cmd_ctx_snippet > "$COMMANDS_DIR/ctx-snippet.md" ;;
+            ctx-decision) create_cmd_ctx_decision > "$COMMANDS_DIR/ctx-decision.md" ;;
         esac
 
         printf " ${GREEN}✓${NC}\n"
@@ -3159,7 +3892,7 @@ install_contextvault() {
     done
 
     echo ""
-    print_success "11 commands installed"
+    print_success "16 commands installed"
 
     # Install global hooks
     echo ""
@@ -3179,7 +3912,7 @@ install_contextvault() {
     echo -e "${BOLD}📦 What was installed:${NC}"
     echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
     echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
-    echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(11 slash commands)${NC}"
+    echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(16 slash commands)${NC}"
     echo -e "   ${CYAN}🪝${NC} ~/.claude/settings.json      ${DIM}(Auto-hooks: SessionStart + Stop)${NC}"
     echo ""
     echo -e "${BOLD}🪝 Hooks installed:${NC}"
@@ -3243,7 +3976,7 @@ uninstall_contextvault() {
         print_success "Removed vault directory"
     fi
 
-    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read; do
+    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision; do
         if [ -f "$COMMANDS_DIR/$cmd.md" ]; then
             rm "$COMMANDS_DIR/$cmd.md"
         fi
@@ -3286,10 +4019,10 @@ check_status() {
     if [ -d "$COMMANDS_DIR" ]; then
         print_success "Commands directory exists"
         local cmd_count=0
-        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import; do
+        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision; do
             [ -f "$COMMANDS_DIR/$cmd.md" ] && ((cmd_count++))
         done
-        [ $cmd_count -eq 11 ] && print_success "  └── All 11 commands ✓" || print_warning "  └── $cmd_count/11 commands"
+        [ $cmd_count -eq 16 ] && print_success "  └── All 16 commands ✓" || print_warning "  └── $cmd_count/16 commands"
     else
         print_error "Commands directory not found"
         installed=false
