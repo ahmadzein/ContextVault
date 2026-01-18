@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.4.2"
+VERSION="1.5.0"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -1928,6 +1928,11 @@ When this command is invoked, display:
 │  /ctx-search    Search indexes for a topic                      │
 │  /ctx-read      Read a document by ID (G001, P002)              │
 │                                                                  │
+│  SHARING & IMPORT                                                │
+│  ─────────────────────────────────────────────────────────────  │
+│  /ctx-share     Export vault to ZIP (-local/-global/-all)       │
+│  /ctx-import    Import vault from shared ZIP file               │
+│                                                                  │
 │  MODE OPTIONS (/ctx-mode)                                        │
 │  ─────────────────────────────────────────────────────────────  │
 │  local    Project-only, global OFF (default)                    │
@@ -1960,6 +1965,7 @@ When this command is invoked, display:
 │  3. /ctx-search    → Find existing docs                         │
 │  4. Work on task                                                 │
 │  5. /ctx-doc       → Document findings                          │
+│  6. /ctx-share     → Share knowledge with team (optional)       │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 
@@ -2331,6 +2337,486 @@ If not found:
 CMD_EOF
 }
 
+create_cmd_ctx_share() {
+    cat << 'CMD_EOF'
+# /ctx-share
+
+Export ContextVault documents to a shareable ZIP file with optional cloud upload.
+
+## Usage
+
+```
+/ctx-share [-global] [-local] [-all] [-upload] [-email]
+```
+
+## Scope Flags (pick one)
+
+- `-local` (default): Export project vault only (./.claude/vault/)
+- `-global`: Export global vault only (~/.claude/vault/)
+- `-all`: Export both global and project vaults
+
+## Sharing Flags (optional)
+
+- `-upload`: Upload to transfer.sh and get shareable URL (free, no signup, 14-day link)
+- `-email`: Open default email client with file attached (macOS/Linux)
+
+If no flags specified, defaults to `-local` with local save only.
+
+## Storage Location
+
+Exports are saved to `./ctx-export/` in project root (git-trackable).
+
+## File Naming Convention
+
+Format: `ctx_{type}_{project}_{YYYYMMDD_HHMMSS}.zip`
+
+Examples:
+- `ctx_local_myproject_20260118_143022.zip` (local export from "myproject")
+- `ctx_global_20260118_143022.zip` (global only, no project name)
+- `ctx_all_myproject_20260118_143022.zip` (both vaults from "myproject")
+
+## Instructions
+
+When this command is invoked, perform the following:
+
+### Step 1: Parse Flags
+
+Determine scope and sharing options:
+- Scope: `-local` (default), `-global`, or `-all`
+- Sharing: `-upload` and/or `-email` (both optional)
+
+### Step 2: Validate Source
+
+Check that the requested vaults exist and have documents:
+- For local: Check `./.claude/vault/index.md` exists
+- For global: Check `~/.claude/vault/index.md` exists
+
+If vault doesn't exist or is empty, warn user and abort.
+
+### Step 3: Determine File Name
+
+Use Bash to get project name and create filename:
+
+```bash
+# Get project name from current directory
+project_name=$(basename "$(pwd)" | tr ' ' '_' | tr '[:upper:]' '[:lower:]')
+timestamp=$(date +%Y%m%d_%H%M%S)
+
+# Build filename based on scope
+# -local or default: ctx_local_{project}_{timestamp}.zip
+# -global: ctx_global_{timestamp}.zip
+# -all: ctx_all_{project}_{timestamp}.zip
+```
+
+### Step 4: Create Export Directory
+
+```bash
+# Create ctx-export folder in project root
+mkdir -p ./ctx-export
+
+# Create temp working directory
+temp_dir="/tmp/ctx_export_${timestamp}"
+mkdir -p "$temp_dir"
+```
+
+### Step 5: Build Export Structure
+
+Create structure in temp directory:
+
+```
+/tmp/ctx_export_YYYYMMDD_HHMMSS/
+├── manifest.json
+├── global/           (if -global or -all)
+│   ├── index.md
+│   └── G*.md files
+└── project/          (if -local or -all)
+    ├── index.md
+    └── P*.md files
+```
+
+Use Bash tool to copy files:
+```bash
+# For global
+if [[ "$scope" == "global" || "$scope" == "all" ]]; then
+    mkdir -p "$temp_dir/global"
+    cp ~/.claude/vault/index.md "$temp_dir/global/"
+    cp ~/.claude/vault/G*.md "$temp_dir/global/" 2>/dev/null
+fi
+
+# For local/project
+if [[ "$scope" == "local" || "$scope" == "all" ]]; then
+    mkdir -p "$temp_dir/project"
+    cp ./.claude/vault/index.md "$temp_dir/project/"
+    cp ./.claude/vault/P*.md "$temp_dir/project/" 2>/dev/null
+fi
+```
+
+### Step 6: Generate manifest.json
+
+Create manifest.json with metadata:
+
+```json
+{
+  "contextvault_version": "1.5.0",
+  "export_version": "1.1",
+  "exported_at": "2026-01-18T12:34:56Z",
+  "scope": "all",
+  "includes": {
+    "global": true,
+    "project": true
+  },
+  "counts": {
+    "global_docs": 5,
+    "project_docs": 3
+  },
+  "source": {
+    "project_name": "my-project",
+    "project_path": "/path/to/project",
+    "exported_by": "user"
+  },
+  "documents": {
+    "global": ["G001_topic.md", "G002_topic.md"],
+    "project": ["P001_topic.md", "P002_topic.md"]
+  }
+}
+```
+
+### Step 7: Create ZIP File
+
+```bash
+# Create ZIP in ctx-export folder
+cd /tmp
+zip -r "./ctx-export/${filename}" "ctx_export_${timestamp}/"
+
+# Move to project ctx-export folder
+mv "/tmp/ctx-export/${filename}" "./ctx-export/"
+```
+
+Or simpler:
+```bash
+cd /tmp
+zip -r "${filename}" "ctx_export_${timestamp}/"
+mv "/tmp/${filename}" "./ctx-export/"
+```
+
+### Step 8: Handle -upload Flag (if specified)
+
+If `-upload` flag is present, upload to transfer.sh:
+
+```bash
+# Upload to transfer.sh (free, no API key, 14-day retention)
+upload_url=$(curl --upload-file "./ctx-export/${filename}" "https://transfer.sh/${filename}" 2>/dev/null)
+
+# transfer.sh returns the download URL directly
+echo "Upload URL: $upload_url"
+```
+
+Display:
+```
+📤 Uploaded to transfer.sh!
+
+🔗 Shareable Link (valid 14 days):
+   https://transfer.sh/abc123/ctx_local_myproject_20260118_143022.zip
+
+📋 Copy this link and share via:
+   • Slack/Teams message
+   • Email
+   • Any chat app
+
+📥 Recipient imports with:
+   curl -O <link>
+   /ctx-import ./ctx_local_myproject_20260118_143022.zip
+```
+
+### Step 9: Handle -email Flag (if specified)
+
+If `-email` flag is present, open default email client:
+
+**macOS:**
+```bash
+open "mailto:?subject=ContextVault%20Export%20-%20${project_name}&body=I'm%20sharing%20my%20ContextVault%20documentation.%0A%0AFile:%20${filename}%0ALocation:%20$(pwd)/ctx-export/${filename}%0A%0AImport%20with:%20/ctx-import%20path/to/file.zip"
+```
+
+**Linux:**
+```bash
+xdg-open "mailto:?subject=ContextVault%20Export%20-%20${project_name}&body=..."
+```
+
+Note: Email clients can't auto-attach files via mailto, so instruct user to attach manually.
+
+Display:
+```
+📧 Email client opened!
+
+Please attach this file manually:
+   ./ctx-export/${filename}
+
+The email body contains import instructions for the recipient.
+```
+
+### Step 10: Display Result
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ✅ CONTEXTVAULT EXPORT COMPLETE                                │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  📦 Exported:                                                    │
+│     Scope: local (project only)                                  │
+│     Project docs: 5 documents                                    │
+│                                                                  │
+│  📁 Saved to:                                                    │
+│     ./ctx-export/ctx_local_myproject_20260118_143022.zip        │
+│     Size: 12.3 KB                                                │
+│                                                                  │
+│  📤 Share options:                                               │
+│     • Run again with -upload for shareable link                  │
+│     • Run again with -email to open email client                 │
+│     • Manual: attach file to Slack/Teams/Email                   │
+│                                                                  │
+│  📥 Import command (for recipient):                              │
+│     /ctx-import path/to/ctx_local_myproject_20260118_143022.zip │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+If `-upload` was used, also show:
+```
+│  🔗 Shareable Link (14 days):                                    │
+│     https://transfer.sh/abc123/ctx_local_myproject_....zip      │
+```
+
+### Step 11: Cleanup
+
+Remove temporary directory:
+```bash
+rm -rf "/tmp/ctx_export_${timestamp}"
+```
+
+## Examples
+
+```
+/ctx-share                    → Export project vault, save locally
+/ctx-share -local             → Same as above
+/ctx-share -global            → Export global vault only
+/ctx-share -all               → Export both vaults
+/ctx-share -upload            → Export project + upload to transfer.sh
+/ctx-share -all -upload       → Export both + upload
+/ctx-share -local -email      → Export project + open email client
+/ctx-share -all -upload -email → Export both + upload + email
+```
+
+## Output Files
+
+All exports saved to `./ctx-export/` folder:
+```
+./ctx-export/
+├── ctx_local_myproject_20260118_143022.zip
+├── ctx_all_myproject_20260119_091500.zip
+└── ctx_global_20260120_160000.zip
+```
+
+This folder can be:
+- Git tracked (for team sharing via repo)
+- Git ignored (add to .gitignore if preferred)
+CMD_EOF
+}
+
+create_cmd_ctx_import() {
+    cat << 'CMD_EOF'
+# /ctx-import
+
+Import ContextVault documents from a shared ZIP file.
+
+## Usage
+
+```
+/ctx-import <path-to-zip>
+```
+
+## Arguments
+
+- `path-to-zip`: Path to the exported ContextVault ZIP file
+
+## Instructions
+
+When this command is invoked, perform the following:
+
+### Step 1: Validate ZIP File
+
+Check that the file exists and is a valid ZIP:
+
+```bash
+# Check file exists
+ls -la /path/to/file.zip
+
+# Validate ZIP integrity
+unzip -t /path/to/file.zip
+```
+
+If invalid, show error: "Invalid or corrupted ZIP file"
+
+### Step 2: Extract and Read Manifest
+
+Use Bash to extract to temp directory:
+
+```bash
+timestamp=$(date +%s)
+mkdir -p /tmp/ctx_import_${timestamp}
+unzip /path/to/file.zip -d /tmp/ctx_import_${timestamp}
+```
+
+Then read manifest.json to understand contents:
+- Check `contextvault_version` for compatibility
+- Read `includes` to know what's in the export
+- Read `counts` and `documents` for details
+
+### Step 3: Show Import Preview
+
+Display what will be imported:
+
+```
+📦 ContextVault Import Preview
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Source: contextvault_export_20260118_123456.zip
+Exported: 2026-01-18 12:34:56
+Version: 1.5.0
+
+📚 Contents:
+├── Global: X documents
+│   ├── G001_docker_tips.md
+│   ├── G002_git_workflows.md
+│   └── ...
+└── Project: Y documents
+    ├── P001_auth_system.md
+    └── ...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### Step 4: Check for Conflicts
+
+Compare imported documents with existing ones:
+
+For global imports:
+- Check each G###.md against ~/.claude/vault/
+- List files that already exist
+
+For project imports:
+- Check each P###.md against ./.claude/vault/
+- List files that already exist
+
+If conflicts found, display:
+```
+⚠️ Conflicts Detected:
+   Global:
+   • G001 exists: "Docker Tips" (local) vs "Container Patterns" (import)
+   Project:
+   • P002 exists: "Auth System" (local) vs "Authentication" (import)
+```
+
+### Step 5: Ask Conflict Resolution
+
+Use AskUserQuestion tool if conflicts exist:
+
+```
+How should I handle conflicting documents?
+
+Options:
+1. Skip - Keep existing, only import new documents
+2. Overwrite - Replace existing with imported (⚠️ destructive)
+3. Merge - Import new docs, keep existing, merge indexes (recommended)
+4. Backup & Overwrite - Backup existing first, then overwrite
+```
+
+### Step 6: Perform Import
+
+Based on user choice:
+
+**Skip Mode:**
+```bash
+# Only copy non-existing files
+for file in import/global/*.md; do
+  [ ! -f ~/.claude/vault/$(basename $file) ] && cp $file ~/.claude/vault/
+done
+```
+
+**Overwrite Mode:**
+```bash
+# Copy all, overwriting existing
+cp -f import/global/*.md ~/.claude/vault/
+```
+
+**Merge Mode:**
+- Copy non-conflicting documents
+- Keep existing conflicting documents
+- Merge index.md: Add new entries from import, keep existing entries
+
+**Backup & Overwrite:**
+```bash
+# Backup first
+cp -r ~/.claude/vault ~/.contextvault_backup_import_$(date +%Y%m%d_%H%M%S)
+# Then overwrite
+cp -f import/global/*.md ~/.claude/vault/
+```
+
+### Step 7: Update Indexes
+
+After importing, update the index.md files:
+- Add entries for newly imported documents
+- Update Quick Stats counts
+- Update "Last updated" date
+
+For merge mode, combine tables:
+- Read existing index
+- Read imported index
+- Merge Active Documents tables
+- Merge Related Terms Map tables
+- Write combined index
+
+### Step 8: Display Result
+
+```
+✅ ContextVault Import Complete!
+
+📥 Imported:
+   Global:  X documents (Y new, Z skipped)
+   Project: X documents (Y new, Z skipped)
+
+📁 Locations:
+   Global:  ~/.claude/vault/
+   Project: ./.claude/vault/
+
+✅ Indexes updated
+
+Run /ctx-status to verify.
+```
+
+### Step 9: Cleanup
+
+Remove temporary extraction directory:
+```bash
+rm -rf /tmp/ctx_import_${timestamp}
+```
+
+## Conflict Resolution Details
+
+| Mode | Existing Docs | Imported Docs | Index |
+|------|---------------|---------------|-------|
+| Skip | Kept | Only new IDs imported | Merged (new only) |
+| Overwrite | Replaced | All imported | Replaced |
+| Merge | Kept | Only new IDs imported | Merged |
+| Backup+Overwrite | Backed up then replaced | All imported | Replaced |
+
+## Examples
+
+```
+/ctx-import ~/Desktop/contextvault_export_20260118_123456.zip
+/ctx-import /path/to/team-context.zip
+/ctx-import ./shared-knowledge.zip
+```
+CMD_EOF
+}
+
 #===============================================================================
 # INSTALLATION FUNCTIONS
 #===============================================================================
@@ -2453,7 +2939,7 @@ check_and_restore_backup() {
             echo -e "${BOLD}📦 What was restored:${NC}"
             echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
             echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
-            echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(9 slash commands)${NC}"
+            echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(11 slash commands)${NC}"
             echo ""
             echo -e "${BOLD}🚀 Quick Start:${NC}"
             echo -e "   1. Start Claude Code: ${CYAN}claude${NC}"
@@ -2587,6 +3073,8 @@ install_contextvault() {
         "ctx-update:🔧"
         "ctx-search:🔎"
         "ctx-read:📖"
+        "ctx-share:📤"
+        "ctx-import:📥"
     )
 
     for cmd_info in "${commands[@]}"; do
@@ -2603,6 +3091,8 @@ install_contextvault() {
             ctx-update) create_cmd_ctx_update > "$COMMANDS_DIR/ctx-update.md" ;;
             ctx-search) create_cmd_ctx_search > "$COMMANDS_DIR/ctx-search.md" ;;
             ctx-read) create_cmd_ctx_read > "$COMMANDS_DIR/ctx-read.md" ;;
+            ctx-share) create_cmd_ctx_share > "$COMMANDS_DIR/ctx-share.md" ;;
+            ctx-import) create_cmd_ctx_import > "$COMMANDS_DIR/ctx-import.md" ;;
         esac
 
         printf " ${GREEN}✓${NC}\n"
@@ -2610,7 +3100,7 @@ install_contextvault() {
     done
 
     echo ""
-    print_success "9 commands installed"
+    print_success "11 commands installed"
 
     # Install global hooks
     echo ""
@@ -2630,7 +3120,7 @@ install_contextvault() {
     echo -e "${BOLD}📦 What was installed:${NC}"
     echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
     echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
-    echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(9 slash commands)${NC}"
+    echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(11 slash commands)${NC}"
     echo -e "   ${CYAN}🪝${NC} ~/.claude/settings.json      ${DIM}(Auto-hooks: SessionStart + Stop)${NC}"
     echo ""
     echo -e "${BOLD}🪝 Hooks installed:${NC}"
@@ -2737,10 +3227,10 @@ check_status() {
     if [ -d "$COMMANDS_DIR" ]; then
         print_success "Commands directory exists"
         local cmd_count=0
-        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read; do
+        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import; do
             [ -f "$COMMANDS_DIR/$cmd.md" ] && ((cmd_count++))
         done
-        [ $cmd_count -eq 9 ] && print_success "  └── All 9 commands ✓" || print_warning "  └── $cmd_count/9 commands"
+        [ $cmd_count -eq 11 ] && print_success "  └── All 11 commands ✓" || print_warning "  └── $cmd_count/11 commands"
     else
         print_error "Commands directory not found"
         installed=false
