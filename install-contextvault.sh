@@ -844,13 +844,67 @@ Create `.claude/vault/index.md` with this content:
 
 Create `.claude/vault/_template.md` with the standard document template.
 
-### Step 5: Confirm completion
+### Step 5: Create project CLAUDE.md (IMPORTANT!)
 
-Tell the user:
-- ContextVault initialized successfully
-- Project docs go in `.claude/vault/` with P### prefix
-- Global docs go in `~/.claude/vault/` with G### prefix
-- Always read both indexes before starting work
+Create `.claude/CLAUDE.md` with these MANDATORY instructions:
+
+```markdown
+# Project Instructions - ContextVault Enabled
+
+**This project uses ContextVault for documentation.**
+
+## MANDATORY BEHAVIOR
+
+You MUST use ContextVault in this project. This is NOT optional.
+
+### On Session Start (AUTOMATIC):
+1. Read `./.claude/vault/index.md` to see project knowledge
+2. Check `~/.claude/vault/settings.json` for mode settings
+3. Use existing knowledge to inform your responses
+
+### During Work (AUTOMATIC):
+1. After completing tasks → Document findings
+2. After exploring code → Document architecture
+3. After fixing bugs → Document solution
+4. After decisions → Document reasoning
+
+### Documentation Rules:
+- NEVER ask "Should I document?" - JUST DO IT
+- Project-specific knowledge → P### docs in `./.claude/vault/`
+- Reusable patterns → G### docs in `~/.claude/vault/`
+- Always update index after changes
+
+### Available Commands:
+- `/ctx-status` - Check vault status
+- `/ctx-new` - Create new document
+- `/ctx-doc` - Quick document after task
+- `/ctx-update` - Update existing doc
+- `/ctx-search` - Search for docs
+- `/ctx-read` - Read doc by ID
+
+## Project Vault Location
+
+`./.claude/vault/`
+```
+
+### Step 6: Confirm completion
+
+Display success message:
+```
+✅ ContextVault initialized for this project!
+
+Created:
+├── .claude/CLAUDE.md        (project instructions)
+├── .claude/vault/index.md   (project index)
+└── .claude/vault/_template.md
+
+Claude will now AUTOMATICALLY:
+• Read project index at session start
+• Document findings without asking
+• Use P### prefix for project docs
+
+Run /ctx-status to verify setup.
+```
 CMD_EOF
 }
 
