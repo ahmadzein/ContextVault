@@ -24,7 +24,45 @@
 set -e
 
 # Version
-VERSION="1.4.1"
+VERSION="1.4.2"
+
+#===============================================================================
+# 🔒 SECURITY & VALIDATION
+#===============================================================================
+
+# Validate HOME environment variable
+validate_environment() {
+    # Check HOME is set
+    if [ -z "$HOME" ]; then
+        echo "ERROR: HOME environment variable is not set!" >&2
+        echo "Cannot determine installation directory." >&2
+        exit 1
+    fi
+
+    # Check HOME exists and is a directory
+    if [ ! -d "$HOME" ]; then
+        echo "ERROR: HOME directory does not exist: $HOME" >&2
+        exit 1
+    fi
+
+    # Security check: Ensure we're not operating on root filesystem
+    if [ "$HOME" = "/" ]; then
+        echo "ERROR: HOME cannot be root filesystem!" >&2
+        exit 1
+    fi
+
+    # Validate HOME is an absolute path
+    case "$HOME" in
+        /*) ;; # OK - absolute path
+        *)
+            echo "ERROR: HOME must be an absolute path: $HOME" >&2
+            exit 1
+            ;;
+    esac
+}
+
+# Run validation immediately
+validate_environment
 
 # Colors
 RED='\033[0;31m'
@@ -197,26 +235,151 @@ print_sparkle() {
     echo -e "${MAGENTA}✨${NC} $1"
 }
 
-# Detect installed version
+#===============================================================================
+# 📁 SAFE FILE OPERATIONS
+#===============================================================================
+
+# Safe directory creation with error handling
+safe_mkdir() {
+    local dir="$1"
+    local desc="${2:-directory}"
+
+    if [ -d "$dir" ]; then
+        return 0  # Already exists
+    fi
+
+    if mkdir -p "$dir" 2>/dev/null; then
+        return 0
+    else
+        print_error "Failed to create $desc: $dir"
+        return 1
+    fi
+}
+
+# Safe file write with validation
+safe_write_file() {
+    local file="$1"
+    local content="$2"
+    local desc="${3:-file}"
+
+    # Ensure parent directory exists
+    local parent_dir=$(dirname "$file")
+    if [ ! -d "$parent_dir" ]; then
+        if ! safe_mkdir "$parent_dir" "parent directory"; then
+            return 1
+        fi
+    fi
+
+    # Write to temp file first, then move (atomic operation)
+    local temp_file="${file}.tmp.$$"
+
+    if echo "$content" > "$temp_file" 2>/dev/null; then
+        if mv "$temp_file" "$file" 2>/dev/null; then
+            return 0
+        else
+            rm -f "$temp_file" 2>/dev/null
+            print_error "Failed to write $desc: $file"
+            return 1
+        fi
+    else
+        rm -f "$temp_file" 2>/dev/null
+        print_error "Failed to create $desc: $file"
+        return 1
+    fi
+}
+
+# Safe file copy with error handling
+safe_copy() {
+    local src="$1"
+    local dest="$2"
+    local desc="${3:-file}"
+
+    if cp "$src" "$dest" 2>/dev/null; then
+        return 0
+    else
+        print_error "Failed to copy $desc: $src -> $dest"
+        return 1
+    fi
+}
+
+# Set secure file permissions
+secure_file() {
+    local file="$1"
+    local mode="${2:-600}"
+    chmod "$mode" "$file" 2>/dev/null || true
+}
+
+# Set secure directory permissions
+secure_dir() {
+    local dir="$1"
+    local mode="${2:-700}"
+    chmod "$mode" "$dir" 2>/dev/null || true
+}
+
+#===============================================================================
+# 🔍 VERSION DETECTION
+#===============================================================================
+
+# Detect installed version with validation
 get_installed_version() {
     local installed_version=""
 
     # Try to get version from hook script first (most reliable)
     if [ -f "$CLAUDE_DIR/hooks/ctx-session-start.sh" ]; then
-        installed_version=$(grep -m1 'VERSION=' "$CLAUDE_DIR/hooks/ctx-session-start.sh" 2>/dev/null | cut -d'"' -f2)
+        # Extract version and validate format (X.Y.Z)
+        installed_version=$(grep -m1 'VERSION=' "$CLAUDE_DIR/hooks/ctx-session-start.sh" 2>/dev/null | \
+                          grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
     fi
 
-    # Fallback: try to detect from CLAUDE.md patterns
+    # Fallback: try ctx-status.md which has version
+    if [ -z "$installed_version" ] && [ -f "$COMMANDS_DIR/ctx-status.md" ]; then
+        installed_version=$(grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' "$COMMANDS_DIR/ctx-status.md" 2>/dev/null | \
+                          head -1 | tr -d 'v')
+    fi
+
+    # Final fallback: detect from CLAUDE.md patterns
     if [ -z "$installed_version" ] && [ -f "$CLAUDE_MD" ]; then
-        # Check for known version markers
         if grep -q "PRE-WORK CHECKLIST" "$CLAUDE_MD" 2>/dev/null; then
-            installed_version="1.4.0"  # Has the new checklists
+            installed_version="1.4.0"
         elif grep -q "ContextVault" "$CLAUDE_MD" 2>/dev/null; then
-            installed_version="1.3.x"  # Older version
+            installed_version="1.3.0"
         fi
     fi
 
-    echo "$installed_version"
+    # Validate version format before returning
+    if [[ "$installed_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "$installed_version"
+    fi
+}
+
+# Check for updates with proper error handling
+check_for_updates() {
+    local current_version="$1"
+    local timeout=3
+    local url="https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh"
+
+    # Try to fetch latest version
+    local response
+    response=$(curl -sfL --max-time "$timeout" "$url" 2>/dev/null) || return 1
+
+    # Check for error responses
+    if [ -z "$response" ]; then
+        return 1
+    fi
+
+    # Extract version safely
+    local latest
+    latest=$(echo "$response" | grep -m1 'VERSION=' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+
+    # Validate version format
+    if [[ "$latest" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        if [ "$latest" != "$current_version" ]; then
+            echo "$latest"
+            return 0
+        fi
+    fi
+
+    return 1
 }
 
 #===============================================================================
@@ -226,7 +389,7 @@ get_installed_version() {
 # Create the ctx-session-start hook script
 create_session_start_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-session-start.sh"
-    mkdir -p "$CLAUDE_DIR/hooks"
+    safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
@@ -236,10 +399,15 @@ create_session_start_script() {
 VERSION="__VERSION_PLACEHOLDER__"
 VAULT_DIR="$HOME/.claude/vault"
 PROJECT_VAULT="./.claude/vault"
-SESSION_FILE="/tmp/ctx_session_$$"
 
-# Save session start time for tracking modifications
-date +%s > "$SESSION_FILE" 2>/dev/null
+# Create unique session file using PPID (parent process ID) for reliable matching
+# This ensures the end hook finds the correct session file even with multiple sessions
+SESSION_ID="${PPID:-$$}_$(date +%s)"
+SESSION_FILE="/tmp/ctx_session_${SESSION_ID}"
+
+# Save session start time and ID for tracking modifications
+echo "$SESSION_ID $(date +%s)" > "$SESSION_FILE" 2>/dev/null
+chmod 600 "$SESSION_FILE" 2>/dev/null
 
 # Count global docs
 global_count=0
@@ -257,9 +425,9 @@ fi
 
 # Check for updates (non-blocking, timeout 2s)
 update_msg=""
-latest=$(curl -sfL --max-time 2 "https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh" 2>/dev/null | grep -m1 'VERSION=' | cut -d'"' -f2)
+latest=$(curl -sfL --max-time 2 "https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh" 2>/dev/null | grep -m1 'VERSION=' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
 if [ -n "$latest" ] && [ "$latest" != "$VERSION" ]; then
-    update_msg="\\n   ⬆️  Update available: v$latest (you have v$VERSION)"
+    update_msg="\n   ⬆️  Update available: v$latest (you have v$VERSION)"
 fi
 
 # Output status
@@ -276,15 +444,22 @@ echo "   📖 Read indexes now! Use /ctx-status for details"
 echo ""
 SCRIPT_EOF
 
-    # Replace version placeholder with actual version
-    sed -i.bak "s/__VERSION_PLACEHOLDER__/$VERSION/g" "$script_path" && rm -f "${script_path}.bak"
+    # Replace version placeholder with actual version using temp file (safer)
+    local temp_file="${script_path}.tmp"
+    if sed "s/__VERSION_PLACEHOLDER__/$VERSION/g" "$script_path" > "$temp_file" 2>/dev/null; then
+        mv "$temp_file" "$script_path"
+    else
+        rm -f "$temp_file" 2>/dev/null
+        print_error "Failed to set version in hook script"
+    fi
     chmod +x "$script_path"
+    secure_file "$script_path" 755
 }
 
 # Create the ctx-session-end hook script
 create_session_end_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-session-end.sh"
-    mkdir -p "$CLAUDE_DIR/hooks"
+    safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
@@ -294,18 +469,34 @@ create_session_end_script() {
 VAULT_DIR="$HOME/.claude/vault"
 PROJECT_VAULT="./.claude/vault"
 
-# Find session start time
+# Find the correct session file by matching PPID prefix
+# This prevents race conditions with multiple concurrent sessions
 session_start=0
-for f in /tmp/ctx_session_*; do
+session_file=""
+my_ppid="${PPID:-0}"
+
+# Look for session file matching our parent process
+for f in /tmp/ctx_session_${my_ppid}_* /tmp/ctx_session_*; do
     if [ -f "$f" ]; then
-        session_start=$(cat "$f" 2>/dev/null)
-        rm -f "$f" 2>/dev/null
-        break
+        # Read session data (format: "session_id timestamp")
+        session_data=$(cat "$f" 2>/dev/null)
+        session_start=$(echo "$session_data" | awk '{print $2}')
+        session_file="$f"
+
+        # If we found a file matching our PPID, use it and stop
+        if [[ "$f" == *"${my_ppid}_"* ]]; then
+            break
+        fi
     fi
 done
 
-# If no session file, just show reminder
-if [ "$session_start" = "0" ]; then
+# Clean up the session file
+if [ -n "$session_file" ] && [ -f "$session_file" ]; then
+    rm -f "$session_file" 2>/dev/null
+fi
+
+# If no session file or invalid timestamp, just show reminder
+if [ -z "$session_start" ] || [ "$session_start" = "0" ]; then
     echo ""
     echo "📝 ContextVault"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -357,6 +548,7 @@ echo ""
 SCRIPT_EOF
 
     chmod +x "$script_path"
+    secure_file "$script_path" 755
 }
 
 # Create global hooks in ~/.claude/settings.json
@@ -396,31 +588,67 @@ create_global_hooks() {
     # Check if settings.json already exists
     if [ -f "$settings_file" ]; then
         # Backup existing settings
-        cp "$settings_file" "${settings_file}.backup"
+        safe_copy "$settings_file" "${settings_file}.backup" "settings backup"
 
         # Try to merge hooks with existing settings using jq if available
         if command -v jq &> /dev/null; then
-            # Replace SessionStart and Stop hooks with ours, preserve other settings
-            local existing=$(cat "$settings_file")
-            local merged=$(echo "$existing" | jq --argjson new_hooks "$hooks_json" '
-                # Preserve all non-hooks settings
-                . as $orig |
+            local existing
+            existing=$(cat "$settings_file" 2>/dev/null)
+
+            # Validate existing JSON first
+            if ! echo "$existing" | jq empty 2>/dev/null; then
+                print_warning "Existing settings.json is invalid JSON - recreating"
+                if safe_write_file "$settings_file" "$hooks_json" "settings.json"; then
+                    print_success "Global hooks created (replaced invalid JSON)"
+                fi
+                return
+            fi
+
+            # Safely merge: ensure .hooks exists, then replace SessionStart and Stop
+            local merged
+            merged=$(echo "$existing" | jq --argjson new_hooks "$hooks_json" '
+                # Ensure hooks object exists
+                .hooks //= {} |
                 # Replace SessionStart and Stop with our hooks
                 .hooks.SessionStart = $new_hooks.hooks.SessionStart |
                 .hooks.Stop = $new_hooks.hooks.Stop
-            ')
-            echo "$merged" > "$settings_file"
-            print_success "Global hooks updated to v${VERSION}"
+            ' 2>/dev/null)
+
+            # Validate merged output before writing
+            if [ -n "$merged" ] && echo "$merged" | jq empty 2>/dev/null; then
+                if safe_write_file "$settings_file" "$merged" "settings.json"; then
+                    print_success "Global hooks updated to v${VERSION}"
+                else
+                    print_error "Failed to write settings.json (backup at ${settings_file}.backup)"
+                fi
+            else
+                print_error "Failed to merge hooks (backup at ${settings_file}.backup)"
+                print_info "Manually update ~/.claude/settings.json if needed"
+            fi
         else
-            # No jq, warn user and create new file
-            print_warning "jq not found - creating new settings (backup saved)"
-            echo "$hooks_json" > "$settings_file"
+            # No jq - try to preserve other settings by simple replacement if possible
+            # Otherwise just inform user
+            print_warning "jq not found - cannot safely merge settings"
+            print_info "Backup saved at ${settings_file}.backup"
+
+            # Only overwrite if file appears to be ContextVault-only
+            if grep -q '"hooks"' "$settings_file" && ! grep -q '"mcpServers"\|"mode"\|"alwaysThinking"' "$settings_file" 2>/dev/null; then
+                if safe_write_file "$settings_file" "$hooks_json" "settings.json"; then
+                    print_success "Global hooks updated"
+                fi
+            else
+                print_warning "Cannot update - other settings exist. Install jq for safe merging."
+            fi
         fi
     else
         # Create new settings.json
-        echo "$hooks_json" > "$settings_file"
-        print_success "Global hooks created"
+        if safe_write_file "$settings_file" "$hooks_json" "settings.json"; then
+            print_success "Global hooks created"
+        fi
     fi
+
+    # Set secure permissions on settings file
+    secure_file "$settings_file" 600
 }
 
 # Generate project hooks JSON for ctx-init

@@ -22,7 +22,7 @@
 
 set -e
 
-VERSION="1.4.1"
+VERSION="1.4.2"
 
 # Parse arguments
 FORCE_MODE=false
@@ -33,6 +33,44 @@ for arg in "$@"; do
             ;;
     esac
 done
+
+#===============================================================================
+# 🔒 SECURITY & VALIDATION
+#===============================================================================
+
+# Validate HOME environment variable
+validate_environment() {
+    # Check HOME is set
+    if [ -z "$HOME" ]; then
+        echo "ERROR: HOME environment variable is not set!" >&2
+        echo "Cannot determine ContextVault location." >&2
+        exit 1
+    fi
+
+    # Check HOME exists and is a directory
+    if [ ! -d "$HOME" ]; then
+        echo "ERROR: HOME directory does not exist: $HOME" >&2
+        exit 1
+    fi
+
+    # Security check: Ensure we're not operating on root filesystem
+    if [ "$HOME" = "/" ]; then
+        echo "ERROR: HOME cannot be root filesystem!" >&2
+        exit 1
+    fi
+
+    # Validate HOME is an absolute path
+    case "$HOME" in
+        /*) ;; # OK - absolute path
+        *)
+            echo "ERROR: HOME must be an absolute path: $HOME" >&2
+            exit 1
+            ;;
+    esac
+}
+
+# Run validation immediately
+validate_environment
 
 # Colors
 RED='\033[0;31m'
@@ -447,26 +485,62 @@ uninstall() {
         fi
     fi
     if [ "$has_ctx_hooks" = true ]; then
-        # Check if settings.json ONLY contains ContextVault hooks (safe to delete entirely)
-        # by checking if it has other top-level keys besides "hooks"
         if command -v jq &> /dev/null; then
+            # Check if settings.json has other top-level keys besides "hooks"
             local other_keys=$(cat "$SETTINGS_JSON" | jq 'keys | map(select(. != "hooks")) | length' 2>/dev/null || echo "0")
+
             if [ "$other_keys" = "0" ]; then
-                # Only has hooks, safe to remove entirely
+                # Only has hooks, check if hooks has other keys besides SessionStart/Stop
+                local other_hooks=$(cat "$SETTINGS_JSON" | jq '.hooks | keys | map(select(. != "SessionStart" and . != "Stop")) | length' 2>/dev/null || echo "0")
+
+                if [ "$other_hooks" = "0" ]; then
+                    # Only ContextVault hooks, safe to remove entirely
+                    if rm "$SETTINGS_JSON" 2>/dev/null; then
+                        print_success "Removed settings.json (ContextVault hooks only)"
+                        ((removed_count++))
+                    fi
+                else
+                    # Other hooks exist, just remove SessionStart and Stop
+                    local cleaned
+                    cleaned=$(cat "$SETTINGS_JSON" | jq 'del(.hooks.SessionStart, .hooks.Stop)' 2>/dev/null)
+                    if [ -n "$cleaned" ] && echo "$cleaned" | jq empty 2>/dev/null; then
+                        echo "$cleaned" > "$SETTINGS_JSON"
+                        print_success "Removed ContextVault hooks from settings.json"
+                        ((removed_count++))
+                    fi
+                fi
+            else
+                # Has other settings - safely remove just the hooks
+                local cleaned
+                cleaned=$(cat "$SETTINGS_JSON" | jq 'del(.hooks.SessionStart, .hooks.Stop)' 2>/dev/null)
+
+                # If hooks object is now empty, remove it entirely
+                if [ -n "$cleaned" ]; then
+                    local hooks_empty=$(echo "$cleaned" | jq '.hooks | length' 2>/dev/null || echo "1")
+                    if [ "$hooks_empty" = "0" ]; then
+                        cleaned=$(echo "$cleaned" | jq 'del(.hooks)' 2>/dev/null)
+                    fi
+                fi
+
+                if [ -n "$cleaned" ] && echo "$cleaned" | jq empty 2>/dev/null; then
+                    echo "$cleaned" > "$SETTINGS_JSON"
+                    print_success "Removed ContextVault hooks (preserved other settings)"
+                    ((removed_count++))
+                else
+                    print_warning "Could not cleanly remove hooks - manual cleanup may be needed"
+                fi
+            fi
+        else
+            # No jq - check if file appears to only have hooks
+            local line_count=$(wc -l < "$SETTINGS_JSON" | tr -d ' ')
+            if [ "$line_count" -lt 30 ] && ! grep -q '"mcpServers"\|"mode"\|"alwaysThinking"' "$SETTINGS_JSON" 2>/dev/null; then
                 if rm "$SETTINGS_JSON" 2>/dev/null; then
                     print_success "Removed settings.json (ContextVault hooks)"
                     ((removed_count++))
                 fi
             else
-                # Has other settings, just warn user
-                print_warning "settings.json has other settings - ContextVault hooks left in place"
-                print_info "Manually remove ContextVault hooks from ~/.claude/settings.json if needed"
-            fi
-        else
-            # No jq, just remove it (was likely only created by us)
-            if rm "$SETTINGS_JSON" 2>/dev/null; then
-                print_success "Removed settings.json (ContextVault hooks)"
-                ((removed_count++))
+                print_warning "Cannot safely remove hooks without jq - manual cleanup needed"
+                print_info "Install jq and re-run, or manually edit ~/.claude/settings.json"
             fi
         fi
     fi

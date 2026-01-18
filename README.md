@@ -20,7 +20,7 @@
 
 **Give Claude Code a persistent memory across ALL your projects** 🧠
 
-[![Version](https://img.shields.io/badge/version-1.4.1-blue.svg)](https://github.com/ahmadzein/ContextVault)
+[![Version](https://img.shields.io/badge/version-1.4.2-blue.svg)](https://github.com/ahmadzein/ContextVault)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude-Code-blueviolet)](https://claude.ai)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ahmadzein/ContextVault/pulls)
@@ -947,6 +947,44 @@ chmod +x uninstall-contextvault.sh
 ./install-contextvault.sh uninstall
 ./install-contextvault.sh install
 ```
+
+### Edge Cases & Recovery
+
+**Running `/ctx-init` twice in the same project?**
+- Safe! It will detect existing files and skip them
+- CLAUDE.md section will only be added once
+- Your existing docs are preserved
+
+**Accidentally deleted the vault?**
+```bash
+# Check for backups (created on every reinstall/uninstall)
+ls -la ~/.contextvault_backup_*
+
+# Restore from backup
+cp -r ~/.contextvault_backup_XXXXXX/vault ~/.claude/vault
+```
+
+**Corrupt `.claude/` directory?**
+```bash
+# Uninstall will backup first
+./uninstall-contextvault.sh
+
+# Then reinstall - it will offer to restore from backup
+./install-contextvault.sh
+```
+
+**Multiple Claude sessions running?**
+- Each session uses unique session IDs
+- No race conditions - sessions won't interfere with each other
+
+**Missing `jq` tool?**
+- Installer works without jq but is safer with it
+- Install jq for best experience: `brew install jq` (macOS) or `apt install jq` (Linux)
+
+**Hooks not showing output?**
+- Claude Code hooks send output to Claude's context, not your terminal
+- This is by design - Claude sees the info, you don't
+- Use `/ctx-status` to see vault status manually
 
 </details>
 
