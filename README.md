@@ -290,7 +290,7 @@ After installation, you get **11 powerful slash commands** in Claude Code:
 
 | Command | Description | When to Use |
 |---------|-------------|-------------|
-| `/ctx-share` | 📤 Export vault to ZIP | Share knowledge with team |
+| `/ctx-share` | 📤 Export vault to ZIP (with `-upload` for link) | Share knowledge with team |
 | `/ctx-import` | 📥 Import vault from ZIP | Receive shared knowledge |
 
 ---
@@ -683,49 +683,65 @@ Document loaded! How can I help you with this?
 
 ### `/ctx-share` 📤
 
-**Export your vault to a ZIP file for sharing.**
+**Export your vault to a shareable ZIP file with optional cloud upload.**
 
 ```
-Usage: /ctx-share [-local] [-global] [-all]
+Usage: /ctx-share [-local] [-global] [-all] [-upload] [-email]
 
-Options:
+Scope (pick one):
   -local   Export project vault only (default)
   -global  Export global vault only
   -all     Export both vaults
+
+Sharing (optional):
+  -upload  Upload to transfer.sh (free, 14-day link)
+  -email   Open email client with instructions
 ```
 
-What it creates:
-- 📦 A ZIP file with your vault contents
-- 📋 A manifest.json with metadata
-- 📇 Includes indexes and all documents
+**Storage:** `./ctx-export/` folder in project root (git-trackable)
+
+**File naming:** `ctx_{type}_{project}_{timestamp}.zip`
+- `ctx_local_myproject_20260118_143022.zip`
+- `ctx_global_20260118_143022.zip`
+- `ctx_all_myproject_20260118_143022.zip`
 
 **Sample usage:**
 ```
-You: /ctx-share -all
+You: /ctx-share -all -upload
 
 Claude:
 📤 Exporting ContextVault...
 
-Options detected: -all (both global and project)
-
 📦 Creating export package...
    ├── manifest.json (metadata)
-   ├── global/
-   │   ├── index.md
-   │   └── G001_contextvault.md
-   └── project/
-       ├── index.md
-       └── P001_auth_system.md
+   ├── global/ (3 docs)
+   └── project/ (2 docs)
 
-✅ Export created: ~/Desktop/contextvault_export_20260118_143022.zip
+✅ Export complete!
 
-Share this file with your team! They can import it with /ctx-import
+📁 Saved to:
+   ./ctx-export/ctx_all_myproject_20260118_143022.zip
+
+🔗 Shareable Link (valid 14 days):
+   https://transfer.sh/abc123/ctx_all_myproject_20260118_143022.zip
+
+📥 Recipient imports with:
+   /ctx-import ./ctx_all_myproject_20260118_143022.zip
+```
+
+**Examples:**
+```
+/ctx-share                → Export project, save locally
+/ctx-share -upload        → Export project + get shareable link
+/ctx-share -all -upload   → Export both + upload to transfer.sh
+/ctx-share -global -email → Export global + open email client
 ```
 
 **Use cases:**
-- 🤝 Share project knowledge with teammates
+- 🤝 Share project knowledge with teammates (use `-upload`)
 - 💾 Backup your vault before major changes
 - 🔄 Transfer knowledge between machines
+- 📧 Email context to collaborators (use `-email`)
 
 ---
 

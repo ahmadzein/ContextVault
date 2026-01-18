@@ -2341,21 +2341,39 @@ create_cmd_ctx_share() {
     cat << 'CMD_EOF'
 # /ctx-share
 
-Export ContextVault documents to a shareable ZIP file.
+Export ContextVault documents to a shareable ZIP file with optional cloud upload.
 
 ## Usage
 
 ```
-/ctx-share [-global] [-local] [-all]
+/ctx-share [-global] [-local] [-all] [-upload] [-email]
 ```
 
-## Flags
+## Scope Flags (pick one)
 
-- `-local` (default): Export project vault (./.claude/vault/)
-- `-global`: Export global vault (~/.claude/vault/)
+- `-local` (default): Export project vault only (./.claude/vault/)
+- `-global`: Export global vault only (~/.claude/vault/)
 - `-all`: Export both global and project vaults
 
-If no flag specified, defaults to `-local`.
+## Sharing Flags (optional)
+
+- `-upload`: Upload to transfer.sh and get shareable URL (free, no signup, 14-day link)
+- `-email`: Open default email client with file attached (macOS/Linux)
+
+If no flags specified, defaults to `-local` with local save only.
+
+## Storage Location
+
+Exports are saved to `./ctx-export/` in project root (git-trackable).
+
+## File Naming Convention
+
+Format: `ctx_{type}_{project}_{YYYYMMDD_HHMMSS}.zip`
+
+Examples:
+- `ctx_local_myproject_20260118_143022.zip` (local export from "myproject")
+- `ctx_global_20260118_143022.zip` (global only, no project name)
+- `ctx_all_myproject_20260118_143022.zip` (both vaults from "myproject")
 
 ## Instructions
 
@@ -2363,10 +2381,9 @@ When this command is invoked, perform the following:
 
 ### Step 1: Parse Flags
 
-Determine what to export:
-- No flags or `-local` → Export project vault only
-- `-global` → Export global vault only
-- `-all` → Export both vaults
+Determine scope and sharing options:
+- Scope: `-local` (default), `-global`, or `-all`
+- Sharing: `-upload` and/or `-email` (both optional)
 
 ### Step 2: Validate Source
 
@@ -2374,14 +2391,40 @@ Check that the requested vaults exist and have documents:
 - For local: Check `./.claude/vault/index.md` exists
 - For global: Check `~/.claude/vault/index.md` exists
 
-If vault doesn't exist or is empty, warn user.
+If vault doesn't exist or is empty, warn user and abort.
 
-### Step 3: Create Export Structure
+### Step 3: Determine File Name
 
-Create a temporary directory with this structure:
+Use Bash to get project name and create filename:
+
+```bash
+# Get project name from current directory
+project_name=$(basename "$(pwd)" | tr ' ' '_' | tr '[:upper:]' '[:lower:]')
+timestamp=$(date +%Y%m%d_%H%M%S)
+
+# Build filename based on scope
+# -local or default: ctx_local_{project}_{timestamp}.zip
+# -global: ctx_global_{timestamp}.zip
+# -all: ctx_all_{project}_{timestamp}.zip
+```
+
+### Step 4: Create Export Directory
+
+```bash
+# Create ctx-export folder in project root
+mkdir -p ./ctx-export
+
+# Create temp working directory
+temp_dir="/tmp/ctx_export_${timestamp}"
+mkdir -p "$temp_dir"
+```
+
+### Step 5: Build Export Structure
+
+Create structure in temp directory:
 
 ```
-/tmp/contextvault_export_YYYYMMDD_HHMMSS/
+/tmp/ctx_export_YYYYMMDD_HHMMSS/
 ├── manifest.json
 ├── global/           (if -global or -all)
 │   ├── index.md
@@ -2391,20 +2434,33 @@ Create a temporary directory with this structure:
     └── P*.md files
 ```
 
-Use Bash tool to:
-1. Create temp directory structure
-2. Copy vault files to appropriate subdirectories
-3. Generate manifest.json using Write tool
+Use Bash tool to copy files:
+```bash
+# For global
+if [[ "$scope" == "global" || "$scope" == "all" ]]; then
+    mkdir -p "$temp_dir/global"
+    cp ~/.claude/vault/index.md "$temp_dir/global/"
+    cp ~/.claude/vault/G*.md "$temp_dir/global/" 2>/dev/null
+fi
 
-### Step 4: Generate manifest.json
+# For local/project
+if [[ "$scope" == "local" || "$scope" == "all" ]]; then
+    mkdir -p "$temp_dir/project"
+    cp ./.claude/vault/index.md "$temp_dir/project/"
+    cp ./.claude/vault/P*.md "$temp_dir/project/" 2>/dev/null
+fi
+```
 
-Create manifest.json in the export directory with this structure:
+### Step 6: Generate manifest.json
+
+Create manifest.json with metadata:
 
 ```json
 {
   "contextvault_version": "1.5.0",
-  "export_version": "1.0",
+  "export_version": "1.1",
   "exported_at": "2026-01-18T12:34:56Z",
+  "scope": "all",
   "includes": {
     "global": true,
     "project": true
@@ -2415,7 +2471,8 @@ Create manifest.json in the export directory with this structure:
   },
   "source": {
     "project_name": "my-project",
-    "project_path": "/path/to/project"
+    "project_path": "/path/to/project",
+    "exported_by": "user"
   },
   "documents": {
     "global": ["G001_topic.md", "G002_topic.md"],
@@ -2424,55 +2481,144 @@ Create manifest.json in the export directory with this structure:
 }
 ```
 
-### Step 5: Create ZIP File
-
-Use Bash tool to create ZIP:
+### Step 7: Create ZIP File
 
 ```bash
-timestamp=$(date +%Y%m%d_%H%M%S)
+# Create ZIP in ctx-export folder
 cd /tmp
-zip -r ~/Desktop/contextvault_export_${timestamp}.zip contextvault_export_${timestamp}/
+zip -r "./ctx-export/${filename}" "ctx_export_${timestamp}/"
+
+# Move to project ctx-export folder
+mv "/tmp/ctx-export/${filename}" "./ctx-export/"
 ```
 
-Save to user's Desktop (or current directory if Desktop doesn't exist).
-
-### Step 6: Display Result
-
-```
-✅ ContextVault Export Complete!
-
-📦 Exported:
-   • Global docs: X documents
-   • Project docs: Y documents
-
-📁 File created:
-   ~/Desktop/contextvault_export_YYYYMMDD_HHMMSS.zip
-   (Size: X.X MB)
-
-📤 Share via:
-   • Email attachment
-   • Slack/Teams upload
-   • Cloud storage (Drive, Dropbox)
-
-📥 Import on another machine:
-   /ctx-import ~/path/to/contextvault_export_YYYYMMDD_HHMMSS.zip
-```
-
-### Step 7: Cleanup
-
-Remove the temporary directory:
+Or simpler:
 ```bash
-rm -rf /tmp/contextvault_export_${timestamp}
+cd /tmp
+zip -r "${filename}" "ctx_export_${timestamp}/"
+mv "/tmp/${filename}" "./ctx-export/"
+```
+
+### Step 8: Handle -upload Flag (if specified)
+
+If `-upload` flag is present, upload to transfer.sh:
+
+```bash
+# Upload to transfer.sh (free, no API key, 14-day retention)
+upload_url=$(curl --upload-file "./ctx-export/${filename}" "https://transfer.sh/${filename}" 2>/dev/null)
+
+# transfer.sh returns the download URL directly
+echo "Upload URL: $upload_url"
+```
+
+Display:
+```
+📤 Uploaded to transfer.sh!
+
+🔗 Shareable Link (valid 14 days):
+   https://transfer.sh/abc123/ctx_local_myproject_20260118_143022.zip
+
+📋 Copy this link and share via:
+   • Slack/Teams message
+   • Email
+   • Any chat app
+
+📥 Recipient imports with:
+   curl -O <link>
+   /ctx-import ./ctx_local_myproject_20260118_143022.zip
+```
+
+### Step 9: Handle -email Flag (if specified)
+
+If `-email` flag is present, open default email client:
+
+**macOS:**
+```bash
+open "mailto:?subject=ContextVault%20Export%20-%20${project_name}&body=I'm%20sharing%20my%20ContextVault%20documentation.%0A%0AFile:%20${filename}%0ALocation:%20$(pwd)/ctx-export/${filename}%0A%0AImport%20with:%20/ctx-import%20path/to/file.zip"
+```
+
+**Linux:**
+```bash
+xdg-open "mailto:?subject=ContextVault%20Export%20-%20${project_name}&body=..."
+```
+
+Note: Email clients can't auto-attach files via mailto, so instruct user to attach manually.
+
+Display:
+```
+📧 Email client opened!
+
+Please attach this file manually:
+   ./ctx-export/${filename}
+
+The email body contains import instructions for the recipient.
+```
+
+### Step 10: Display Result
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ✅ CONTEXTVAULT EXPORT COMPLETE                                │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  📦 Exported:                                                    │
+│     Scope: local (project only)                                  │
+│     Project docs: 5 documents                                    │
+│                                                                  │
+│  📁 Saved to:                                                    │
+│     ./ctx-export/ctx_local_myproject_20260118_143022.zip        │
+│     Size: 12.3 KB                                                │
+│                                                                  │
+│  📤 Share options:                                               │
+│     • Run again with -upload for shareable link                  │
+│     • Run again with -email to open email client                 │
+│     • Manual: attach file to Slack/Teams/Email                   │
+│                                                                  │
+│  📥 Import command (for recipient):                              │
+│     /ctx-import path/to/ctx_local_myproject_20260118_143022.zip │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+If `-upload` was used, also show:
+```
+│  🔗 Shareable Link (14 days):                                    │
+│     https://transfer.sh/abc123/ctx_local_myproject_....zip      │
+```
+
+### Step 11: Cleanup
+
+Remove temporary directory:
+```bash
+rm -rf "/tmp/ctx_export_${timestamp}"
 ```
 
 ## Examples
 
 ```
-/ctx-share              → Export project vault only (default)
-/ctx-share -local       → Export project vault only
-/ctx-share -global      → Export global vault only
-/ctx-share -all         → Export both vaults
+/ctx-share                    → Export project vault, save locally
+/ctx-share -local             → Same as above
+/ctx-share -global            → Export global vault only
+/ctx-share -all               → Export both vaults
+/ctx-share -upload            → Export project + upload to transfer.sh
+/ctx-share -all -upload       → Export both + upload
+/ctx-share -local -email      → Export project + open email client
+/ctx-share -all -upload -email → Export both + upload + email
 ```
+
+## Output Files
+
+All exports saved to `./ctx-export/` folder:
+```
+./ctx-export/
+├── ctx_local_myproject_20260118_143022.zip
+├── ctx_all_myproject_20260119_091500.zip
+└── ctx_global_20260120_160000.zip
+```
+
+This folder can be:
+- Git tracked (for team sharing via repo)
+- Git ignored (add to .gitignore if preferred)
 CMD_EOF
 }
 
