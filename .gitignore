@@ -1,0 +1,17 @@
+# ContextVault user data (project-specific, not to be shared)
+.claude/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Backup files
+*.bak
+*.backup
