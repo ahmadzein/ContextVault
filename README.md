@@ -345,10 +345,12 @@ Usage: /ctx-init
 ```
 
 What it does:
-1. Creates `.claude/CLAUDE.md` with **mandatory ctx usage instructions**
+1. **Creates/Updates `./CLAUDE.md`** in project root with mandatory ctx instructions
 2. Creates `.claude/vault/` folder in your project
 3. Sets up the project index
 4. Copies the document template
+
+**The key:** It adds ContextVault instructions to your project's `./CLAUDE.md` which **forces** Claude to use ctx!
 
 **Sample usage:**
 ```
@@ -359,20 +361,23 @@ Claude:
 
 ✅ ContextVault initialized for this project!
 
-Created:
-├── .claude/CLAUDE.md        (project instructions - FORCES ctx usage)
+Created/Updated:
+├── ./CLAUDE.md              (ctx instructions added - FORCES ctx usage!)
 ├── .claude/vault/index.md   (project index)
 └── .claude/vault/_template.md
 
 Claude will now AUTOMATICALLY:
-• Read project index at session start
+• Read project vault at session start
 • Document findings without asking
 • Use P### prefix for project docs
 
 Run /ctx-status to verify setup.
 ```
 
-**Run this once per project.** Claude will then be **forced** to use ContextVault in this project!
+**If `./CLAUDE.md` already exists:** The ctx instructions are **appended** to it.
+**If `./CLAUDE.md` doesn't exist:** It's **created** with ctx instructions.
+
+**Run this once per project.** Claude will then be **forced** to use ContextVault!
 
 ---
 

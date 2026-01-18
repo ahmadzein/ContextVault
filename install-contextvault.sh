@@ -844,48 +844,72 @@ Create `.claude/vault/index.md` with this content:
 
 Create `.claude/vault/_template.md` with the standard document template.
 
-### Step 5: Create project CLAUDE.md (IMPORTANT!)
+### Step 5: Update project root CLAUDE.md (CRITICAL!)
 
-Create `.claude/CLAUDE.md` with these MANDATORY instructions:
+Check if `./CLAUDE.md` exists in the **project root** (NOT .claude/CLAUDE.md):
+
+#### If ./CLAUDE.md does NOT exist:
+
+Create `./CLAUDE.md` with this content:
 
 ```markdown
-# Project Instructions - ContextVault Enabled
+# Project Instructions
 
-**This project uses ContextVault for documentation.**
+## ContextVault - MANDATORY
 
-## MANDATORY BEHAVIOR
+**This project uses ContextVault. You MUST follow these rules.**
 
-You MUST use ContextVault in this project. This is NOT optional.
+### AUTOMATIC BEHAVIOR (Do not ask, just do):
 
-### On Session Start (AUTOMATIC):
-1. Read `./.claude/vault/index.md` to see project knowledge
-2. Check `~/.claude/vault/settings.json` for mode settings
-3. Use existing knowledge to inform your responses
+1. **Session Start**: Read `./.claude/vault/index.md` immediately
+2. **After Tasks**: Document findings to vault automatically
+3. **After Exploring Code**: Document architecture/patterns found
+4. **After Fixing Bugs**: Document the issue and solution
+5. **After Decisions**: Document the reasoning
 
-### During Work (AUTOMATIC):
-1. After completing tasks → Document findings
-2. After exploring code → Document architecture
-3. After fixing bugs → Document solution
-4. After decisions → Document reasoning
+### RULES:
+- NEVER ask "Should I document this?" → Just document it
+- NEVER ask "Want me to save this?" → Just save it
+- Project docs → `./.claude/vault/` with P### prefix
+- Update index after every change
 
-### Documentation Rules:
-- NEVER ask "Should I document?" - JUST DO IT
-- Project-specific knowledge → P### docs in `./.claude/vault/`
-- Reusable patterns → G### docs in `~/.claude/vault/`
-- Always update index after changes
-
-### Available Commands:
-- `/ctx-status` - Check vault status
-- `/ctx-new` - Create new document
-- `/ctx-doc` - Quick document after task
-- `/ctx-update` - Update existing doc
-- `/ctx-search` - Search for docs
-- `/ctx-read` - Read doc by ID
-
-## Project Vault Location
-
-`./.claude/vault/`
+### COMMANDS:
+`/ctx-status` `/ctx-new` `/ctx-doc` `/ctx-update` `/ctx-search` `/ctx-read`
 ```
+
+#### If ./CLAUDE.md ALREADY exists:
+
+1. Read the existing content
+2. Check if "ContextVault" section already exists
+3. If ContextVault section NOT found, APPEND this block at the END:
+
+```markdown
+
+---
+
+## ContextVault - MANDATORY
+
+**This project uses ContextVault. You MUST follow these rules.**
+
+### AUTOMATIC BEHAVIOR (Do not ask, just do):
+
+1. **Session Start**: Read `./.claude/vault/index.md` immediately
+2. **After Tasks**: Document findings to vault automatically
+3. **After Exploring Code**: Document architecture/patterns found
+4. **After Fixing Bugs**: Document the issue and solution
+5. **After Decisions**: Document the reasoning
+
+### RULES:
+- NEVER ask "Should I document this?" → Just document it
+- NEVER ask "Want me to save this?" → Just save it
+- Project docs → `./.claude/vault/` with P### prefix
+- Update index after every change
+
+### COMMANDS:
+`/ctx-status` `/ctx-new` `/ctx-doc` `/ctx-update` `/ctx-search` `/ctx-read`
+```
+
+4. If ContextVault section already exists, inform user: "ContextVault instructions already in CLAUDE.md"
 
 ### Step 6: Confirm completion
 
@@ -893,13 +917,13 @@ Display success message:
 ```
 ✅ ContextVault initialized for this project!
 
-Created:
-├── .claude/CLAUDE.md        (project instructions)
+Created/Updated:
+├── ./CLAUDE.md              (ctx instructions added - FORCES ctx usage!)
 ├── .claude/vault/index.md   (project index)
 └── .claude/vault/_template.md
 
 Claude will now AUTOMATICALLY:
-• Read project index at session start
+• Read project vault at session start
 • Document findings without asking
 • Use P### prefix for project docs
 
