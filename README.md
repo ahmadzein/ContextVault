@@ -120,8 +120,16 @@ chmod +x install-contextvault.sh
 
 Changed your mind? No hard feelings! 😢
 
+**One-liner (no prompts):**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/uninstall-contextvault.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/uninstall-contextvault.sh | bash -s -- --force
+```
+
+**Interactive (asks for confirmation):**
+```bash
+curl -O https://raw.githubusercontent.com/ahmadzein/ContextVault/main/uninstall-contextvault.sh
+chmod +x uninstall-contextvault.sh
+./uninstall-contextvault.sh
 ```
 
 > 💡 Don't worry - we create a backup before removing anything!

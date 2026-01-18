@@ -8,14 +8,26 @@
 #   (Don't worry, we'll create a backup first!)
 #
 #   Usage:
-#     ./uninstall-contextvault.sh
+#     ./uninstall-contextvault.sh           # Interactive (asks for confirmation)
+#     ./uninstall-contextvault.sh --force   # Non-interactive (no prompt)
+#     ./uninstall-contextvault.sh -y        # Same as --force
 #
-#   Or via curl:
-#     curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/uninstall-contextvault.sh | bash
+#   One-liner (non-interactive):
+#     curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/uninstall-contextvault.sh | bash -s -- --force
 #
 #===============================================================================
 
 set -e
+
+# Parse arguments
+FORCE_MODE=false
+for arg in "$@"; do
+    case $arg in
+        --force|-y|--yes)
+            FORCE_MODE=true
+            ;;
+    esac
+done
 
 # Colors
 RED='\033[0;31m'
@@ -117,18 +129,23 @@ uninstall() {
     echo -e "${DIM}   (But don't worry, we'll create a backup first)${NC}"
     echo ""
 
-    read -p "Are you sure you want to uninstall ContextVault? (y/N) " -n 1 -r
-    echo ""
+    # Skip confirmation if --force flag is provided
+    if [ "$FORCE_MODE" = false ]; then
+        read -p "Are you sure you want to uninstall ContextVault? (y/N) " -n 1 -r
+        echo ""
 
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo ""
+            echo -e "${GREEN}😅 Phew! Uninstall cancelled.${NC}"
+            echo "ContextVault lives to document another day! 📝"
+            echo ""
+            exit 0
+        fi
         echo ""
-        echo -e "${GREEN}😅 Phew! Uninstall cancelled.${NC}"
-        echo "ContextVault lives to document another day! 📝"
+    else
+        echo -e "${CYAN}ℹ${NC} Running in non-interactive mode (--force)"
         echo ""
-        exit 0
     fi
-
-    echo ""
 
     # Create backup first
     backup_existing
