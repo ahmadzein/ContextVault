@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.4.0"
+VERSION="1.4.1"
 
 # Colors
 RED='\033[0;31m'
@@ -363,44 +363,38 @@ SCRIPT_EOF
 create_global_hooks() {
     local settings_file="$SETTINGS_JSON"
 
-    # First create the hook scripts
+    # First create/update the hook scripts (always recreate to ensure latest version)
     create_session_start_script
     create_session_end_script
 
-    # The hooks JSON content - calls our scripts
-    local hooks_json='{
-  "hooks": {
-    "SessionStart": [
+    # The hooks JSON content - uses full path with $HOME for proper expansion
+    local hooks_json="{
+  \"hooks\": {
+    \"SessionStart\": [
       {
-        "hooks": [
+        \"hooks\": [
           {
-            "type": "command",
-            "command": "~/.claude/hooks/ctx-session-start.sh"
+            \"type\": \"command\",
+            \"command\": \"$HOME/.claude/hooks/ctx-session-start.sh\"
           }
         ]
       }
     ],
-    "Stop": [
+    \"Stop\": [
       {
-        "hooks": [
+        \"hooks\": [
           {
-            "type": "command",
-            "command": "~/.claude/hooks/ctx-session-end.sh"
+            \"type\": \"command\",
+            \"command\": \"$HOME/.claude/hooks/ctx-session-end.sh\"
           }
         ]
       }
     ]
   }
-}'
+}"
 
     # Check if settings.json already exists
     if [ -f "$settings_file" ]; then
-        # Check if it already has the NEW-style ContextVault hooks (script-based)
-        if grep -q "ctx-session-start" "$settings_file" 2>/dev/null; then
-            print_info "Global hooks already configured"
-            return 0
-        fi
-
         # Backup existing settings
         cp "$settings_file" "${settings_file}.backup"
 
