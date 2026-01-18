@@ -22,7 +22,7 @@
 
 set -e
 
-VERSION="1.2.0"
+VERSION="1.3.0"
 
 # Parse arguments
 FORCE_MODE=false
@@ -51,6 +51,7 @@ CLAUDE_DIR="$HOME/.claude"
 VAULT_DIR="$CLAUDE_DIR/vault"
 COMMANDS_DIR="$CLAUDE_DIR/commands"
 CLAUDE_MD="$CLAUDE_DIR/CLAUDE.md"
+SETTINGS_JSON="$CLAUDE_DIR/settings.json"
 
 # Track backup location for final message
 BACKUP_LOCATION=""
@@ -237,6 +238,12 @@ backup_existing() {
         fi
     fi
 
+    if [ -f "$SETTINGS_JSON" ]; then
+        cp "$SETTINGS_JSON" "$backup_dir/"
+        ((backed_up++))
+        print_success "Backed up settings.json (hooks)"
+    fi
+
     if [ $backed_up -gt 0 ]; then
         BACKUP_LOCATION="$backup_dir"
         echo ""
@@ -277,11 +284,20 @@ uninstall() {
         fi
     done
 
+    # Check if settings.json has ContextVault hooks
+    local has_hooks="no"
+    if [ -f "$SETTINGS_JSON" ] && grep -q "ContextVault" "$SETTINGS_JSON" 2>/dev/null; then
+        has_hooks="yes"
+    fi
+
     echo -e "${BOLD}📋 What will be removed:${NC}"
     echo ""
     echo -e "  ${RED}•${NC} ~/.claude/CLAUDE.md ${DIM}(global instructions)${NC}"
     echo -e "  ${RED}•${NC} ~/.claude/vault/ ${DIM}($doc_count documents)${NC}"
     echo -e "  ${RED}•${NC} ~/.claude/commands/ctx-*.md ${DIM}($cmd_count commands)${NC}"
+    if [ "$has_hooks" = "yes" ]; then
+        echo -e "  ${RED}•${NC} ~/.claude/settings.json ${DIM}(ContextVault hooks)${NC}"
+    fi
     echo ""
     echo -e "${YELLOW}⚠️  Your global documentation will be removed!${NC}"
     echo ""
@@ -370,6 +386,32 @@ uninstall() {
     if [ $removed_cmds -gt 0 ]; then
         print_success "Removed $removed_cmds commands"
         ((removed_count++))
+    fi
+
+    # Remove settings.json hooks (only if it contains ContextVault hooks)
+    if [ -f "$SETTINGS_JSON" ] && grep -q "ContextVault" "$SETTINGS_JSON" 2>/dev/null; then
+        # Check if settings.json ONLY contains ContextVault hooks (safe to delete entirely)
+        # by checking if it has other top-level keys besides "hooks"
+        if command -v jq &> /dev/null; then
+            local other_keys=$(cat "$SETTINGS_JSON" | jq 'keys | map(select(. != "hooks")) | length' 2>/dev/null || echo "0")
+            if [ "$other_keys" = "0" ]; then
+                # Only has hooks, safe to remove entirely
+                if rm "$SETTINGS_JSON" 2>/dev/null; then
+                    print_success "Removed settings.json (ContextVault hooks)"
+                    ((removed_count++))
+                fi
+            else
+                # Has other settings, just warn user
+                print_warning "settings.json has other settings - ContextVault hooks left in place"
+                print_info "Manually remove ContextVault hooks from ~/.claude/settings.json if needed"
+            fi
+        else
+            # No jq, just remove it (was likely only created by us)
+            if rm "$SETTINGS_JSON" 2>/dev/null; then
+                print_success "Removed settings.json (ContextVault hooks)"
+                ((removed_count++))
+            fi
+        fi
     fi
 
     sleep 0.5

@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.2.0"
+VERSION="1.3.0"
 
 # Colors
 RED='\033[0;31m'
@@ -43,6 +43,7 @@ CLAUDE_DIR="$HOME/.claude"
 VAULT_DIR="$CLAUDE_DIR/vault"
 COMMANDS_DIR="$CLAUDE_DIR/commands"
 CLAUDE_MD="$CLAUDE_DIR/CLAUDE.md"
+SETTINGS_JSON="$CLAUDE_DIR/settings.json"
 
 #===============================================================================
 # 🎨 FUN ANIMATION FUNCTIONS
@@ -194,6 +195,100 @@ print_info() {
 
 print_sparkle() {
     echo -e "${MAGENTA}✨${NC} $1"
+}
+
+#===============================================================================
+# HOOKS CONFIGURATION
+#===============================================================================
+
+# Create global hooks in ~/.claude/settings.json
+create_global_hooks() {
+    local settings_file="$SETTINGS_JSON"
+
+    # The hooks JSON content
+    local hooks_json='{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"\\n🔐 ContextVault Active\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n📚 MANDATORY: Read vault indexes now!\\n   Global:  ~/.claude/vault/index.md\\n   Project: ./.claude/vault/index.md (if exists)\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"\\n📝 ContextVault Reminder\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nDid you learn something worth saving?\\nRun /ctx-doc to document it!\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+          }
+        ]
+      }
+    ]
+  }
+}'
+
+    # Check if settings.json already exists
+    if [ -f "$settings_file" ]; then
+        # Check if it already has ContextVault hooks
+        if grep -q "ContextVault Active" "$settings_file" 2>/dev/null; then
+            print_info "Global hooks already configured"
+            return 0
+        fi
+
+        # Backup existing settings
+        cp "$settings_file" "${settings_file}.backup"
+
+        # Try to merge hooks with existing settings using jq if available
+        if command -v jq &> /dev/null; then
+            # Merge hooks into existing settings
+            local existing=$(cat "$settings_file")
+            local merged=$(echo "$existing" | jq --argjson new_hooks "$hooks_json" '.hooks = ($new_hooks.hooks + (.hooks // {}))')
+            echo "$merged" > "$settings_file"
+            print_success "Global hooks merged with existing settings"
+        else
+            # No jq, warn user and create new file
+            print_warning "jq not found - creating new settings (backup saved)"
+            echo "$hooks_json" > "$settings_file"
+        fi
+    else
+        # Create new settings.json
+        echo "$hooks_json" > "$settings_file"
+        print_success "Global hooks created"
+    fi
+}
+
+# Generate project hooks JSON for ctx-init
+generate_project_hooks_json() {
+    cat << 'HOOKS_EOF'
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"\\n📂 Project ContextVault\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n📖 Read: ./.claude/vault/index.md\\n🏷️  Use P### prefix for project docs\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"\\n💾 Project Documentation Reminder\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nDocument project-specific learnings!\\nUse /ctx-doc with P### prefix\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+          }
+        ]
+      }
+    ]
+  }
+}
+HOOKS_EOF
 }
 
 #===============================================================================
@@ -945,20 +1040,73 @@ Also create `.claude/vault/_template.md` with the standard document template.
 
 ---
 
-## Step 5: Display completion message
+## Step 5: Create project hooks (IMPORTANT!)
 
-**Only show this AFTER you have completed Steps 1-4:**
+Create `.claude/settings.json` with project-specific hooks for automatic enforcement.
+
+### Action Required:
+
+**A) Check if `.claude/settings.json` exists:**
+
+**B) If it does NOT exist → CREATE IT:**
+
+Use the **Write tool** to create `.claude/settings.json` with this EXACT content:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"\\n📂 Project ContextVault\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n📖 Read: ./.claude/vault/index.md\\n🏷️  Use P### prefix for project docs\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"\\n💾 Project Documentation Reminder\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nDocument project-specific learnings!\\nUse /ctx-doc with P### prefix\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**C) If `.claude/settings.json` EXISTS:**
+
+1. Read the existing content
+2. Check if "Project ContextVault" appears in any hook command
+3. If NOT found, you need to merge the hooks - add the SessionStart and Stop hooks to the existing hooks object
+4. If already present, inform user: "Project hooks already configured"
+
+---
+
+## Step 6: Display completion message
+
+**Only show this AFTER you have completed Steps 1-5:**
 
 ```
 ✅ ContextVault initialized for this project!
 
 Created/Updated:
-├── ./CLAUDE.md               ← ContextVault instructions added (FORCES ctx usage!)
-├── .claude/vault/index.md    ← Project documentation index
-└── .claude/vault/_template.md
+├── ./CLAUDE.md                ← ContextVault instructions (FORCES ctx usage!)
+├── .claude/vault/index.md     ← Project documentation index
+├── .claude/vault/_template.md ← Document template
+└── .claude/settings.json      ← Project hooks (SessionStart + Stop)
+
+🪝 Hooks installed:
+   SessionStart → Reminds to read project vault
+   Stop         → Reminds to document learnings
 
 Claude will now AUTOMATICALLY:
-• Read project vault at session start
+• Read project vault at session start (enforced by hook!)
 • Document findings without asking
 • Use P### prefix for project docs
 
@@ -974,6 +1122,7 @@ Before reporting success, confirm ALL of these are true:
 - [ ] `./CLAUDE.md` exists in project root AND contains "ContextVault - MANDATORY" section
 - [ ] `.claude/vault/index.md` exists
 - [ ] `.claude/vault/_template.md` exists
+- [ ] `.claude/settings.json` exists AND contains project hooks
 
 **If any checkbox is false, go back and complete that step!**
 CMD_EOF
@@ -1864,6 +2013,11 @@ install_contextvault() {
     echo ""
     print_success "9 commands installed"
 
+    # Install global hooks
+    echo ""
+    print_step "🪝 Setting up global hooks..."
+    create_global_hooks
+
     # Celebration!
     echo ""
     sleep 0.3 2>/dev/null || true
@@ -1878,6 +2032,11 @@ install_contextvault() {
     echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
     echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
     echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(9 slash commands)${NC}"
+    echo -e "   ${CYAN}🪝${NC} ~/.claude/settings.json      ${DIM}(Auto-hooks: SessionStart + Stop)${NC}"
+    echo ""
+    echo -e "${BOLD}🪝 Hooks installed:${NC}"
+    echo -e "   ${GREEN}SessionStart${NC} → Reminds to read vault indexes"
+    echo -e "   ${GREEN}Stop${NC}         → Reminds to document learnings"
     echo ""
     echo -e "${BOLD}🎮 Your new commands:${NC}"
     echo -e "   ${YELLOW}/ctx-help${NC}     📖 See all commands"
