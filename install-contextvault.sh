@@ -2,10 +2,12 @@
 
 #===============================================================================
 #
-#   ContextVault - External Context Management System for Claude Code
+#   🏰 ContextVault Installer
 #
-#   A two-tier documentation system for efficient context management
-#   Inspired by concepts from arxiv:2512.24601
+#   Your knowledge, perfectly organized. Your context, never lost.
+#
+#   Works from ANY directory! Just run it and we'll set up everything
+#   in ~/.claude/ automagically! ✨
 #
 #   Usage:
 #     ./install-contextvault.sh           # Install ContextVault
@@ -14,7 +16,7 @@
 #     ./install-contextvault.sh update    # Update to latest version
 #     ./install-contextvault.sh status    # Check installation status
 #
-#   Or via curl:
+#   Or via curl (from anywhere!):
 #     curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash
 #
 #===============================================================================
@@ -36,19 +38,135 @@ NC='\033[0m' # No Color
 BOLD='\033[1m'
 DIM='\033[2m'
 
-# Paths
+# Paths (Always installs to ~/.claude - works from any directory!)
 CLAUDE_DIR="$HOME/.claude"
 VAULT_DIR="$CLAUDE_DIR/vault"
 COMMANDS_DIR="$CLAUDE_DIR/commands"
 CLAUDE_MD="$CLAUDE_DIR/CLAUDE.md"
 
-# Print functions
+#===============================================================================
+# 🎨 FUN ANIMATION FUNCTIONS
+#===============================================================================
+
+# Spinner animation
+spin() {
+    local pid=$1
+    local delay=0.1
+    local spinstr='🌑🌒🌓🌔🌕🌖🌗🌘'
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf " [%c]  " "$spinstr"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        printf "\b\b\b\b\b\b"
+    done
+    printf "    \b\b\b\b"
+}
+
+# Progress bar
+progress_bar() {
+    local duration=$1
+    local steps=20
+    local sleep_time=$(echo "scale=3; $duration / $steps" | bc 2>/dev/null || echo "0.05")
+
+    printf "  ["
+    for ((i=0; i<steps; i++)); do
+        printf "▓"
+        sleep $sleep_time 2>/dev/null || sleep 0.05
+    done
+    printf "] ✓\n"
+}
+
+# Typing effect
+type_text() {
+    local text="$1"
+    local delay=${2:-0.03}
+    for ((i=0; i<${#text}; i++)); do
+        printf "%s" "${text:$i:1}"
+        sleep $delay 2>/dev/null || true
+    done
+    printf "\n"
+}
+
+# Celebration animation
+celebrate() {
+    local frames=(
+        "🎉"
+        "🎊"
+        "✨"
+        "🌟"
+        "💫"
+        "⭐"
+        "🎆"
+        "🎇"
+    )
+
+    for i in {1..3}; do
+        for frame in "${frames[@]}"; do
+            printf "\r  $frame $frame $frame  Installing magic...  $frame $frame $frame  "
+            sleep 0.1 2>/dev/null || true
+        done
+    done
+    printf "\r                                                    \r"
+}
+
+# Castle animation
+draw_castle() {
+    echo ""
+    echo -e "${CYAN}"
+    cat << 'CASTLE'
+                        🏴                    🏴
+                      ░░░░░░                ░░░░░░
+                     ░░░░░░░░              ░░░░░░░░
+                    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+                    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+                    ░░░░  ░░░░░░░░░░░░░░░░░░░░  ░░░░
+                    ░░░░  ░░░░░░░░░░░░░░░░░░░░  ░░░░
+                    ░░░░░░░░░░░░░░    ░░░░░░░░░░░░░░
+                    ░░░░░░░░░░░░░░    ░░░░░░░░░░░░░░
+                    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+CASTLE
+    echo -e "${NC}"
+}
+
+# Mini castle for header
+mini_castle() {
+    echo -e "${CYAN}     🏰${NC}"
+}
+
+# Rocket launch animation
+rocket_launch() {
+    local frames=(
+        "    🚀    "
+        "   🚀     "
+        "  🚀      "
+        " 🚀       "
+        "🚀        "
+        "          "
+    )
+
+    echo ""
+    for i in {1..2}; do
+        for frame in "${frames[@]}"; do
+            printf "\r  %s  Launching ContextVault..." "$frame"
+            sleep 0.15 2>/dev/null || true
+        done
+    done
+    printf "\r                                              \r"
+}
+
+# Print functions with flair
 print_header() {
+    clear 2>/dev/null || true
     echo ""
     echo -e "${CYAN}╔══════════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${CYAN}║${NC}                                                                  ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}   ${BOLD}${WHITE}ContextVault - External Context Management System${NC}            ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}   ${BOLD}${WHITE}🏰 ContextVault${NC}                                               ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}   ${DIM}External Context Management System${NC}                            ${CYAN}║${NC}"
     echo -e "${CYAN}║${NC}   ${DIM}Version ${VERSION}${NC}                                               ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}                                                                  ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}   ${YELLOW}Your knowledge, perfectly organized.${NC}                          ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}   ${YELLOW}Your context, never lost.${NC}                                     ${CYAN}║${NC}"
     echo -e "${CYAN}║${NC}                                                                  ${CYAN}║${NC}"
     echo -e "${CYAN}╚══════════════════════════════════════════════════════════════════╝${NC}"
     echo ""
@@ -72,6 +190,10 @@ print_error() {
 
 print_info() {
     echo -e "${CYAN}ℹ${NC} $1"
+}
+
+print_sparkle() {
+    echo -e "${MAGENTA}✨${NC} $1"
 }
 
 #===============================================================================
@@ -776,7 +898,7 @@ When this command is invoked, display:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      CONTEXTVAULT                                │
+│                   🏰 CONTEXTVAULT                                │
 │                   Command Reference                              │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
@@ -1200,124 +1322,169 @@ CMD_EOF
 
 backup_existing() {
     local timestamp=$(date +%Y%m%d_%H%M%S)
-    local backup_dir="$HOME/.claude_backup_$timestamp"
+    local backup_dir="$HOME/.contextvault_backup_$timestamp"
 
     if [ -d "$CLAUDE_DIR" ]; then
-        print_step "Backing up existing ~/.claude to $backup_dir"
-        cp -r "$CLAUDE_DIR" "$backup_dir"
-        print_success "Backup created"
+        print_step "📦 Creating backup..."
+        cp -r "$CLAUDE_DIR" "$backup_dir" 2>/dev/null || true
+        print_success "Backup saved to $backup_dir"
     fi
 }
 
 install_contextvault() {
     print_header
-    echo -e "${BOLD}Installing ContextVault...${NC}"
+
+    echo -e "${BOLD}🚀 Starting installation...${NC}"
+    echo ""
+    echo -e "${DIM}   Installing to: ~/.claude/${NC}"
+    echo -e "${DIM}   Works from any directory!${NC}"
     echo ""
 
     # Check for existing installation
     if [ -f "$CLAUDE_MD" ] && [ -f "$VAULT_DIR/index.md" ]; then
-        print_warning "ContextVault appears to be already installed."
+        print_warning "ContextVault is already installed!"
         echo ""
-        read -p "Do you want to reinstall? This will backup and overwrite existing files. (y/N) " -n 1 -r
+        read -p "   🔄 Reinstall? (This will backup existing files) (y/N) " -n 1 -r
         echo ""
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            print_info "Installation cancelled."
+            echo ""
+            echo -e "${GREEN}👍 Keeping existing installation. You're all set!${NC}"
+            echo ""
             exit 0
         fi
+        echo ""
         backup_existing
+        echo ""
     fi
 
+    # Fun animation
+    rocket_launch
+
     # Create directories
-    print_step "Creating directories..."
+    print_step "📁 Creating directories..."
+    sleep 0.3 2>/dev/null || true
     mkdir -p "$CLAUDE_DIR"
     mkdir -p "$VAULT_DIR/archive"
     mkdir -p "$VAULT_DIR/_project_init_template"
     mkdir -p "$COMMANDS_DIR"
     print_success "Directories created"
 
-    # Create CLAUDE.md
-    print_step "Creating global CLAUDE.md..."
+    # Create CLAUDE.md with animation
+    print_step "📜 Writing global instructions..."
+    sleep 0.2 2>/dev/null || true
     create_claude_md | sed "s/\$(date +%Y-%m-%d)/$(date +%Y-%m-%d)/g" > "$CLAUDE_MD"
-    print_success "Created $CLAUDE_MD"
+    print_success "CLAUDE.md created"
 
     # Create vault files
-    print_step "Creating ContextVault index and documents..."
+    print_step "🏰 Building your vault..."
+    sleep 0.2 2>/dev/null || true
     create_global_index | sed "s/\$(date +%Y-%m-%d)/$(date +%Y-%m-%d)/g" > "$VAULT_DIR/index.md"
     create_settings_json | sed "s/\$(date +%Y-%m-%d)/$(date +%Y-%m-%d)/g" > "$VAULT_DIR/settings.json"
     create_template > "$VAULT_DIR/_template.md"
     create_g001_contextvault_system | sed "s/\$(date +%Y-%m-%d)/$(date +%Y-%m-%d)/g" > "$VAULT_DIR/G001_contextvault_system.md"
     create_project_index_template > "$VAULT_DIR/_project_init_template/index.md"
-    print_success "ContextVault files created"
+    print_success "Vault constructed"
 
-    # Create commands
-    print_step "Creating custom commands..."
-    create_cmd_ctx_init > "$COMMANDS_DIR/ctx-init.md"
-    create_cmd_ctx_status > "$COMMANDS_DIR/ctx-status.md"
-    create_cmd_ctx_mode > "$COMMANDS_DIR/ctx-mode.md"
-    create_cmd_ctx_help > "$COMMANDS_DIR/ctx-help.md"
-    create_cmd_ctx_new > "$COMMANDS_DIR/ctx-new.md"
-    create_cmd_ctx_doc > "$COMMANDS_DIR/ctx-doc.md"
-    create_cmd_ctx_update > "$COMMANDS_DIR/ctx-update.md"
-    create_cmd_ctx_search > "$COMMANDS_DIR/ctx-search.md"
-    create_cmd_ctx_read > "$COMMANDS_DIR/ctx-read.md"
-    print_success "9 custom commands created"
-
-    # Done
+    # Create commands with progress
+    print_step "⚡ Installing slash commands..."
     echo ""
+
+    local commands=(
+        "ctx-init:🎬"
+        "ctx-status:📊"
+        "ctx-mode:🔄"
+        "ctx-help:📖"
+        "ctx-new:✨"
+        "ctx-doc:📸"
+        "ctx-update:🔧"
+        "ctx-search:🔎"
+        "ctx-read:📖"
+    )
+
+    for cmd_info in "${commands[@]}"; do
+        IFS=':' read -r cmd emoji <<< "$cmd_info"
+        printf "   ${DIM}%s${NC} /%s" "$emoji" "$cmd"
+
+        case "$cmd" in
+            ctx-init) create_cmd_ctx_init > "$COMMANDS_DIR/ctx-init.md" ;;
+            ctx-status) create_cmd_ctx_status > "$COMMANDS_DIR/ctx-status.md" ;;
+            ctx-mode) create_cmd_ctx_mode > "$COMMANDS_DIR/ctx-mode.md" ;;
+            ctx-help) create_cmd_ctx_help > "$COMMANDS_DIR/ctx-help.md" ;;
+            ctx-new) create_cmd_ctx_new > "$COMMANDS_DIR/ctx-new.md" ;;
+            ctx-doc) create_cmd_ctx_doc > "$COMMANDS_DIR/ctx-doc.md" ;;
+            ctx-update) create_cmd_ctx_update > "$COMMANDS_DIR/ctx-update.md" ;;
+            ctx-search) create_cmd_ctx_search > "$COMMANDS_DIR/ctx-search.md" ;;
+            ctx-read) create_cmd_ctx_read > "$COMMANDS_DIR/ctx-read.md" ;;
+        esac
+
+        printf " ${GREEN}✓${NC}\n"
+        sleep 0.1 2>/dev/null || true
+    done
+
+    echo ""
+    print_success "9 commands installed"
+
+    # Celebration!
+    echo ""
+    sleep 0.3 2>/dev/null || true
+
     echo -e "${GREEN}╔══════════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${GREEN}║${NC}                                                                  ${GREEN}║${NC}"
-    echo -e "${GREEN}║${NC}   ${BOLD}${WHITE}ContextVault Installation Complete!${NC}                          ${GREEN}║${NC}"
+    echo -e "${GREEN}║${NC}   ${BOLD}${WHITE}🎉 ContextVault Installation Complete! 🎉${NC}                     ${GREEN}║${NC}"
     echo -e "${GREEN}║${NC}                                                                  ${GREEN}║${NC}"
     echo -e "${GREEN}╚══════════════════════════════════════════════════════════════════╝${NC}"
     echo ""
-    echo -e "${BOLD}What was installed:${NC}"
-    echo -e "  ${CYAN}•${NC} ~/.claude/CLAUDE.md          ${DIM}(Global instructions)${NC}"
-    echo -e "  ${CYAN}•${NC} ~/.claude/vault/             ${DIM}(Global documentation)${NC}"
-    echo -e "  ${CYAN}•${NC} ~/.claude/commands/          ${DIM}(9 slash commands)${NC}"
+    echo -e "${BOLD}📦 What was installed:${NC}"
+    echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
+    echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
+    echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(9 slash commands)${NC}"
     echo ""
-    echo -e "${BOLD}Available Commands:${NC}"
-    echo -e "  ${YELLOW}/ctx-help${NC}     Show all commands"
-    echo -e "  ${YELLOW}/ctx-status${NC}   Check system status"
-    echo -e "  ${YELLOW}/ctx-init${NC}     Initialize ContextVault in a project"
-    echo -e "  ${YELLOW}/ctx-mode${NC}     Toggle global/local/full mode"
-    echo -e "  ${YELLOW}/ctx-new${NC}      Create new document"
-    echo -e "  ${YELLOW}/ctx-doc${NC}      Quick document after task"
-    echo -e "  ${YELLOW}/ctx-search${NC}   Search all indexes"
-    echo -e "  ${YELLOW}/ctx-read${NC}     Read document by ID"
-    echo -e "  ${YELLOW}/ctx-update${NC}   Update existing document"
+    echo -e "${BOLD}🎮 Your new commands:${NC}"
+    echo -e "   ${YELLOW}/ctx-help${NC}     📖 See all commands"
+    echo -e "   ${YELLOW}/ctx-status${NC}   📊 Check vault status"
+    echo -e "   ${YELLOW}/ctx-init${NC}     🎬 Initialize in a project"
+    echo -e "   ${YELLOW}/ctx-doc${NC}      📸 Quick document"
+    echo -e "   ${YELLOW}/ctx-search${NC}   🔎 Search your knowledge"
     echo ""
-    echo -e "${BOLD}Quick Start:${NC}"
-    echo -e "  1. Open any project in Claude Code"
-    echo -e "  2. Run ${YELLOW}/ctx-init${NC} to initialize project vault"
-    echo -e "  3. Run ${YELLOW}/ctx-help${NC} to see all commands"
+    echo -e "${BOLD}🚀 Quick Start:${NC}"
+    echo -e "   1. Start Claude Code: ${CYAN}claude${NC}"
+    echo -e "   2. Check status:      ${YELLOW}/ctx-status${NC}"
+    echo -e "   3. See all commands:  ${YELLOW}/ctx-help${NC}"
     echo ""
+    echo -e "${DIM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${DIM}Documentation: ~/.claude/CLAUDE.md${NC}"
+    echo -e "${DIM}GitHub: https://github.com/ahmadzein/ContextVault${NC}"
+    echo -e "${DIM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    echo -e "${MAGENTA}✨ Your context will never be lost again! ✨${NC}"
     echo ""
 }
 
 uninstall_contextvault() {
     print_header
-    echo -e "${BOLD}Uninstalling ContextVault...${NC}"
+    echo -e "${BOLD}🗑️  Uninstalling ContextVault...${NC}"
     echo ""
 
     print_warning "This will remove:"
-    echo "  • ~/.claude/CLAUDE.md"
-    echo "  • ~/.claude/vault/ (entire directory)"
-    echo "  • ~/.claude/commands/ctx-*.md (all ContextVault commands)"
+    echo "   • ~/.claude/CLAUDE.md"
+    echo "   • ~/.claude/vault/ ${DIM}(your global docs!)${NC}"
+    echo "   • ~/.claude/commands/ctx-*.md"
     echo ""
 
-    read -p "Are you sure you want to uninstall ContextVault? (y/N) " -n 1 -r
+    read -p "   😢 Are you sure? (y/N) " -n 1 -r
     echo ""
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        print_info "Uninstall cancelled."
+        echo ""
+        echo -e "${GREEN}😅 Phew! Uninstall cancelled.${NC}"
+        echo ""
         exit 0
     fi
 
-    # Backup first
+    echo ""
     backup_existing
+    echo ""
 
-    # Remove files
-    print_step "Removing ContextVault files..."
+    print_step "🧹 Removing files..."
 
     if [ -f "$CLAUDE_MD" ]; then
         rm "$CLAUDE_MD"
@@ -1329,28 +1496,28 @@ uninstall_contextvault() {
         print_success "Removed vault directory"
     fi
 
-    # Remove commands
     for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read; do
         if [ -f "$COMMANDS_DIR/$cmd.md" ]; then
             rm "$COMMANDS_DIR/$cmd.md"
         fi
     done
-    print_success "Removed ContextVault commands"
+    print_success "Removed commands"
 
     echo ""
-    print_success "ContextVault has been uninstalled."
-    print_info "A backup was created before uninstall."
+    echo -e "${GREEN}✅ ContextVault has been uninstalled.${NC}"
+    echo ""
+    echo -e "${DIM}Your backup is at: ~/.contextvault_backup_*${NC}"
+    echo -e "${DIM}We hope to see you again! 👋${NC}"
     echo ""
 }
 
 check_status() {
     print_header
-    echo -e "${BOLD}ContextVault Installation Status${NC}"
+    echo -e "${BOLD}📊 Installation Status${NC}"
     echo ""
 
     local installed=true
 
-    # Check CLAUDE.md
     if [ -f "$CLAUDE_MD" ]; then
         print_success "CLAUDE.md exists"
     else
@@ -1358,52 +1525,24 @@ check_status() {
         installed=false
     fi
 
-    # Check vault directory
     if [ -d "$VAULT_DIR" ]; then
         print_success "Vault directory exists"
 
-        # Check index
-        if [ -f "$VAULT_DIR/index.md" ]; then
-            print_success "  └── index.md exists"
-        else
-            print_error "  └── index.md not found"
-            installed=false
-        fi
-
-        # Check settings
-        if [ -f "$VAULT_DIR/settings.json" ]; then
-            print_success "  └── settings.json exists"
-        else
-            print_error "  └── settings.json not found"
-            installed=false
-        fi
-
-        # Check template
-        if [ -f "$VAULT_DIR/_template.md" ]; then
-            print_success "  └── _template.md exists"
-        else
-            print_error "  └── _template.md not found"
-            installed=false
-        fi
+        [ -f "$VAULT_DIR/index.md" ] && print_success "  └── index.md ✓" || { print_error "  └── index.md ✗"; installed=false; }
+        [ -f "$VAULT_DIR/settings.json" ] && print_success "  └── settings.json ✓" || { print_error "  └── settings.json ✗"; installed=false; }
+        [ -f "$VAULT_DIR/_template.md" ] && print_success "  └── _template.md ✓" || { print_error "  └── _template.md ✗"; installed=false; }
     else
         print_error "Vault directory not found"
         installed=false
     fi
 
-    # Check commands
     if [ -d "$COMMANDS_DIR" ]; then
         print_success "Commands directory exists"
         local cmd_count=0
         for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read; do
-            if [ -f "$COMMANDS_DIR/$cmd.md" ]; then
-                ((cmd_count++))
-            fi
+            [ -f "$COMMANDS_DIR/$cmd.md" ] && ((cmd_count++))
         done
-        if [ $cmd_count -eq 9 ]; then
-            print_success "  └── All 9 commands installed"
-        else
-            print_warning "  └── $cmd_count/9 commands installed"
-        fi
+        [ $cmd_count -eq 9 ] && print_success "  └── All 9 commands ✓" || print_warning "  └── $cmd_count/9 commands"
     else
         print_error "Commands directory not found"
         installed=false
@@ -1411,33 +1550,37 @@ check_status() {
 
     echo ""
     if [ "$installed" = true ]; then
-        echo -e "${GREEN}${BOLD}ContextVault is fully installed and ready to use.${NC}"
+        echo -e "${GREEN}${BOLD}🎉 ContextVault is fully installed and ready!${NC}"
     else
-        echo -e "${YELLOW}${BOLD}ContextVault is not fully installed. Run: ./install-contextvault.sh install${NC}"
+        echo -e "${YELLOW}${BOLD}⚠️  ContextVault needs to be installed/repaired.${NC}"
+        echo -e "${DIM}   Run: ./install-contextvault.sh${NC}"
     fi
     echo ""
 }
 
 show_help() {
     print_header
-    echo -e "${BOLD}Usage:${NC}"
-    echo "  ./install-contextvault.sh [command]"
+    echo -e "${BOLD}📖 Usage:${NC}"
+    echo "   ./install-contextvault.sh [command]"
     echo ""
-    echo -e "${BOLD}Commands:${NC}"
-    echo "  install     Install ContextVault (default)"
-    echo "  uninstall   Remove ContextVault from your system"
-    echo "  update      Update to latest version (reinstall)"
-    echo "  status      Check installation status"
-    echo "  help        Show this help message"
+    echo -e "${BOLD}🎮 Commands:${NC}"
+    echo -e "   ${GREEN}install${NC}     🚀 Install ContextVault (default)"
+    echo -e "   ${RED}uninstall${NC}   🗑️  Remove ContextVault"
+    echo -e "   ${BLUE}update${NC}      🔄 Update to latest version"
+    echo -e "   ${CYAN}status${NC}      📊 Check installation status"
+    echo -e "   ${YELLOW}help${NC}        📖 Show this help"
     echo ""
-    echo -e "${BOLD}Examples:${NC}"
-    echo "  ./install-contextvault.sh           # Install"
-    echo "  ./install-contextvault.sh install   # Install"
-    echo "  ./install-contextvault.sh uninstall # Remove"
-    echo "  ./install-contextvault.sh status    # Check status"
+    echo -e "${BOLD}📝 Examples:${NC}"
+    echo "   ./install-contextvault.sh           # Install"
+    echo "   ./install-contextvault.sh uninstall # Remove"
+    echo "   ./install-contextvault.sh status    # Check"
     echo ""
-    echo -e "${BOLD}One-liner install:${NC}"
-    echo "  curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash"
+    echo -e "${BOLD}🌐 One-liner install:${NC}"
+    echo -e "   ${CYAN}curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash${NC}"
+    echo ""
+    echo -e "${DIM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${DIM}🏰 ContextVault - Your knowledge, perfectly organized.${NC}"
+    echo -e "${DIM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
 }
 
@@ -1466,6 +1609,7 @@ main() {
             ;;
         *)
             print_error "Unknown command: $command"
+            echo ""
             show_help
             exit 1
             ;;
