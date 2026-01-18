@@ -206,7 +206,7 @@ Never lose your docs
 │   └── ctx-read.md
 └── 📁 vault/                    # Global knowledge storage
     ├── index.md                 # 📇 Quick lookup table
-    ├── settings.json            # ⚙️ Mode settings
+    ├── settings.json            # ⚙️ Mode & limits config
     ├── _template.md             # 📝 Doc template
     └── G001_contextvault.md     # 📚 First doc!
 ```
@@ -224,7 +224,7 @@ After installation, you get **9 powerful slash commands** in Claude Code:
 | `/ctx-help` | 📖 Show all commands | When you forget what's available |
 | `/ctx-status` | 📊 Check vault status | Start of session, see what exists |
 | `/ctx-init` | 🎬 Initialize project vault | First time in a new project |
-| `/ctx-mode` | 🔄 Switch modes | Change global/local behavior |
+| `/ctx-mode` | 🔄 Switch modes & limits | Change mode or configure limits |
 
 ### 📝 Documentation
 
@@ -316,30 +316,38 @@ What it does:
 
 ### `/ctx-mode` 🔄
 
-**Switch between different operating modes.**
+**Switch modes and configure limits.**
 
 ```
-Usage: /ctx-mode [mode]
+Usage: /ctx-mode [mode|limit] [value]
 
 Modes:
-  full   - Use global + project docs (default)
-  local  - Project only, ignore global
+  local  - Project only, ignore global (DEFAULT)
+  full   - Use global + project docs
   global - Global only, ignore project
+
+Limits:
+  max-global N   - Max global docs (default: 50)
+  max-project N  - Max project docs (default: 50)
+  max-lines N    - Max lines per doc (default: 100)
+  max-summary N  - Max summary words (default: 15)
 ```
 
 **When to use each mode:**
 
 | Mode | Best For |
 |------|----------|
-| `full` | Normal work - access everything |
-| `local` | Isolated project, no cross-contamination |
+| `local` | Focused project work (default) |
+| `full` | Access everything - global + project |
 | `global` | Building up your personal knowledge base |
 
 **Examples:**
 ```
-/ctx-mode         → Show current mode
-/ctx-mode local   → Switch to project-only
-/ctx-mode full    → Back to normal
+/ctx-mode              → Show current mode & limits
+/ctx-mode local        → Switch to project-only (default)
+/ctx-mode full         → Enable global + project
+/ctx-mode max-global 100   → Allow up to 100 global docs
+/ctx-mode max-project 25   → Allow up to 25 project docs
 ```
 
 ---
@@ -521,13 +529,16 @@ Maximum in context at any time:
 └─────────────────────────────────────┘
 ```
 
-### 📏 Size Limits
+### 📏 Size Limits (Configurable!)
 
-| What | Limit | Why |
-|------|-------|-----|
-| Index entries | 50 max | Keep it scannable |
-| Document lines | 100 max | Focused knowledge |
-| Summary words | 15 max | Quick decisions |
+| What | Default | Configurable Via |
+|------|---------|------------------|
+| Global docs | 50 max | `/ctx-mode max-global N` |
+| Project docs | 50 max | `/ctx-mode max-project N` |
+| Document lines | 100 max | `/ctx-mode max-lines N` |
+| Summary words | 15 max | `/ctx-mode max-summary N` |
+
+> 💡 **Need more space?** Just run `/ctx-mode max-global 100` to allow 100 global docs!
 
 ---
 

@@ -462,12 +462,18 @@ INDEX_EOF
 create_settings_json() {
     cat << 'SETTINGS_EOF'
 {
-  "mode": "full",
+  "mode": "local",
   "updated": "$(date +%Y-%m-%d)",
+  "limits": {
+    "max_global_docs": 50,
+    "max_project_docs": 50,
+    "max_doc_lines": 100,
+    "max_summary_words": 15
+  },
   "modes": {
     "full": "Use both global and project documentation",
-    "local": "Project-only, global disabled",
-    "global": "Global-only, project disabled"
+    "local": "Project-only, ignore global (default)",
+    "global": "Global-only, ignore project"
   }
 }
 SETTINGS_EOF
@@ -781,83 +787,95 @@ create_cmd_ctx_mode() {
     cat << 'CMD_EOF'
 # /ctx-mode
 
-Toggle ContextVault mode between Global+Project, Project-only, or Global-only.
+Toggle ContextVault mode and configure limits.
 
 ## Usage
 
 ```
-/ctx-mode [mode]
+/ctx-mode [mode|limit] [value]
 ```
 
 ## Arguments
 
-- `mode` (optional): `full`, `local`, `global`, or no argument to show current mode
+- No args: Show current mode and limits
+- `mode`: `full`, `local`, `global` - change mode
+- `limit`: `max-global`, `max-project`, `max-lines`, `max-summary` - change limits
 
 ## Modes
 
 | Mode | Description | What to Read |
 |------|-------------|--------------|
-| `full` | Use both global and project docs (DEFAULT) | Both indexes |
-| `local` | Project-only, ignore global | Only `./.claude/vault/index.md` |
+| `local` | Project-only, ignore global (DEFAULT) | Only `./.claude/vault/index.md` |
+| `full` | Use both global and project docs | Both indexes |
 | `global` | Global-only, ignore project | Only `~/.claude/vault/index.md` |
 
 ## Instructions
 
 When this command is invoked:
 
-### If No Argument: Show Current Mode
+### If No Argument: Show Current Settings
 
 Read `~/.claude/vault/settings.json` and display:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                   CONTEXTVAULT MODE                          │
+│                 CONTEXTVAULT SETTINGS                        │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
-│  Current Mode: [FULL / LOCAL / GLOBAL]                      │
+│  MODE: [LOCAL / FULL / GLOBAL]                              │
 │                                                              │
-│  Available modes:                                            │
-│  • /ctx-mode full   → Use global + project (default)        │
-│  • /ctx-mode local  → Project only, ignore global           │
-│  • /ctx-mode global → Global only, ignore project           │
+│  LIMITS:                                                     │
+│  ├── Max global docs:   50                                  │
+│  ├── Max project docs:  50                                  │
+│  ├── Max doc lines:     100                                 │
+│  └── Max summary words: 15                                  │
+│                                                              │
+│  COMMANDS:                                                   │
+│  • /ctx-mode local        → Project only (default)          │
+│  • /ctx-mode full         → Use global + project            │
+│  • /ctx-mode global       → Global only                     │
+│  • /ctx-mode max-global 100  → Change global doc limit      │
+│  • /ctx-mode max-project 30  → Change project doc limit     │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### If Argument Provided: Set Mode
+### If Mode Argument: Set Mode
 
 1. Validate mode is one of: `full`, `local`, `global`
 
-2. Update `~/.claude/vault/settings.json`:
-```json
-{
-  "mode": "full|local|global",
-  "updated": "YYYY-MM-DD"
-}
-```
+2. Update `~/.claude/vault/settings.json` mode field
 
 3. Confirm change:
 ```
 ✓ ContextVault mode changed to [MODE]
+```
 
-What this means:
-- full:   Read global + project indexes
-- local:  Read only project index, global disabled
-- global: Read only global index, project disabled
+### If Limit Argument: Set Limit
+
+Valid limit commands:
+- `/ctx-mode max-global 100` → Set max global docs to 100
+- `/ctx-mode max-project 30` → Set max project docs to 30
+- `/ctx-mode max-lines 150` → Set max lines per doc to 150
+- `/ctx-mode max-summary 20` → Set max summary words to 20
+
+Update `~/.claude/vault/settings.json` limits section and confirm:
+```
+✓ Max global docs changed to 100
 ```
 
 ### Behavior Based on Mode
 
-**When mode is `full` (default):**
-- Read `~/.claude/vault/index.md` first
-- Then read `./.claude/vault/index.md`
-- New docs can go to either location
-
-**When mode is `local`:**
+**When mode is `local` (default):**
 - Skip global index entirely
 - Only read `./.claude/vault/index.md`
 - New docs only go to project
-- Useful for: isolated projects, offline work, focused sessions
+- Useful for: focused project work, isolated context
+
+**When mode is `full`:**
+- Read `~/.claude/vault/index.md` first
+- Then read `./.claude/vault/index.md`
+- New docs can go to either location
 
 **When mode is `global`:**
 - Only read `~/.claude/vault/index.md`
@@ -865,17 +883,30 @@ What this means:
 - New docs only go to global
 - Useful for: building up global knowledge base
 
-## Settings File Location
+## Settings File
 
 `~/.claude/vault/settings.json`
+```json
+{
+  "mode": "local",
+  "limits": {
+    "max_global_docs": 50,
+    "max_project_docs": 50,
+    "max_doc_lines": 100,
+    "max_summary_words": 15
+  }
+}
+```
 
 ## Examples
 
 ```
-/ctx-mode           → Show current mode
-/ctx-mode local     → Switch to project-only
-/ctx-mode global    → Switch to global-only
-/ctx-mode full      → Switch back to both (default)
+/ctx-mode              → Show current mode and limits
+/ctx-mode local        → Switch to project-only (default)
+/ctx-mode full         → Switch to global + project
+/ctx-mode global       → Switch to global-only
+/ctx-mode max-global 100   → Allow up to 100 global docs
+/ctx-mode max-project 25   → Allow up to 25 project docs
 ```
 CMD_EOF
 }
@@ -922,16 +953,23 @@ When this command is invoked, display:
 │                                                                  │
 │  MODE OPTIONS (/ctx-mode)                                        │
 │  ─────────────────────────────────────────────────────────────  │
-│  full     Use global + project docs (default)                   │
-│  local    Project-only, global OFF                              │
+│  local    Project-only, global OFF (default)                    │
+│  full     Use global + project docs                             │
 │  global   Global-only, project OFF                              │
+│                                                                  │
+│  CONFIGURABLE LIMITS (/ctx-mode max-*)                           │
+│  ─────────────────────────────────────────────────────────────  │
+│  max-global N    Max global docs (default: 50)                  │
+│  max-project N   Max project docs (default: 50)                 │
+│  max-lines N     Max lines per doc (default: 100)               │
+│  max-summary N   Max words in summary (default: 15)             │
 │                                                                  │
 │  QUICK REFERENCE                                                 │
 │  ─────────────────────────────────────────────────────────────  │
 │  • Global docs:  ~/.claude/vault/    (G### prefix)              │
 │  • Project docs: ./.claude/vault/    (P### prefix)              │
 │  • Max load: 2 indexes + 1 doc                                  │
-│  • Limits: 50 entries/index, 100 lines/doc, 15 words/summary    │
+│  • Default limits: 50 docs, 100 lines, 15-word summary          │
 │                                                                  │
 │  ROUTING GUIDE                                                   │
 │  ─────────────────────────────────────────────────────────────  │
