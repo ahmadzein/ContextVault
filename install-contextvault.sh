@@ -201,11 +201,149 @@ print_sparkle() {
 # HOOKS CONFIGURATION
 #===============================================================================
 
+# Create the ctx-session-start hook script
+create_session_start_script() {
+    local script_path="$CLAUDE_DIR/hooks/ctx-session-start.sh"
+    mkdir -p "$CLAUDE_DIR/hooks"
+
+    cat << 'SCRIPT_EOF' > "$script_path"
+#!/bin/bash
+# ContextVault Session Start Hook
+# Shows status, version, and checks for updates
+
+VERSION="1.4.0"
+VAULT_DIR="$HOME/.claude/vault"
+PROJECT_VAULT="./.claude/vault"
+SESSION_FILE="/tmp/ctx_session_$$"
+
+# Save session start time for tracking modifications
+date +%s > "$SESSION_FILE" 2>/dev/null
+
+# Count global docs
+global_count=0
+if [ -d "$VAULT_DIR" ]; then
+    global_count=$(find "$VAULT_DIR" -maxdepth 1 -name "G*.md" 2>/dev/null | wc -l | tr -d ' ')
+fi
+
+# Count project docs
+project_count=0
+project_status="Not initialized"
+if [ -d "$PROJECT_VAULT" ]; then
+    project_count=$(find "$PROJECT_VAULT" -maxdepth 1 -name "P*.md" 2>/dev/null | wc -l | tr -d ' ')
+    project_status="Active"
+fi
+
+# Check for updates (non-blocking, timeout 2s)
+update_msg=""
+latest=$(curl -sfL --max-time 2 "https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh" 2>/dev/null | grep -m1 'VERSION=' | cut -d'"' -f2)
+if [ -n "$latest" ] && [ "$latest" != "$VERSION" ]; then
+    update_msg="\\n   ⬆️  Update available: v$latest (you have v$VERSION)"
+fi
+
+# Output status
+echo ""
+echo "🏰 ContextVault v$VERSION"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "   📚 Global:  $global_count docs  (~/.claude/vault/)"
+echo "   📂 Project: $project_count docs  ($project_status)"
+if [ -n "$update_msg" ]; then
+    echo -e "$update_msg"
+fi
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "   📖 Read indexes now! Use /ctx-status for details"
+echo ""
+SCRIPT_EOF
+
+    chmod +x "$script_path"
+}
+
+# Create the ctx-session-end hook script
+create_session_end_script() {
+    local script_path="$CLAUDE_DIR/hooks/ctx-session-end.sh"
+    mkdir -p "$CLAUDE_DIR/hooks"
+
+    cat << 'SCRIPT_EOF' > "$script_path"
+#!/bin/bash
+# ContextVault Session End Hook
+# Reports if any docs were created/modified during session
+
+VAULT_DIR="$HOME/.claude/vault"
+PROJECT_VAULT="./.claude/vault"
+
+# Find session start time
+session_start=0
+for f in /tmp/ctx_session_*; do
+    if [ -f "$f" ]; then
+        session_start=$(cat "$f" 2>/dev/null)
+        rm -f "$f" 2>/dev/null
+        break
+    fi
+done
+
+# If no session file, just show reminder
+if [ "$session_start" = "0" ]; then
+    echo ""
+    echo "📝 ContextVault"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "   Did you document your learnings?"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    exit 0
+fi
+
+# Find modified files since session start
+modified_global=""
+modified_project=""
+
+if [ -d "$VAULT_DIR" ]; then
+    while IFS= read -r file; do
+        if [ -n "$file" ]; then
+            modified_global="$modified_global $(basename "$file")"
+        fi
+    done < <(find "$VAULT_DIR" -maxdepth 1 -name "G*.md" -newermt "@$session_start" 2>/dev/null)
+fi
+
+if [ -d "$PROJECT_VAULT" ]; then
+    while IFS= read -r file; do
+        if [ -n "$file" ]; then
+            modified_project="$modified_project $(basename "$file")"
+        fi
+    done < <(find "$PROJECT_VAULT" -maxdepth 1 -name "P*.md" -newermt "@$session_start" 2>/dev/null)
+fi
+
+# Output results
+echo ""
+echo "📝 ContextVault Session Summary"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+if [ -n "$modified_global" ] || [ -n "$modified_project" ]; then
+    echo "   ✅ Documentation updated:"
+    if [ -n "$modified_global" ]; then
+        echo "      Global:$modified_global"
+    fi
+    if [ -n "$modified_project" ]; then
+        echo "      Project:$modified_project"
+    fi
+else
+    echo "   ℹ️  No docs modified this session"
+    echo "   💡 Use /ctx-doc to capture learnings"
+fi
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+SCRIPT_EOF
+
+    chmod +x "$script_path"
+}
+
 # Create global hooks in ~/.claude/settings.json
 create_global_hooks() {
     local settings_file="$SETTINGS_JSON"
 
-    # The hooks JSON content
+    # First create the hook scripts
+    create_session_start_script
+    create_session_end_script
+
+    # The hooks JSON content - calls our scripts
     local hooks_json='{
   "hooks": {
     "SessionStart": [
@@ -213,7 +351,7 @@ create_global_hooks() {
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"\\n🔐 ContextVault Active\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n📚 MANDATORY: Read vault indexes now!\\n   Global:  ~/.claude/vault/index.md\\n   Project: ./.claude/vault/index.md (if exists)\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+            "command": "~/.claude/hooks/ctx-session-start.sh"
           }
         ]
       }
@@ -223,7 +361,7 @@ create_global_hooks() {
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"\\n📝 ContextVault Reminder\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nDid you learn something worth saving?\\nRun /ctx-doc to document it!\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+            "command": "~/.claude/hooks/ctx-session-end.sh"
           }
         ]
       }
@@ -234,7 +372,7 @@ create_global_hooks() {
     # Check if settings.json already exists
     if [ -f "$settings_file" ]; then
         # Check if it already has ContextVault hooks
-        if grep -q "ContextVault Active" "$settings_file" 2>/dev/null; then
+        if grep -q "ctx-session-start" "$settings_file" 2>/dev/null; then
             print_info "Global hooks already configured"
             return 0
         fi
