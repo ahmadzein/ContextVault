@@ -260,6 +260,21 @@ When you run this, you'll see a beautiful command reference card with:
 - Quick reference for limits and rules
 - Routing guide (global vs project)
 
+**Sample usage:**
+```
+You: /ctx-help
+
+Claude:
+┌─────────────────────────────────────────────────────────────────┐
+│                   🏰 CONTEXTVAULT                                │
+│                   Command Reference                              │
+├─────────────────────────────────────────────────────────────────┤
+│  SETUP: /ctx-init  /ctx-status  /ctx-mode  /ctx-help            │
+│  DOCS:  /ctx-new   /ctx-doc     /ctx-update                     │
+│  FIND:  /ctx-search  /ctx-read                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 **Pro tip:** Run this at the start of any session to refresh your memory!
 
 ---
@@ -309,6 +324,24 @@ What it does:
 1. Creates `.claude/vault/` folder in your project
 2. Sets up the project index
 3. Copies the document template
+
+**Sample usage:**
+```
+You: /ctx-init
+
+Claude:
+🎬 Initializing ContextVault for this project...
+
+Created:
+  ├── .claude/vault/
+  ├── .claude/vault/index.md
+  └── .claude/vault/_template.md
+
+✅ Project vault initialized!
+
+You can now create project-specific docs with P### IDs.
+Run /ctx-new to create your first project document!
+```
 
 **Run this once per project.** After that, you can create P### docs!
 
@@ -366,21 +399,30 @@ This command:
 3. 📝 Creates the doc with proper ID (G### or P###)
 4. 📇 Updates the index automatically
 
-**The routing question:**
+**Sample usage:**
 ```
+You: /ctx-new Docker Compose patterns
+
+Claude:
+🔍 Searching existing docs for "Docker Compose"...
+   No existing docs found.
+
+Where should this document go?
+
 ┌─────────────────────────────────────────────────────────────┐
-│              WHERE SHOULD THIS DOCUMENT GO?                  │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  [1] GLOBAL (G###) - ~/.claude/vault/                       │
-│      → Reusable patterns, tools, best practices             │
-│      → Available in ALL your projects                       │
-│                                                              │
-│  [2] PROJECT (P###) - ./.claude/vault/                      │
-│      → This project's architecture                           │
-│      → Configs specific to here only                        │
-│                                                              │
+│  [1] GLOBAL  - Reusable across all projects                 │
+│  [2] PROJECT - Only for this project                        │
 └─────────────────────────────────────────────────────────────┘
+
+You: 1
+
+Claude:
+✅ Created G002_docker_compose_patterns.md
+
+📄 Document created at: ~/.claude/vault/G002_docker_compose_patterns.md
+📇 Index updated with: G002 | Docker Compose patterns | ...
+
+What would you like to document about Docker Compose patterns?
 ```
 
 ---
@@ -399,6 +441,36 @@ The fastest way to capture knowledge! Just run it after finishing something, and
 2. 🔍 Check if related docs exist
 3. 🤔 Ask: Update existing or create new?
 4. 📝 Do the right thing automatically
+
+**Sample usage:**
+```
+You: /ctx-doc
+
+Claude:
+📸 Quick Documentation Mode
+
+What did you just learn or figure out?
+
+You: I found that using Docker multi-stage builds reduces image size by 60%
+
+Claude:
+🔍 Searching for related docs...
+   Found: G002 - Docker Compose patterns
+
+What would you like to do?
+  [1] Update G002 (add to existing Docker doc)
+  [2] Create new document
+
+You: 1
+
+Claude:
+✅ Updated G002_docker_compose_patterns.md
+
+Added to "Current Understanding" section:
+  • Multi-stage builds reduce image size by 60%
+
+📇 Index summary updated.
+```
 
 **Perfect for:** "I just figured this out, let me save it before I forget!"
 
@@ -422,6 +494,34 @@ What it does:
 3. ❓ Asks what needs updating
 4. ✏️ Updates correctly (replaces outdated, adds new)
 5. 📇 Updates the index summary
+
+**Sample usage:**
+```
+You: /ctx-update G001
+
+Claude:
+📖 Reading G001_contextvault.md...
+
+Current contents:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ContextVault Setup
+- Two-tier system: global + project
+- 9 slash commands available
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+What would you like to update?
+
+You: Add that the default mode is now "local" instead of "full"
+
+Claude:
+✅ Updated G001_contextvault.md
+
+Changes made:
+  • Added: Default mode is "local" (project-focused)
+  • Previous info moved to History section
+
+📇 Index summary updated.
+```
 
 **Important:** Old info goes to History section with a date!
 
@@ -478,6 +578,38 @@ Quick way to load a document when you know its ID.
 
 - `G###` → Reads from global vault
 - `P###` → Reads from project vault
+
+**Sample usage:**
+```
+You: /ctx-read G001
+
+Claude:
+📖 Loading G001_contextvault.md...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ContextVault Setup
+
+**ID:** G001
+**Last updated:** 2025-01-18
+**Status:** Active
+
+## Current Understanding
+
+ContextVault is a two-tier documentation system:
+- Global tier (~/.claude/vault/) for cross-project knowledge
+- Project tier (./.claude/vault/) for project-specific docs
+- Default mode is "local" (project-focused)
+- 9 slash commands: ctx-init, ctx-status, ctx-mode, etc.
+
+## Key Commands
+
+- /ctx-new: Create new document
+- /ctx-doc: Quick documentation
+- /ctx-search: Find existing docs
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Document loaded! How can I help you with this?
+```
 
 </details>
 
