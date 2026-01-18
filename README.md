@@ -1,12 +1,49 @@
+<div align="center">
+
 # 🏰 ContextVault
 
-> *Your knowledge, perfectly organized. Your context, never lost.*
+### *Your knowledge, perfectly organized. Your context, never lost.*
 
-**External Context Management System for Claude Code** 🤖
+<br>
 
-A two-tier documentation system that gives Claude Code a **persistent memory** across all your projects. No more re-explaining things. No more lost context. Just smooth, continuous collaboration.
+```
+   🏰🏰🏰🏰🏰🏰🏰🏰🏰🏰🏰🏰🏰🏰🏰
+   🏰                           🏰
+   🏰   WELCOME TO THE VAULT    🏰
+   🏰   Where Context Lives     🏰
+   🏰   Forever! ✨              🏰
+   🏰                           🏰
+   🏰🏰🏰🏰🏰🏰🏰🏰🏰🏰🏰🏰🏰🏰🏰
+```
+
+<br>
+
+**Give Claude Code a persistent memory across ALL your projects** 🧠
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Claude Code](https://img.shields.io/badge/Claude-Code-blueviolet)](https://claude.ai)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ahmadzein/ContextVault/pulls)
+
+<br>
+
+[**Quick Install**](#-quick-install) • [**Commands**](#-commands-reference) • [**How It Works**](#%EF%B8%8F-how-it-works) • [**Pro Tips**](#-pro-tips)
+
+</div>
+
+<br>
+
+---
+
+## ✨ Why ContextVault?
+
+| Without ContextVault 😫 | With ContextVault 😎 |
+|------------------------|---------------------|
+| "Claude, remember that Docker fix we did?" | Claude already knows! |
+| Re-explain your project structure every session | Instant project context |
+| Lost that brilliant solution from last week | Saved forever in your vault |
+| "What was that API pattern again?" | `/ctx-search api` → Found! |
+
+<br>
 
 ---
 
@@ -28,13 +65,22 @@ Ever wished Claude could **remember** what you taught it last session? That's Co
 
 ## 🚀 Quick Install
 
-### One-liner (recommended)
+<div align="center">
+
+### ⚡ One command. That's it. ⚡
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash
 ```
 
-### Manual Install
+**Watch the magic happen!** 🎩✨
+
+</div>
+
+<details>
+<summary>📦 <b>Manual Install</b> (click to expand)</summary>
+
+<br>
 
 ```bash
 # Download
@@ -47,27 +93,99 @@ chmod +x install-contextvault.sh
 ./install-contextvault.sh
 ```
 
+</details>
+
 ---
 
-## 🗑️ Uninstall
+<details>
+<summary>🗑️ <b>Uninstall</b> (hopefully you won't need this!)</summary>
+
+<br>
 
 Changed your mind? No hard feelings! 😢
-
-### One-liner
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/uninstall-contextvault.sh | bash
 ```
 
-### Manual Uninstall
-
-```bash
-curl -O https://raw.githubusercontent.com/ahmadzein/ContextVault/main/uninstall-contextvault.sh
-chmod +x uninstall-contextvault.sh
-./uninstall-contextvault.sh
-```
-
 > 💡 Don't worry - we create a backup before removing anything!
+
+</details>
+
+---
+
+## 🌟 Features at a Glance
+
+<table>
+<tr>
+<td align="center" width="25%">
+
+### 🧠
+**Persistent Memory**
+
+Claude remembers across sessions
+
+</td>
+<td align="center" width="25%">
+
+### 🌍
+**Two-Tier System**
+
+Global + Project knowledge
+
+</td>
+<td align="center" width="25%">
+
+### ⚡
+**9 Commands**
+
+Full control at your fingertips
+
+</td>
+<td align="center" width="25%">
+
+### 🪶
+**Minimal Context**
+
+~200 lines max loaded
+
+</td>
+</tr>
+<tr>
+<td align="center">
+
+### 🔍
+**Smart Search**
+
+Find anything instantly
+
+</td>
+<td align="center">
+
+### 🔄
+**Mode Switching**
+
+Full / Local / Global
+
+</td>
+<td align="center">
+
+### 📇
+**Auto-Indexing**
+
+Always organized
+
+</td>
+<td align="center">
+
+### 🛡️
+**Backup Safety**
+
+Never lose your docs
+
+</td>
+</tr>
+</table>
 
 ---
 
@@ -125,7 +243,8 @@ After installation, you get **9 powerful slash commands** in Claude Code:
 
 ---
 
-## 📚 Detailed Command Documentation
+<details>
+<summary><h2>📚 Detailed Command Documentation</h2> <i>(click to expand)</i></summary>
 
 ### `/ctx-help` 📖
 
@@ -352,6 +471,8 @@ Quick way to load a document when you know its ID.
 - `G###` → Reads from global vault
 - `P###` → Reads from project vault
 
+</details>
+
 ---
 
 ## 🏗️ How It Works
@@ -508,7 +629,10 @@ Will I use this in OTHER projects?
 
 ---
 
-## 🔧 Installer Commands
+<details>
+<summary>🔧 <b>Installer Commands & Troubleshooting</b></summary>
+
+### Installer Commands
 
 ```bash
 # Install
@@ -529,11 +653,9 @@ Will I use this in OTHER projects?
 ./install-contextvault.sh help
 ```
 
----
+### Troubleshooting
 
-## 🆘 Troubleshooting
-
-### Commands not showing up?
+**Commands not showing up?**
 
 Make sure you're in **Claude Code CLI**, not the web interface!
 
@@ -545,27 +667,35 @@ claude
 # https://claude.ai
 ```
 
-### Permission denied?
+**Permission denied?**
 
 ```bash
 chmod +x install-contextvault.sh
 chmod +x uninstall-contextvault.sh
 ```
 
-### Want to start fresh?
+**Want to start fresh?**
 
 ```bash
 ./install-contextvault.sh uninstall
 ./install-contextvault.sh install
 ```
 
+</details>
+
 ---
 
 ## 📋 Requirements
 
-- ✅ Claude Code CLI installed
-- ✅ Bash shell (macOS, Linux, WSL)
-- ✅ That's it!
+Just **3 things**:
+
+| # | Requirement | Status |
+|---|-------------|--------|
+| 1 | Claude Code CLI installed | ✅ |
+| 2 | Bash shell (macOS, Linux, WSL) | ✅ |
+| 3 | A desire for organized knowledge | ✅ |
+
+**That's it!** No dependencies. No config files. No hassle.
 
 ---
 
@@ -581,27 +711,51 @@ This project combines my practical workflow with the theoretical framework from 
 
 ## 🤝 Contributing
 
-Found a bug? Have an idea?
+Found a bug? Have an idea? We'd love your help!
 
-1. Fork it 🍴
-2. Branch it 🌿
-3. Fix it 🔧
-4. PR it 🎁
+```
+    🍴 Fork it
+       ↓
+    🌿 Branch it
+       ↓
+    🔧 Fix it
+       ↓
+    🎁 PR it
+       ↓
+    🎉 Celebrate!
+```
+
+All contributions welcome - from typo fixes to new features!
 
 ---
 
 ## 📄 License
 
-MIT - Do whatever you want! Just don't blame me if your vault becomes sentient. 🤖
+**MIT** - Do whatever you want! Just don't blame me if your vault becomes sentient. 🤖
 
 ---
 
 <div align="center">
 
-**Made with 💜 and too much ☕**
+<br>
 
-*Star ⭐ if ContextVault saved your context!*
+```
+╔═══════════════════════════════════════════════════════════╗
+║                                                           ║
+║   Made with 💜 and mass consumption of ☕                 ║
+║                                                           ║
+║   If ContextVault saved your context...                   ║
+║   ⭐ Star it! ⭐                                          ║
+║                                                           ║
+╚═══════════════════════════════════════════════════════════╝
+```
 
-[Report Bug](https://github.com/ahmadzein/ContextVault/issues) · [Request Feature](https://github.com/ahmadzein/ContextVault/issues)
+<br>
+
+**Questions?** [Open an Issue](https://github.com/ahmadzein/ContextVault/issues) | **Ideas?** [Start a Discussion](https://github.com/ahmadzein/ContextVault/issues)
+
+<br>
+
+*Happy documenting!* 📝✨
 
 </div>
