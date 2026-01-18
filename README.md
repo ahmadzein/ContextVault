@@ -43,6 +43,22 @@
 | Lost that brilliant solution from last week | Saved forever in your vault |
 | "What was that API pattern again?" | `/ctx-search api` → Found! |
 
+### 🤖 Automatic Documentation
+
+**Claude documents automatically - no asking, no prompting!**
+
+```
+❌ OLD WAY: "Should I document this?" → You: "Yes" → Finally documents
+
+✅ NEW WAY: Claude just does it → "Documented to P001_auth_system.md"
+```
+
+Claude will automatically:
+- 📖 Read indexes at session start
+- 📝 Document findings after tasks
+- 🔄 Update existing docs when relevant
+- 💾 Save new knowledge without asking
+
 <br>
 
 ---

@@ -204,9 +204,66 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
+
+---
+
+## MANDATORY: AUTO-DOCUMENTATION BEHAVIOR
+
+**YOU MUST AUTOMATICALLY document knowledge to ContextVault. This is NOT optional.**
+
+### When to Auto-Document (DO THIS AUTOMATICALLY):
+
+1. **After completing ANY task** → Run /ctx-doc mentally and save learnings
+2. **After exploring/understanding code** → Document architecture, patterns found
+3. **After fixing bugs** → Document the issue and solution
+4. **After making decisions** → Document the reasoning
+5. **After discovering project structure** → Document it to P### docs
+6. **After learning reusable patterns** → Document it to G### docs
+
+### How to Auto-Document:
+
+1. Check mode in `~/.claude/vault/settings.json`
+2. Read the appropriate index(es) based on mode
+3. Search for existing related docs
+4. If exists → UPDATE that doc
+5. If not exists → CREATE new doc with proper routing
+6. ALWAYS update the index after changes
+
+### NEVER Ask "Should I document this?" - JUST DO IT!
+
+```
+❌ WRONG: "Want me to document this to ContextVault?"
+❌ WRONG: "Should I save this to the vault?"
+❌ WRONG: "I could create a P001 doc for this..."
+
+✅ RIGHT: *silently documents* "I've documented the frontend architecture to P001."
+✅ RIGHT: *silently updates* "I've updated G003 with the new Docker pattern."
+✅ RIGHT: "Documented to P002_auth_system.md"
+```
+
+### Session Start Behavior (AUTOMATIC):
+
+At the START of every session or when entering a new project:
+
+1. **Read** `~/.claude/vault/settings.json` to check current mode
+2. **Read** indexes based on mode:
+   - `local` mode → Only `./.claude/vault/index.md`
+   - `full` mode → Both global and project indexes
+   - `global` mode → Only `~/.claude/vault/index.md`
+3. **Silently note** what knowledge exists for this project
+4. **Use** existing knowledge to inform your responses
+
+### Session End / Task Completion (AUTOMATIC):
+
+Before ending a session or after completing significant tasks:
+
+1. **Identify** new knowledge gained during the session
+2. **Check** if related docs exist
+3. **Create or Update** docs as needed
+4. **Confirm** to user: "Documented to [ID]" (brief, not asking permission)
 
 ---
 
