@@ -242,12 +242,13 @@ The installer will ask before overwriting. It creates a timestamped backup.
 
 ---
 
-## Acknowledgments
+## Origin Story
 
-Inspired by concepts from:
-- "Recursive Language Models" (arxiv:2512.24601)
+I was already using a similar approach - documenting findings in separate files while working with Claude Code and loading only relevant docs when needed. When I discovered the "Recursive Language Models" paper (arxiv:2512.24601), I realized the concepts aligned with what I was doing intuitively.
 
-This is an independent implementation and is not affiliated with or endorsed by the paper's authors.
+This project combines my practical workflow with the theoretical framework from the paper, resulting in a structured two-tier system with proper tooling.
+
+**This is an independent implementation and is not affiliated with or endorsed by the paper's authors.**
 
 ---
 
