@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.6.0"
+VERSION="1.6.1"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -600,6 +600,73 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
+# Create the ctx-post-tool hook script (v1.6.1 - PostToolUse reminders)
+create_post_tool_script() {
+    local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
+    safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
+
+    cat << 'SCRIPT_EOF' > "$script_path"
+#!/bin/bash
+# ContextVault PostToolUse Hook v1.6.1
+# Smart documentation reminders during work (no jq dependency)
+
+EDIT_COUNT_FILE="/tmp/ctx-edit-count"
+[ ! -f "$EDIT_COUNT_FILE" ] && echo "0" > "$EDIT_COUNT_FILE"
+
+INPUT=$(cat)
+
+TOOL_NAME=$(echo "$INPUT" | grep -o '"tool_name"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
+FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
+COMMAND=$(echo "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
+
+remind() {
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  ContextVault: $1"
+    echo "  $2"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+
+# Reset counter when documenting
+if [[ "$FILE_PATH" == *"vault/"* ]] && [[ "$FILE_PATH" == *".md" ]]; then
+    echo "0" > "$EDIT_COUNT_FILE"
+    exit 0
+fi
+
+is_code_file() {
+    case "$1" in
+        *.ts|*.tsx|*.js|*.jsx|*.py|*.go|*.rs|*.java|*.rb|*.php|*.swift|*.kt|*.c|*.cpp|*.h|*.cs) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+case "$TOOL_NAME" in
+    "Write")
+        is_code_file "$FILE_PATH" && remind "New code file created" "Document if significant: /ctx-doc"
+        ;;
+    "Edit")
+        if is_code_file "$FILE_PATH"; then
+            COUNT=$(($(cat "$EDIT_COUNT_FILE" 2>/dev/null || echo "0") + 1))
+            echo "$COUNT" > "$EDIT_COUNT_FILE"
+            [ $((COUNT % 5)) -eq 0 ] && remind "$COUNT code edits this session" "Time to document? /ctx-doc or /ctx-error"
+        fi
+        ;;
+    "Bash")
+        CMD_LOWER=$(echo "$COMMAND" | tr '[:upper:]' '[:lower:]')
+        echo "$CMD_LOWER" | grep -qE '(npm test|yarn test|pnpm test|pytest|go test|cargo test|jest|vitest|mocha)' && remind "Tests completed" "Document results: /ctx-doc or /ctx-error"
+        echo "$CMD_LOWER" | grep -qE '(npm run build|yarn build|pnpm build|make |cargo build|go build|tsc|webpack|vite build)' && remind "Build completed" "Document any issues: /ctx-error"
+        ;;
+    "Task")
+        remind "Exploration completed" "Document findings: /ctx-doc or /ctx-intel"
+        ;;
+esac
+exit 0
+SCRIPT_EOF
+
+    chmod +x "$script_path"
+    secure_file "$script_path" 755
+}
+
 # Create global hooks in ~/.claude/settings.json
 create_global_hooks() {
     local settings_file="$SETTINGS_JSON"
@@ -607,8 +674,10 @@ create_global_hooks() {
     # First create/update the hook scripts (always recreate to ensure latest version)
     create_session_start_script
     create_session_end_script
+    create_post_tool_script
 
     # The hooks JSON content - uses full path with $HOME for proper expansion
+    # v1.6.1: Added PostToolUse hooks for mid-session reminders
     local hooks_json="{
   \"hooks\": {
     \"SessionStart\": [
@@ -627,6 +696,44 @@ create_global_hooks() {
           {
             \"type\": \"command\",
             \"command\": \"$HOME/.claude/hooks/ctx-session-end.sh\"
+          }
+        ]
+      }
+    ],
+    \"PostToolUse\": [
+      {
+        \"matcher\": \"Edit\",
+        \"hooks\": [
+          {
+            \"type\": \"command\",
+            \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\"
+          }
+        ]
+      },
+      {
+        \"matcher\": \"Write\",
+        \"hooks\": [
+          {
+            \"type\": \"command\",
+            \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\"
+          }
+        ]
+      },
+      {
+        \"matcher\": \"Bash\",
+        \"hooks\": [
+          {
+            \"type\": \"command\",
+            \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\"
+          }
+        ]
+      },
+      {
+        \"matcher\": \"Task\",
+        \"hooks\": [
+          {
+            \"type\": \"command\",
+            \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\"
           }
         ]
       }
@@ -653,14 +760,15 @@ create_global_hooks() {
                 return
             fi
 
-            # Safely merge: ensure .hooks exists, then replace SessionStart and Stop
+            # Safely merge: ensure .hooks exists, then replace SessionStart, Stop, and PostToolUse
             local merged
             merged=$(echo "$existing" | jq --argjson new_hooks "$hooks_json" '
                 # Ensure hooks object exists
                 .hooks //= {} |
-                # Replace SessionStart and Stop with our hooks
+                # Replace SessionStart, Stop, and PostToolUse with our hooks
                 .hooks.SessionStart = $new_hooks.hooks.SessionStart |
-                .hooks.Stop = $new_hooks.hooks.Stop
+                .hooks.Stop = $new_hooks.hooks.Stop |
+                .hooks.PostToolUse = $new_hooks.hooks.PostToolUse
             ' 2>/dev/null)
 
             # Validate merged output before writing
@@ -738,7 +846,7 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.5.2
+**Version:** 1.6.1
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
 
@@ -1244,7 +1352,10 @@ This is an independent implementation and is not affiliated with or endorsed by 
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.4.0 | $(date +%Y-%m-%d) | Enhanced instructions with clear checklists |
+| 1.6.1 | $(date +%Y-%m-%d) | PostToolUse hooks for mid-session reminders |
+| 1.6.0 | 2026-01-18 | Added 6 new commands (health, note, changelog, link, quiz, explain) |
+| 1.5.3 | 2026-01-18 | Added /ctx-upgrade command |
+| 1.4.0 | 2026-01-17 | Enhanced instructions with clear checklists |
 CLAUDE_MD_EOF
 }
 
@@ -2641,7 +2752,7 @@ Create manifest.json with metadata:
 
 ```json
 {
-  "contextvault_version": "1.5.2",
+  "contextvault_version": "1.6.1",
   "export_version": "1.1",
   "exported_at": "2026-01-18T12:34:56Z",
   "scope": "all",
@@ -2864,7 +2975,7 @@ Display what will be imported:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Source: contextvault_export_20260118_123456.zip
 Exported: 2026-01-18 12:34:56
-Version: 1.5.2
+Version: 1.6.1
 
 📚 Contents:
 ├── Global: X documents
@@ -4775,11 +4886,13 @@ install_contextvault() {
     echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
     echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
     echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(23 slash commands)${NC}"
-    echo -e "   ${CYAN}🪝${NC} ~/.claude/settings.json      ${DIM}(Auto-hooks: SessionStart + Stop)${NC}"
+    echo -e "   ${CYAN}🪝${NC} ~/.claude/hooks/             ${DIM}(3 hook scripts)${NC}"
+    echo -e "   ${CYAN}⚙️${NC} ~/.claude/settings.json      ${DIM}(Hook triggers)${NC}"
     echo ""
-    echo -e "${BOLD}🪝 Hooks installed:${NC}"
-    echo -e "   ${GREEN}SessionStart${NC} → Reminds to read vault indexes"
-    echo -e "   ${GREEN}Stop${NC}         → Reminds to document learnings"
+    echo -e "${BOLD}🪝 Hooks installed (v1.6.1):${NC}"
+    echo -e "   ${GREEN}SessionStart${NC}  → Reminds to read vault indexes"
+    echo -e "   ${GREEN}PostToolUse${NC}   → Mid-session reminders (Edit/Bash/Task)"
+    echo -e "   ${GREEN}Stop${NC}          → Reminds to document learnings"
     echo ""
     echo -e "${BOLD}🎮 Your new commands:${NC}"
     echo -e "   ${YELLOW}/ctx-help${NC}     📖 See all commands"

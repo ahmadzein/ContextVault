@@ -22,7 +22,7 @@
 
 set -e
 
-VERSION="1.6.0"
+VERSION="1.6.1"
 
 # Parse arguments
 FORCE_MODE=false
@@ -280,7 +280,7 @@ backup_existing() {
     if [ -d "$HOOKS_DIR" ]; then
         mkdir -p "$backup_dir/hooks"
         local hook_count=0
-        for hook in ctx-session-start.sh ctx-session-end.sh; do
+        for hook in ctx-session-start.sh ctx-session-end.sh ctx-post-tool.sh; do
             if [ -f "$HOOKS_DIR/$hook" ]; then
                 cp "$HOOKS_DIR/$hook" "$backup_dir/hooks/"
                 ((hook_count++))
@@ -460,7 +460,7 @@ uninstall() {
     # Remove hooks directory
     if [ -d "$HOOKS_DIR" ]; then
         local hooks_removed=0
-        for hook in ctx-session-start.sh ctx-session-end.sh; do
+        for hook in ctx-session-start.sh ctx-session-end.sh ctx-post-tool.sh; do
             if [ -f "$HOOKS_DIR/$hook" ]; then
                 if rm "$HOOKS_DIR/$hook" 2>/dev/null; then
                     ((hooks_removed++))
@@ -480,7 +480,7 @@ uninstall() {
     # Remove settings.json hooks (only if it contains ContextVault hooks)
     local has_ctx_hooks=false
     if [ -f "$SETTINGS_JSON" ]; then
-        if grep -q "ctx-session-start" "$SETTINGS_JSON" 2>/dev/null || grep -q "ContextVault" "$SETTINGS_JSON" 2>/dev/null; then
+        if grep -q "ctx-session-start\|ctx-post-tool" "$SETTINGS_JSON" 2>/dev/null || grep -q "ContextVault" "$SETTINGS_JSON" 2>/dev/null; then
             has_ctx_hooks=true
         fi
     fi
@@ -490,8 +490,8 @@ uninstall() {
             local other_keys=$(cat "$SETTINGS_JSON" | jq 'keys | map(select(. != "hooks")) | length' 2>/dev/null || echo "0")
 
             if [ "$other_keys" = "0" ]; then
-                # Only has hooks, check if hooks has other keys besides SessionStart/Stop
-                local other_hooks=$(cat "$SETTINGS_JSON" | jq '.hooks | keys | map(select(. != "SessionStart" and . != "Stop")) | length' 2>/dev/null || echo "0")
+                # Only has hooks, check if hooks has other keys besides SessionStart/Stop/PostToolUse
+                local other_hooks=$(cat "$SETTINGS_JSON" | jq '.hooks | keys | map(select(. != "SessionStart" and . != "Stop" and . != "PostToolUse")) | length' 2>/dev/null || echo "0")
 
                 if [ "$other_hooks" = "0" ]; then
                     # Only ContextVault hooks, safe to remove entirely
@@ -500,9 +500,9 @@ uninstall() {
                         ((removed_count++))
                     fi
                 else
-                    # Other hooks exist, just remove SessionStart and Stop
+                    # Other hooks exist, just remove SessionStart, Stop, and PostToolUse
                     local cleaned
-                    cleaned=$(cat "$SETTINGS_JSON" | jq 'del(.hooks.SessionStart, .hooks.Stop)' 2>/dev/null)
+                    cleaned=$(cat "$SETTINGS_JSON" | jq 'del(.hooks.SessionStart, .hooks.Stop, .hooks.PostToolUse)' 2>/dev/null)
                     if [ -n "$cleaned" ] && echo "$cleaned" | jq empty 2>/dev/null; then
                         echo "$cleaned" > "$SETTINGS_JSON"
                         print_success "Removed ContextVault hooks from settings.json"
@@ -512,7 +512,7 @@ uninstall() {
             else
                 # Has other settings - safely remove just the hooks
                 local cleaned
-                cleaned=$(cat "$SETTINGS_JSON" | jq 'del(.hooks.SessionStart, .hooks.Stop)' 2>/dev/null)
+                cleaned=$(cat "$SETTINGS_JSON" | jq 'del(.hooks.SessionStart, .hooks.Stop, .hooks.PostToolUse)' 2>/dev/null)
 
                 # If hooks object is now empty, remove it entirely
                 if [ -n "$cleaned" ]; then
@@ -533,7 +533,7 @@ uninstall() {
         else
             # No jq - check if file appears to only have hooks
             local line_count=$(wc -l < "$SETTINGS_JSON" | tr -d ' ')
-            if [ "$line_count" -lt 30 ] && ! grep -q '"mcpServers"\|"mode"\|"alwaysThinking"' "$SETTINGS_JSON" 2>/dev/null; then
+            if [ "$line_count" -lt 50 ] && ! grep -q '"mcpServers"\|"mode"\|"alwaysThinking"' "$SETTINGS_JSON" 2>/dev/null; then
                 if rm "$SETTINGS_JSON" 2>/dev/null; then
                     print_success "Removed settings.json (ContextVault hooks)"
                     ((removed_count++))

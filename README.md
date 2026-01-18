@@ -20,7 +20,7 @@
 
 **Give Claude Code a persistent memory across ALL your projects** 🧠
 
-[![Version](https://img.shields.io/badge/version-1.6.0-blue.svg)](https://github.com/ahmadzein/ContextVault)
+[![Version](https://img.shields.io/badge/version-1.6.1-blue.svg)](https://github.com/ahmadzein/ContextVault)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude-Code-blueviolet)](https://claude.ai)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ahmadzein/ContextVault/pulls)
@@ -198,7 +198,7 @@ Full / Local / Global
 ### 🪝
 **Auto-Hooks**
 
-SessionStart + Stop
+SessionStart + Stop + PostToolUse
 
 </td>
 <td align="center">
@@ -220,7 +220,11 @@ Never lose your docs
 ```
 ~/.claude/
 ├── 📄 CLAUDE.md                 # Global instructions (all projects)
-├── 📄 settings.json             # 🪝 Global hooks (SessionStart + Stop)
+├── 📄 settings.json             # 🪝 Global hooks (SessionStart + Stop + PostToolUse)
+├── 📁 hooks/                    # Hook scripts (v1.6.1+)
+│   ├── ctx-session-start.sh    # Session start status
+│   ├── ctx-session-end.sh      # Session end reminder
+│   └── ctx-post-tool.sh        # Mid-session reminders (NEW!)
 ├── 📁 commands/                 # Your new superpowers ⚡
 │   ├── ctx-init.md
 │   ├── ctx-status.md
@@ -863,7 +867,7 @@ Claude:
 1️⃣  INSTALL (one time)
     curl ... | bash
     ├── Creates ~/.claude/ with CLAUDE.md, commands, vault
-    └── Installs global hooks (SessionStart + Stop) 🪝
+    └── Installs global hooks (SessionStart + Stop + PostToolUse) 🪝
 
 2️⃣  INIT PROJECT (once per project)
     /ctx-init
@@ -875,6 +879,7 @@ Claude:
     🪝 SessionStart hook fires → "Read vault indexes now!"
     Claude reads indexes → Knows your context
     You work on your task → Claude helps
+    🪝 PostToolUse hooks fire → Reminds during work (v1.6.1+)
     🪝 Stop hook fires → "Document learnings!"
     Claude documents automatically → No asking!
 ```
@@ -923,7 +928,7 @@ Maximum in context at any time:
 └─────────────────────────────────────┘
 ```
 
-### 🪝 Automatic Hooks (v1.3.0+)
+### 🪝 Automatic Hooks (v1.6.1+)
 
 **Claude Code hooks enforce ContextVault automatically!**
 
@@ -937,6 +942,12 @@ Maximum in context at any time:
 │                 📚 MANDATORY: Read vault indexes now!         │
 │                    Global:  ~/.claude/vault/index.md          │
 │                    Project: ./.claude/vault/index.md          │
+│                                                               │
+│  PostToolUse  → 📝 Mid-Session Reminders (NEW in v1.6.1!)     │
+│                 After Edit: Counts edits, reminds every 5     │
+│                 After Write: Reminds on new code files        │
+│                 After Bash: Detects test/build commands       │
+│                 After Task: Reminds to document findings      │
 │                                                               │
 │  Stop         → 📝 ContextVault Reminder                      │
 │                 Did you learn something worth saving?         │

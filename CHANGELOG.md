@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.1] - 2026-01-18
+
+### Added
+- **PostToolUse Hooks** - Smart reminders DURING work, not just at session boundaries
+  - Fires after Edit, Write, Bash, and Task tools
+  - Edit counter: reminds every 5 code file edits
+  - Test/build detection: reminds after `npm test`, `cargo build`, etc.
+  - Exploration detection: reminds after Task tool usage
+  - Counter resets when you document (write to vault/*.md)
+- **No jq dependency** - Hook script uses pure bash for portability
+- **`/ctx-upgrade` updated** - Now installs PostToolUse hooks
+
+### Changed
+- Moved from boundary-only reminders to continuous awareness
+- Hook script at `~/.claude/hooks/ctx-post-tool.sh`
+- Global settings now include PostToolUse matchers
+
+### Technical
+- PostToolUse hooks use tool matchers: Edit, Write, Bash, Task
+- State tracked in `/tmp/ctx-edit-count` (resets on documentation)
+- Code file detection via extension matching (not all files trigger reminders)
+
+---
+
 ## [1.6.0] - 2026-01-18
 
 ### Added
@@ -169,6 +193,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.6.1]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.1
+[1.6.0]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.0
 [1.5.3]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.5.3
 [1.5.2]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.5.2
 [1.5.1]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.5.1
