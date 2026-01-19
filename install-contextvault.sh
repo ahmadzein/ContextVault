@@ -600,7 +600,7 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the ctx-post-tool hook script (v1.6.2 - PostToolUse reminders)
+# Create the ctx-post-tool hook script (v1.6.2 - Aggressive feature documentation reminders)
 create_post_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
@@ -608,9 +608,10 @@ create_post_tool_script() {
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
 # ContextVault PostToolUse Hook v1.6.2
-# Smart documentation reminders during work (no jq dependency)
+# Aggressive documentation reminders for feature add/edit/remove (no jq dependency)
 
 EDIT_COUNT_FILE="/tmp/ctx-edit-count"
+FIRST_EDIT_FILE="/tmp/ctx-first-edit-done"
 [ ! -f "$EDIT_COUNT_FILE" ] && echo "0" > "$EDIT_COUNT_FILE"
 
 INPUT=$(cat)
@@ -627,28 +628,39 @@ remind() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
 
-# Reset counter when documenting
+# Reset counters when documenting to vault
 if [[ "$FILE_PATH" == *"vault/"* ]] && [[ "$FILE_PATH" == *".md" ]]; then
     echo "0" > "$EDIT_COUNT_FILE"
+    rm -f "$FIRST_EDIT_FILE" 2>/dev/null
     exit 0
 fi
 
 is_code_file() {
     case "$1" in
-        *.ts|*.tsx|*.js|*.jsx|*.py|*.go|*.rs|*.java|*.rb|*.php|*.swift|*.kt|*.c|*.cpp|*.h|*.cs) return 0 ;;
+        *.ts|*.tsx|*.js|*.jsx|*.py|*.go|*.rs|*.java|*.rb|*.php|*.swift|*.kt|*.c|*.cpp|*.h|*.cs|*.vue|*.svelte|*.astro) return 0 ;;
         *) return 1 ;;
     esac
 }
 
 case "$TOOL_NAME" in
     "Write")
-        is_code_file "$FILE_PATH" && remind "New code file created" "Document if significant: /ctx-doc"
+        if is_code_file "$FILE_PATH"; then
+            remind "FEATURE ADDED: $(basename "$FILE_PATH")" "Document this new file: /ctx-doc"
+        fi
         ;;
     "Edit")
         if is_code_file "$FILE_PATH"; then
             COUNT=$(($(cat "$EDIT_COUNT_FILE" 2>/dev/null || echo "0") + 1))
             echo "$COUNT" > "$EDIT_COUNT_FILE"
-            [ $((COUNT % 5)) -eq 0 ] && remind "$COUNT code edits this session" "Time to document? /ctx-doc or /ctx-error"
+
+            # First edit of session - always remind
+            if [ ! -f "$FIRST_EDIT_FILE" ]; then
+                touch "$FIRST_EDIT_FILE"
+                remind "Code changes started" "Document features you add/edit/remove: /ctx-doc"
+            # Then remind every 3 edits (aggressive)
+            elif [ $((COUNT % 3)) -eq 0 ]; then
+                remind "$COUNT code changes" "Added/edited/removed features? /ctx-doc"
+            fi
         fi
         ;;
     "Bash")

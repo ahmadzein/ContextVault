@@ -17,14 +17,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Now `/ctx-init` and `/ctx-upgrade` install PostToolUse hooks in project settings
 
 ### Changed
+- **More aggressive feature documentation reminders:**
+  - Edit threshold reduced from 5 to 3 (reminds every 3 code changes)
+  - Added **first-edit reminder** - now reminds on FIRST code change of session
+  - Write reminder now says "FEATURE ADDED" (not wishy-washy "if significant")
+  - Messages explicitly mention "add/edit/remove features"
 - `/ctx-upgrade` Step 3 now includes full PostToolUse hook configuration
 - `/ctx-init` Step 5 now includes PostToolUse hooks in project settings
-- `generate_project_hooks_json()` updated with PostToolUse matchers
-- Redundant hook configuration (both global + project) for reliability
+- Added more file extensions: `.vue`, `.svelte`, `.astro`
 
 ### Technical
 - Project `.claude/settings.json` now contains: SessionStart, Stop, AND PostToolUse
 - Both global and project settings reference `~/.claude/hooks/ctx-post-tool.sh`
+- New `FIRST_EDIT_FILE` tracker (`/tmp/ctx-first-edit-done`) resets on documentation
 - Ensures mid-session reminders work regardless of which settings file takes precedence
 
 ---
