@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.6.7"
+VERSION="1.6.8"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -607,18 +607,22 @@ create_stop_enforcer_script() {
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault BLOCKING Stop Hook v1.6.7
+# ContextVault BLOCKING Stop Hook v1.6.8
 # PREVENTS Claude from stopping until documentation is done
+# MORE AGGRESSIVE: Blocks after ANY code change without docs
 
 PROJECT_VAULT="./.claude/vault"
+GLOBAL_VAULT="$HOME/.claude/vault"
 EDIT_COUNT_FILE="/tmp/ctx-edit-count"
+WRITE_COUNT_FILE="/tmp/ctx-write-count"
 FIRST_EDIT_FILE="/tmp/ctx-first-edit-done"
 
-# Check if any code edits happened this session
+# Check code edits AND new file writes
 edit_count=0
-if [ -f "$EDIT_COUNT_FILE" ]; then
-    edit_count=$(cat "$EDIT_COUNT_FILE" 2>/dev/null || echo "0")
-fi
+write_count=0
+[ -f "$EDIT_COUNT_FILE" ] && edit_count=$(cat "$EDIT_COUNT_FILE" 2>/dev/null || echo "0")
+[ -f "$WRITE_COUNT_FILE" ] && write_count=$(cat "$WRITE_COUNT_FILE" 2>/dev/null || echo "0")
+total_changes=$((edit_count + write_count))
 
 # Check session start time
 session_file=""
@@ -630,24 +634,24 @@ for f in /tmp/ctx_session_${my_ppid}_* /tmp/ctx_session_*; do
         session_data=$(cat "$f" 2>/dev/null)
         session_start=$(echo "$session_data" | awk '{print $2}')
         session_file="$f"
-        if [[ "$f" == *"${my_ppid}_"* ]]; then
-            break
-        fi
+        [[ "$f" == *"${my_ppid}_"* ]] && break
     fi
 done
 
-# Count docs modified this session
+# Count docs modified this session (project OR global)
 docs_modified=0
-if [ -d "$PROJECT_VAULT" ] && [ "$session_start" -gt 0 ]; then
-    docs_modified=$(find "$PROJECT_VAULT" -maxdepth 1 -name "P*.md" -newermt "@$session_start" 2>/dev/null | wc -l | tr -d ' ')
+if [ "$session_start" -gt 0 ]; then
+    [ -d "$PROJECT_VAULT" ] && docs_modified=$((docs_modified + $(find "$PROJECT_VAULT" -maxdepth 1 -name "P*.md" -newermt "@$session_start" 2>/dev/null | wc -l)))
+    [ -d "$GLOBAL_VAULT" ] && docs_modified=$((docs_modified + $(find "$GLOBAL_VAULT" -maxdepth 1 -name "G*.md" -newermt "@$session_start" 2>/dev/null | wc -l)))
 fi
 
-# BLOCK if code was edited but nothing documented
-if [ "$edit_count" -gt 2 ] && [ "$docs_modified" -eq 0 ]; then
+# BLOCK if ANY code changes but NO documentation
+# v1.6.8: More aggressive - blocks after just 1 change
+if [ "$total_changes" -gt 0 ] && [ "$docs_modified" -eq 0 ]; then
     cat << 'BLOCK_EOF'
 {
   "decision": "block",
-  "reason": "STOP! You made code changes but haven't documented anything!\n\nYou MUST document before ending:\n1. Run /ctx-doc to document the features you added\n2. Or run /ctx-error if you fixed bugs\n3. Or run /ctx-decision if you made architectural choices\n\nDo NOT try to stop again until you have created at least one P###_*.md document."
+  "reason": "🛑 BLOCKED: You made code changes but haven't documented!\n\n📊 This session: edits + new files, 0 docs created\n\n✅ You MUST document before ending:\n   /ctx-doc    - Document feature/learning\n   /ctx-error  - Document bug fix\n   /ctx-decision - Document architecture choice\n\n⚠️ Do NOT try to stop again until you create a P###_*.md or G###_*.md document!"
 }
 BLOCK_EOF
     exit 0
@@ -655,17 +659,14 @@ fi
 
 # ALLOW - show summary
 echo ""
-echo "ContextVault Session Summary"
-echo "---"
-if [ "$docs_modified" -gt 0 ]; then
-    echo "$docs_modified document(s) created/updated"
-else
-    echo "No documentation changes"
-fi
-echo ""
+echo "ContextVault Session Complete"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Code changes: $total_changes"
+echo "  Docs created: $docs_modified"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Clean up
-rm -f "$EDIT_COUNT_FILE" "$FIRST_EDIT_FILE" /tmp/ctx-plan-reminded 2>/dev/null
+rm -f "$EDIT_COUNT_FILE" "$WRITE_COUNT_FILE" "$FIRST_EDIT_FILE" /tmp/ctx-plan-reminded 2>/dev/null
 [ -n "$session_file" ] && rm -f "$session_file" 2>/dev/null
 
 exit 0
@@ -675,20 +676,21 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the ctx-post-tool hook script (v1.6.7 - Plan tracking + large change detection)
+# Create the ctx-post-tool hook script (v1.6.8 - MORE AGGRESSIVE reminders)
 create_post_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault PostToolUse Hook v1.6.7
-# Plan tracking, large change detection, multi-edit reminders (no jq dependency)
+# ContextVault PostToolUse Hook v1.6.8
+# MORE AGGRESSIVE: Reminds on EVERY code change, tracks writes too
 
 EDIT_COUNT_FILE="/tmp/ctx-edit-count"
+WRITE_COUNT_FILE="/tmp/ctx-write-count"
 FIRST_EDIT_FILE="/tmp/ctx-first-edit-done"
-PLAN_REMINDED_FILE="/tmp/ctx-plan-reminded"
 [ ! -f "$EDIT_COUNT_FILE" ] && echo "0" > "$EDIT_COUNT_FILE"
+[ ! -f "$WRITE_COUNT_FILE" ] && echo "0" > "$WRITE_COUNT_FILE"
 
 INPUT=$(cat)
 
@@ -696,28 +698,27 @@ TOOL_NAME=$(echo "$INPUT" | grep -o '"tool_name"[[:space:]]*:[[:space:]]*"[^"]*"
 FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
 COMMAND=$(echo "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
 
-# Estimate change size by counting escaped newlines in the input
-# This gives approximate line count for the change
 LINE_COUNT=$(echo "$INPUT" | grep -o '\\n' | wc -l | tr -d ' ')
 
 remind() {
     echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🚨━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━🚨"
     echo "  ContextVault: $1"
-    echo "  $2"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  👉 $2"
+    echo "🚨━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━🚨"
 }
 
 # Reset ALL counters when documenting to vault
 if [[ "$FILE_PATH" == *"vault/"* ]] && [[ "$FILE_PATH" == *".md" ]]; then
     echo "0" > "$EDIT_COUNT_FILE"
-    rm -f "$FIRST_EDIT_FILE" "$PLAN_REMINDED_FILE" 2>/dev/null
+    echo "0" > "$WRITE_COUNT_FILE"
+    rm -f "$FIRST_EDIT_FILE" 2>/dev/null
     exit 0
 fi
 
 is_code_file() {
     case "$1" in
-        *.ts|*.tsx|*.js|*.jsx|*.py|*.go|*.rs|*.java|*.rb|*.php|*.swift|*.kt|*.c|*.cpp|*.h|*.cs|*.vue|*.svelte|*.astro) return 0 ;;
+        *.ts|*.tsx|*.js|*.jsx|*.py|*.go|*.rs|*.java|*.rb|*.php|*.swift|*.kt|*.c|*.cpp|*.h|*.cs|*.vue|*.svelte|*.astro|*.sh|*.bash) return 0 ;;
         *) return 1 ;;
     esac
 }
@@ -725,7 +726,9 @@ is_code_file() {
 case "$TOOL_NAME" in
     "Write")
         if is_code_file "$FILE_PATH"; then
-            remind "FEATURE ADDED: $(basename "$FILE_PATH")" "Document this new file NOW: /ctx-doc"
+            WCOUNT=$(($(cat "$WRITE_COUNT_FILE" 2>/dev/null || echo "0") + 1))
+            echo "$WCOUNT" > "$WRITE_COUNT_FILE"
+            remind "🆕 NEW FILE: $(basename "$FILE_PATH")" "STOP! Document this feature NOW: /ctx-doc"
         fi
         ;;
     "Edit")
@@ -733,30 +736,24 @@ case "$TOOL_NAME" in
             COUNT=$(($(cat "$EDIT_COUNT_FILE" 2>/dev/null || echo "0") + 1))
             echo "$COUNT" > "$EDIT_COUNT_FILE"
 
-            # PRIORITY 1: Large change detection (>20 lines = significant feature)
+            # v1.6.8: ALWAYS remind on code changes (more aggressive)
             if [ "$LINE_COUNT" -gt 20 ]; then
-                remind "LARGE CHANGE (~$LINE_COUNT lines)" "Document this feature NOW: /ctx-doc"
-            # PRIORITY 2: First edit - remind to document plan
+                remind "⚠️ LARGE CHANGE (~$LINE_COUNT lines)" "STOP NOW! Document feature: /ctx-doc"
             elif [ ! -f "$FIRST_EDIT_FILE" ]; then
                 touch "$FIRST_EDIT_FILE"
-                remind "Task started" "Document your PLAN first: /ctx-doc"
-            # PRIORITY 3: Second edit - multi-step task detected
-            elif [ "$COUNT" -eq 2 ] && [ ! -f "$PLAN_REMINDED_FILE" ]; then
-                touch "$PLAN_REMINDED_FILE"
-                remind "Multi-step task detected" "Document plan & track progress: /ctx-doc"
-            # PRIORITY 4: Every 3 edits - regular reminder
-            elif [ $((COUNT % 3)) -eq 0 ]; then
-                remind "$COUNT code changes" "Update docs with progress: /ctx-doc"
+                remind "📝 Task started ($COUNT edit)" "Document your plan: /ctx-doc"
+            else
+                remind "✏️ Code edit #$COUNT" "Remember to document: /ctx-doc"
             fi
         fi
         ;;
     "Bash")
         CMD_LOWER=$(echo "$COMMAND" | tr '[:upper:]' '[:lower:]')
-        echo "$CMD_LOWER" | grep -qE '(npm test|yarn test|pnpm test|pytest|go test|cargo test|jest|vitest|mocha)' && remind "Tests completed" "Document results: /ctx-doc or /ctx-error"
-        echo "$CMD_LOWER" | grep -qE '(npm run build|yarn build|pnpm build|make |cargo build|go build|tsc|webpack|vite build)' && remind "Build completed" "Document any issues: /ctx-error"
+        echo "$CMD_LOWER" | grep -qE '(npm test|yarn test|pnpm test|pytest|go test|cargo test|jest|vitest|mocha)' && remind "✅ Tests completed" "Document results: /ctx-doc or /ctx-error"
+        echo "$CMD_LOWER" | grep -qE '(npm run build|yarn build|pnpm build|make |cargo build|go build|tsc|webpack|vite build)' && remind "🔨 Build completed" "Document any issues: /ctx-error"
         ;;
     "Task")
-        remind "Exploration completed" "Document findings: /ctx-doc or /ctx-intel"
+        remind "🔍 Exploration completed" "Document findings: /ctx-doc or /ctx-intel"
         ;;
 esac
 exit 0
@@ -2009,8 +2006,6 @@ Create `.claude/settings.json` with project-specific hooks for automatic enforce
 
 Use the **Write tool** to create `.claude/settings.json` with this EXACT content:
 
-**IMPORTANT:** Replace `USER_HOME` with the actual home directory path (e.g., `/Users/username` or `/home/username`). You can get this by running `echo $HOME` first.
-
 ```json
 {
   "hooks": {
@@ -2019,7 +2014,7 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "USER_HOME/.claude/hooks/ctx-session-start.sh"
+            "command": "~/.claude/hooks/ctx-session-start.sh"
           }
         ]
       }
@@ -2029,7 +2024,7 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "USER_HOME/.claude/hooks/ctx-stop-enforcer.sh",
+            "command": "~/.claude/hooks/ctx-stop-enforcer.sh",
             "blocking": true
           }
         ]
@@ -2041,7 +2036,7 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       },
@@ -2050,7 +2045,7 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       },
@@ -2059,7 +2054,7 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       },
@@ -2068,7 +2063,7 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       }
@@ -4092,8 +4087,6 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
 
 **REPLACE** `.claude/settings.json` with this content that includes **BLOCKING Stop hook**:
 
-**IMPORTANT:** Replace `USER_HOME` with the actual home directory path (e.g., `/Users/username` or `/home/username`). You can get this by running `echo $HOME` first.
-
 ```json
 {
   "hooks": {
@@ -4102,7 +4095,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "USER_HOME/.claude/hooks/ctx-session-start.sh"
+            "command": "~/.claude/hooks/ctx-session-start.sh"
           }
         ]
       }
@@ -4112,7 +4105,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "USER_HOME/.claude/hooks/ctx-stop-enforcer.sh",
+            "command": "~/.claude/hooks/ctx-stop-enforcer.sh",
             "blocking": true
           }
         ]
@@ -4124,7 +4117,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       },
@@ -4133,7 +4126,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       },
@@ -4142,7 +4135,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       },
@@ -4151,7 +4144,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       }

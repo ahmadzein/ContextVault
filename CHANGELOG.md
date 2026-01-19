@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.8] - 2026-01-19
+
+### Changed
+- **MORE AGGRESSIVE Enforcement** - Blocks after ANY code change, not just >2 edits
+  - Stop hook now tracks both edits AND new file writes
+  - Checks global vault (G*.md) in addition to project vault (P*.md)
+  - Blocks if total_changes > 0 AND docs_modified == 0
+- **PostToolUse Reminders on EVERY edit** - No more waiting for 3 edits
+  - Tracks new file writes separately (WRITE_COUNT_FILE)
+  - More urgent messaging with emojis
+  - Reminder after every single code change
+- **Project settings use `~` paths** - No manual USER_HOME replacement needed
+  - Shell expands `~` automatically when executing hooks
+  - Simpler setup in ctx-init and ctx-upgrade
+
+### Technical
+- New tracker file: `/tmp/ctx-write-count` for Write tool tracking
+- Both stop-enforcer and post-tool scripts updated to v1.6.8
+- Added `.sh` and `.bash` to code file detection
+
+---
+
 ## [1.6.7] - 2026-01-19
 
 ### Added
@@ -309,6 +331,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.6.8]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.8
 [1.6.7]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.7
 [1.6.6]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.6
 [1.6.5]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.5
