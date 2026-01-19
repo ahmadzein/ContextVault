@@ -2009,6 +2009,8 @@ Create `.claude/settings.json` with project-specific hooks for automatic enforce
 
 Use the **Write tool** to create `.claude/settings.json` with this EXACT content:
 
+**IMPORTANT:** Replace `USER_HOME` with the actual home directory path (e.g., `/Users/username` or `/home/username`). You can get this by running `echo $HOME` first.
+
 ```json
 {
   "hooks": {
@@ -2017,7 +2019,7 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"\\n📂 Project ContextVault\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n📖 Read: ./.claude/vault/index.md\\n🏷️  Use P### prefix for project docs\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+            "command": "USER_HOME/.claude/hooks/ctx-session-start.sh"
           }
         ]
       }
@@ -2027,7 +2029,8 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"\\n💾 Project Documentation Reminder\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nDocument project-specific learnings!\\nUse /ctx-doc with P### prefix\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+            "command": "USER_HOME/.claude/hooks/ctx-stop-enforcer.sh",
+            "blocking": true
           }
         ]
       }
@@ -2038,7 +2041,7 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
+            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       },
@@ -2047,7 +2050,7 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
+            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       },
@@ -2056,7 +2059,7 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
+            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       },
@@ -2065,7 +2068,7 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
+            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       }
@@ -4085,9 +4088,11 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
 
 ---
 
-## Step 3: Update .claude/settings.json (CRITICAL - NOW INCLUDES PostToolUse!)
+## Step 3: Update .claude/settings.json (CRITICAL - BLOCKING STOP HOOK!)
 
-**REPLACE** `.claude/settings.json` with this content that includes **PostToolUse hooks**:
+**REPLACE** `.claude/settings.json` with this content that includes **BLOCKING Stop hook**:
+
+**IMPORTANT:** Replace `USER_HOME` with the actual home directory path (e.g., `/Users/username` or `/home/username`). You can get this by running `echo $HOME` first.
 
 ```json
 {
@@ -4097,7 +4102,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"\\n ContextVault ACTIVE - Document as you work!\\n Read: ./.claude/vault/index.md NOW\\n Document IMMEDIATELY after each task\\n\""
+            "command": "USER_HOME/.claude/hooks/ctx-session-start.sh"
           }
         ]
       }
@@ -4107,7 +4112,8 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"\\n SESSION ENDING - Did you document?\\n Run /ctx-handoff NOW for session summary\\n Don't lose your work - document it!\\n\""
+            "command": "USER_HOME/.claude/hooks/ctx-stop-enforcer.sh",
+            "blocking": true
           }
         ]
       }
@@ -4118,7 +4124,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
+            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       },
@@ -4127,7 +4133,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
+            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       },
@@ -4136,7 +4142,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
+            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       },
@@ -4145,7 +4151,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
+            "command": "USER_HOME/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       }
