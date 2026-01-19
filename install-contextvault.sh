@@ -600,14 +600,14 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the BLOCKING Stop enforcer hook (v1.6.7 - Forces documentation before stopping)
+# Create the BLOCKING Stop enforcer hook (v1.6.9 - Forces documentation before stopping)
 create_stop_enforcer_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-stop-enforcer.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault BLOCKING Stop Hook v1.6.8
+# ContextVault BLOCKING Stop Hook v1.6.9
 # PREVENTS Claude from stopping until documentation is done
 # MORE AGGRESSIVE: Blocks after ANY code change without docs
 
@@ -646,7 +646,7 @@ if [ "$session_start" -gt 0 ]; then
 fi
 
 # BLOCK if ANY code changes but NO documentation
-# v1.6.8: More aggressive - blocks after just 1 change
+# v1.6.9: More aggressive - blocks after just 1 change
 if [ "$total_changes" -gt 0 ] && [ "$docs_modified" -eq 0 ]; then
     cat << 'BLOCK_EOF'
 {
@@ -739,14 +739,14 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the ctx-post-tool hook script (v1.6.8 - MORE AGGRESSIVE reminders)
+# Create the ctx-post-tool hook script (v1.6.9 - MORE AGGRESSIVE reminders)
 create_post_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault PostToolUse Hook v1.6.8
+# ContextVault PostToolUse Hook v1.6.9
 # MORE AGGRESSIVE: Reminds on EVERY code change, tracks writes too
 
 EDIT_COUNT_FILE="/tmp/ctx-edit-count"
@@ -799,7 +799,7 @@ case "$TOOL_NAME" in
             COUNT=$(($(cat "$EDIT_COUNT_FILE" 2>/dev/null || echo "0") + 1))
             echo "$COUNT" > "$EDIT_COUNT_FILE"
 
-            # v1.6.8: ALWAYS remind on code changes (more aggressive)
+            # v1.6.9: ALWAYS remind on code changes (more aggressive)
             if [ "$LINE_COUNT" -gt 20 ]; then
                 remind "⚠️ LARGE CHANGE (~$LINE_COUNT lines)" "STOP NOW! Document feature: /ctx-doc"
             elif [ ! -f "$FIRST_EDIT_FILE" ]; then
@@ -944,14 +944,15 @@ create_global_hooks() {
                 return
             fi
 
-            # Safely merge: ensure .hooks exists, then replace SessionStart, Stop, and PostToolUse
+            # Safely merge: ensure .hooks exists, then replace all ContextVault hooks
             local merged
             merged=$(echo "$existing" | jq --argjson new_hooks "$hooks_json" '
                 # Ensure hooks object exists
                 .hooks //= {} |
-                # Replace SessionStart, Stop, and PostToolUse with our hooks
+                # Replace SessionStart, Stop, PreToolUse, and PostToolUse with our hooks
                 .hooks.SessionStart = $new_hooks.hooks.SessionStart |
                 .hooks.Stop = $new_hooks.hooks.Stop |
+                .hooks.PreToolUse = $new_hooks.hooks.PreToolUse |
                 .hooks.PostToolUse = $new_hooks.hooks.PostToolUse
             ' 2>/dev/null)
 
@@ -992,7 +993,7 @@ create_global_hooks() {
     secure_file "$settings_file" 600
 }
 
-# Generate project hooks JSON for ctx-init (v1.6.7: includes PostToolUse)
+# Generate project hooks JSON for ctx-init (v1.6.9: includes BLOCKING PreToolUse + PostToolUse)
 generate_project_hooks_json() {
     cat << 'HOOKS_EOF'
 {
@@ -1068,7 +1069,7 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.6.7
+**Version:** 1.6.9
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
 
@@ -1635,7 +1636,9 @@ This is an independent implementation and is not affiliated with or endorsed by 
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.6.7 | $(date +%Y-%m-%d) | PostToolUse hooks for mid-session reminders |
+| 1.6.9 | $(date +%Y-%m-%d) | BLOCKING PreToolUse - Mid-session enforcement |
+| 1.6.8 | 2026-01-19 | More aggressive Stop hook enforcement |
+| 1.6.7 | 2026-01-19 | BLOCKING Stop hook forces documentation |
 | 1.6.0 | 2026-01-18 | Added 6 new commands (health, note, changelog, link, quiz, explain) |
 | 1.5.3 | 2026-01-18 | Added /ctx-upgrade command |
 | 1.4.0 | 2026-01-17 | Enhanced instructions with clear checklists |
@@ -2262,7 +2265,7 @@ Created/Updated:
 ├── ./CLAUDE.md                ← ContextVault instructions (FORCES ctx usage!)
 ├── .claude/vault/index.md     ← Project documentation index
 ├── .claude/vault/_template.md ← Document template
-├── .claude/settings.json      ← Project hooks (SessionStart + Stop)
+├── .claude/settings.json      ← Project hooks (SessionStart + Stop + PreToolUse + PostToolUse)
 └── .git/hooks/pre-commit      ← Git hook (documentation reminder on commit)
 
 🪝 Hooks installed:
@@ -3096,7 +3099,7 @@ Create manifest.json with metadata:
 
 ```json
 {
-  "contextvault_version": "1.6.7",
+  "contextvault_version": "1.6.9",
   "export_version": "1.1",
   "exported_at": "2026-01-18T12:34:56Z",
   "scope": "all",
@@ -3319,7 +3322,7 @@ Display what will be imported:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Source: contextvault_export_20260118_123456.zip
 Exported: 2026-01-18 12:34:56
-Version: 1.6.7
+Version: 1.6.9
 
 📚 Contents:
 ├── Global: X documents
@@ -4321,19 +4324,18 @@ Then: `chmod +x .git/hooks/pre-commit`
 
 Output this:
 ```
-ContextVault v1.6.7 Upgrade Complete!
+ContextVault v1.6.9 Upgrade Complete!
 
 Updated:
   ./CLAUDE.md              Stronger enforcement
-  .claude/settings.json    SessionStart + Stop + PostToolUse hooks
+  .claude/settings.json    SessionStart + Stop + PreToolUse + PostToolUse hooks
   .git/hooks/pre-commit    Git reminder
 
-NEW in v1.6.7:
-  PostToolUse hooks now in PROJECT settings (not just global)
-  Reminds during work (Edit/Write/Bash/Task)
-  Edit counter (every 5 code edits)
-  Test/build detection
-  Counter resets when you document
+NEW in v1.6.9:
+  BLOCKING PreToolUse - Blocks further edits until you document!
+  After 2 code changes, Claude CANNOT make more until documenting
+  Mid-session enforcement is now REAL (not just reminders)
+  5 hook scripts: session-start, session-end, stop-enforcer, pre-tool, post-tool
 
 Your P### docs are SAFE!
 
@@ -5292,13 +5294,14 @@ install_contextvault() {
     echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
     echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
     echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(23 slash commands)${NC}"
-    echo -e "   ${CYAN}🪝${NC} ~/.claude/hooks/             ${DIM}(3 hook scripts)${NC}"
+    echo -e "   ${CYAN}🪝${NC} ~/.claude/hooks/             ${DIM}(5 hook scripts)${NC}"
     echo -e "   ${CYAN}⚙️${NC} ~/.claude/settings.json      ${DIM}(Hook triggers)${NC}"
     echo ""
-    echo -e "${BOLD}🪝 Hooks installed (v1.6.7):${NC}"
+    echo -e "${BOLD}🪝 Hooks installed (v1.6.9):${NC}"
     echo -e "   ${GREEN}SessionStart${NC}  → Reminds to read vault indexes"
-    echo -e "   ${GREEN}PostToolUse${NC}   → Mid-session reminders (Edit/Bash/Task)"
-    echo -e "   ${GREEN}Stop${NC}          → Reminds to document learnings"
+    echo -e "   ${RED}PreToolUse${NC}    → BLOCKS edits after 2 undocumented changes!"
+    echo -e "   ${GREEN}PostToolUse${NC}  → Reminds on every code change"
+    echo -e "   ${RED}Stop${NC}          → BLOCKS session end until documented!"
     echo ""
     echo -e "${BOLD}🎮 Your new commands:${NC}"
     echo -e "   ${YELLOW}/ctx-help${NC}     📖 See all commands"
