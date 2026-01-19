@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.7] - 2026-01-19
+
+### Added
+- **BLOCKING Stop Hook** - Claude literally CANNOT stop until documentation is done!
+  - Uses `"decision": "block"` JSON response to prevent session end
+  - Checks if code was edited (>2 edits) but no P*.md docs created
+  - If blocked, Claude receives instructions to run /ctx-doc first
+  - New script: `~/.claude/hooks/ctx-stop-enforcer.sh`
+
+### Changed
+- Stop hook now uses `blocking: true` in settings.json
+- 4 hook scripts installed (was 3): session-start, session-end, stop-enforcer, post-tool
+- Claude is now FORCED to document, not just reminded
+
+### Technical
+- Stop hook returns `{"decision": "block", "reason": "..."}` to prevent completion
+- Based on Claude Code's hook control flow: exit code 2 or decision:block
+- References: https://stevekinney.com/courses/ai-development/claude-code-hook-control-flow
+
+---
+
 ## [1.6.6] - 2026-01-19
 
 ### Added
@@ -288,6 +309,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.6.7]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.7
 [1.6.6]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.6
 [1.6.5]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.5
 [1.6.4]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.4
