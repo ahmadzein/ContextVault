@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.5] - 2026-01-19
+
+### Added
+- **Document Granularity Rules** - Clear guidance on what goes in what document
+  - Architecture doc = ONLY tech stack, file structure, high-level design
+  - Each FEATURE = its own separate document
+  - Each PLAN = its own document with progress tracking
+  - Each ERROR/BUG = its own document
+  - Each DECISION = its own document
+
+### Changed
+- Added "DOCUMENT GRANULARITY (CRITICAL!)" section to global CLAUDE.md
+- Clear "When to CREATE NEW doc vs UPDATE existing" decision tree
+- Example project structure showing proper doc organization
+- Anti-pattern examples showing what NOT to do
+- Prevents "architecture doc bloat" where everything gets lumped into P001
+
+### Fixed
+- Issue where Claude would put ALL features into one "architecture" doc
+- Now explicitly states: "⛔ NOT features, NOT implementations, NOT details" for architecture
+
+---
+
 ## [1.6.4] - 2026-01-19
 
 ### Added
@@ -244,6 +267,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.6.5]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.5
 [1.6.4]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.4
 [1.6.3]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.3
 [1.6.1]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.1
