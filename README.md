@@ -20,7 +20,7 @@
 
 **Give Claude Code a persistent memory across ALL your projects** 🧠
 
-[![Version](https://img.shields.io/badge/version-1.6.1-blue.svg)](https://github.com/ahmadzein/ContextVault)
+[![Version](https://img.shields.io/badge/version-1.6.3-blue.svg)](https://github.com/ahmadzein/ContextVault)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude-Code-blueviolet)](https://claude.ai)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ahmadzein/ContextVault/pulls)
@@ -221,7 +221,7 @@ Never lose your docs
 ~/.claude/
 ├── 📄 CLAUDE.md                 # Global instructions (all projects)
 ├── 📄 settings.json             # 🪝 Global hooks (SessionStart + Stop + PostToolUse)
-├── 📁 hooks/                    # Hook scripts (v1.6.1+)
+├── 📁 hooks/                    # Hook scripts (v1.6.3+)
 │   ├── ctx-session-start.sh    # Session start status
 │   ├── ctx-session-end.sh      # Session end reminder
 │   └── ctx-post-tool.sh        # Mid-session reminders (NEW!)
@@ -879,7 +879,7 @@ Claude:
     🪝 SessionStart hook fires → "Read vault indexes now!"
     Claude reads indexes → Knows your context
     You work on your task → Claude helps
-    🪝 PostToolUse hooks fire → Reminds during work (v1.6.1+)
+    🪝 PostToolUse hooks fire → Reminds during work (v1.6.3+)
     🪝 Stop hook fires → "Document learnings!"
     Claude documents automatically → No asking!
 ```
@@ -928,7 +928,7 @@ Maximum in context at any time:
 └─────────────────────────────────────┘
 ```
 
-### 🪝 Automatic Hooks (v1.6.1+)
+### 🪝 Automatic Hooks (v1.6.3)
 
 **Claude Code hooks enforce ContextVault automatically!**
 
@@ -943,11 +943,12 @@ Maximum in context at any time:
 │                    Global:  ~/.claude/vault/index.md          │
 │                    Project: ./.claude/vault/index.md          │
 │                                                               │
-│  PostToolUse  → 📝 Mid-Session Reminders (NEW in v1.6.1!)     │
-│                 After Edit: Counts edits, reminds every 5     │
-│                 After Write: Reminds on new code files        │
+│  PostToolUse  → 📝 Mid-Session Reminders (v1.6.3)             │
+│                 After Edit: FIRST edit + every 3rd edit       │
+│                 After Write: "FEATURE ADDED: filename"        │
 │                 After Bash: Detects test/build commands       │
 │                 After Task: Reminds to document findings      │
+│                 Messages: "Added/edited/removed features?"    │
 │                                                               │
 │  Stop         → 📝 ContextVault Reminder                      │
 │                 Did you learn something worth saving?         │
@@ -956,13 +957,16 @@ Maximum in context at any time:
 └──────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────┐
-│                    PROJECT HOOKS                              │
+│                    PROJECT HOOKS (v1.6.3)                     │
 │              .claude/settings.json                            │
 ├──────────────────────────────────────────────────────────────┤
 │                                                               │
 │  SessionStart → 📂 Project ContextVault                       │
 │                 📖 Read: ./.claude/vault/index.md             │
 │                 🏷️  Use P### prefix for project docs          │
+│                                                               │
+│  PostToolUse  → 📝 Same as global (redundant for reliability) │
+│                 Ensures reminders work in all projects!       │
 │                                                               │
 │  Stop         → 💾 Project Documentation Reminder             │
 │                 Document project-specific learnings!          │

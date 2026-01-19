@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.6.2"
+VERSION="1.6.3"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -600,14 +600,14 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the ctx-post-tool hook script (v1.6.2 - Aggressive feature documentation reminders)
+# Create the ctx-post-tool hook script (v1.6.3 - Aggressive feature documentation reminders)
 create_post_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault PostToolUse Hook v1.6.2
+# ContextVault PostToolUse Hook v1.6.3
 # Aggressive documentation reminders for feature add/edit/remove (no jq dependency)
 
 EDIT_COUNT_FILE="/tmp/ctx-edit-count"
@@ -689,7 +689,7 @@ create_global_hooks() {
     create_post_tool_script
 
     # The hooks JSON content - uses full path with $HOME for proper expansion
-    # v1.6.2: Added PostToolUse hooks for mid-session reminders (now in project settings too)
+    # v1.6.3: Added PostToolUse hooks for mid-session reminders (now in project settings too)
     local hooks_json="{
   \"hooks\": {
     \"SessionStart\": [
@@ -820,7 +820,7 @@ create_global_hooks() {
     secure_file "$settings_file" 600
 }
 
-# Generate project hooks JSON for ctx-init (v1.6.2: includes PostToolUse)
+# Generate project hooks JSON for ctx-init (v1.6.3: includes PostToolUse)
 generate_project_hooks_json() {
     cat << 'HOOKS_EOF'
 {
@@ -896,7 +896,7 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.6.1
+**Version:** 1.6.3
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
 
@@ -1402,7 +1402,7 @@ This is an independent implementation and is not affiliated with or endorsed by 
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.6.1 | $(date +%Y-%m-%d) | PostToolUse hooks for mid-session reminders |
+| 1.6.3 | $(date +%Y-%m-%d) | PostToolUse hooks for mid-session reminders |
 | 1.6.0 | 2026-01-18 | Added 6 new commands (health, note, changelog, link, quiz, explain) |
 | 1.5.3 | 2026-01-18 | Added /ctx-upgrade command |
 | 1.4.0 | 2026-01-17 | Enhanced instructions with clear checklists |
@@ -2840,7 +2840,7 @@ Create manifest.json with metadata:
 
 ```json
 {
-  "contextvault_version": "1.6.1",
+  "contextvault_version": "1.6.3",
   "export_version": "1.1",
   "exported_at": "2026-01-18T12:34:56Z",
   "scope": "all",
@@ -3063,7 +3063,7 @@ Display what will be imported:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Source: contextvault_export_20260118_123456.zip
 Exported: 2026-01-18 12:34:56
-Version: 1.6.1
+Version: 1.6.3
 
 📚 Contents:
 ├── Global: X documents
@@ -4042,14 +4042,14 @@ Then: `chmod +x .git/hooks/pre-commit`
 
 Output this:
 ```
-ContextVault v1.6.2 Upgrade Complete!
+ContextVault v1.6.3 Upgrade Complete!
 
 Updated:
   ./CLAUDE.md              Stronger enforcement
   .claude/settings.json    SessionStart + Stop + PostToolUse hooks
   .git/hooks/pre-commit    Git reminder
 
-NEW in v1.6.2:
+NEW in v1.6.3:
   PostToolUse hooks now in PROJECT settings (not just global)
   Reminds during work (Edit/Write/Bash/Task)
   Edit counter (every 5 code edits)
@@ -5016,7 +5016,7 @@ install_contextvault() {
     echo -e "   ${CYAN}🪝${NC} ~/.claude/hooks/             ${DIM}(3 hook scripts)${NC}"
     echo -e "   ${CYAN}⚙️${NC} ~/.claude/settings.json      ${DIM}(Hook triggers)${NC}"
     echo ""
-    echo -e "${BOLD}🪝 Hooks installed (v1.6.2):${NC}"
+    echo -e "${BOLD}🪝 Hooks installed (v1.6.3):${NC}"
     echo -e "   ${GREEN}SessionStart${NC}  → Reminds to read vault indexes"
     echo -e "   ${GREEN}PostToolUse${NC}   → Mid-session reminders (Edit/Bash/Task)"
     echo -e "   ${GREEN}Stop${NC}          → Reminds to document learnings"
