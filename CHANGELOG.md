@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.6] - 2026-01-19
+
+### Added
+- **STOP-AND-DOCUMENT Rules** - Mandatory stopping points for documentation
+  - Stop after creating any file >20 lines
+  - Stop after each feature when user asks for multiple
+  - Stop after any significant change
+  - "Large file (>50 lines) = MANDATORY STOP & DOCUMENT"
+
+### Changed
+- New section: "🛑 STOP-AND-DOCUMENT RULES (MANDATORY!)"
+- Explicit "WRONG vs RIGHT" example for multiple features
+- Clear rule: "NEVER say 'Adding X... Next: Y' - document X first!"
+- Prevents batching features without documenting each
+
+### Fixed
+- Issue where Claude would create multiple features without stopping to document
+- Now explicitly requires: plan doc → feature 1 → doc → feature 2 → doc → etc.
+
+---
+
 ## [1.6.5] - 2026-01-19
 
 ### Added
@@ -267,6 +288,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.6.6]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.6
 [1.6.5]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.5
 [1.6.4]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.4
 [1.6.3]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.3
