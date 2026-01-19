@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.2] - 2026-01-19
+
+### Fixed
+- **PostToolUse hooks now installed in PROJECT settings** (critical bug fix)
+  - v1.6.1 only installed PostToolUse hooks in global `~/.claude/settings.json`
+  - Project settings (`.claude/settings.json`) were missing PostToolUse hooks
+  - This caused mid-session reminders to not fire in some projects
+  - Now `/ctx-init` and `/ctx-upgrade` install PostToolUse hooks in project settings
+
+### Changed
+- `/ctx-upgrade` Step 3 now includes full PostToolUse hook configuration
+- `/ctx-init` Step 5 now includes PostToolUse hooks in project settings
+- `generate_project_hooks_json()` updated with PostToolUse matchers
+- Redundant hook configuration (both global + project) for reliability
+
+### Technical
+- Project `.claude/settings.json` now contains: SessionStart, Stop, AND PostToolUse
+- Both global and project settings reference `~/.claude/hooks/ctx-post-tool.sh`
+- Ensures mid-session reminders work regardless of which settings file takes precedence
+
+---
+
 ## [1.6.1] - 2026-01-18
 
 ### Added
@@ -193,6 +215,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.6.2]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.2
 [1.6.1]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.1
 [1.6.0]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.0
 [1.5.3]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.5.3

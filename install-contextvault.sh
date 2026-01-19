@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.6.1"
+VERSION="1.6.2"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -600,14 +600,14 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the ctx-post-tool hook script (v1.6.1 - PostToolUse reminders)
+# Create the ctx-post-tool hook script (v1.6.2 - PostToolUse reminders)
 create_post_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault PostToolUse Hook v1.6.1
+# ContextVault PostToolUse Hook v1.6.2
 # Smart documentation reminders during work (no jq dependency)
 
 EDIT_COUNT_FILE="/tmp/ctx-edit-count"
@@ -677,7 +677,7 @@ create_global_hooks() {
     create_post_tool_script
 
     # The hooks JSON content - uses full path with $HOME for proper expansion
-    # v1.6.1: Added PostToolUse hooks for mid-session reminders
+    # v1.6.2: Added PostToolUse hooks for mid-session reminders (now in project settings too)
     local hooks_json="{
   \"hooks\": {
     \"SessionStart\": [
@@ -808,7 +808,7 @@ create_global_hooks() {
     secure_file "$settings_file" 600
 }
 
-# Generate project hooks JSON for ctx-init
+# Generate project hooks JSON for ctx-init (v1.6.2: includes PostToolUse)
 generate_project_hooks_json() {
     cat << 'HOOKS_EOF'
 {
@@ -829,6 +829,44 @@ generate_project_hooks_json() {
           {
             "type": "command",
             "command": "echo \"\\n💾 Project Documentation Reminder\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nDocument project-specific learnings!\\nUse /ctx-doc with P### prefix\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       }
@@ -1828,6 +1866,44 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
           {
             "type": "command",
             "command": "echo \"\\n💾 Project Documentation Reminder\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nDocument project-specific learnings!\\nUse /ctx-doc with P### prefix\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       }
@@ -3847,9 +3923,9 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
 
 ---
 
-## Step 3: Update .claude/settings.json
+## Step 3: Update .claude/settings.json (CRITICAL - NOW INCLUDES PostToolUse!)
 
-**REPLACE** `.claude/settings.json` with this content:
+**REPLACE** `.claude/settings.json` with this content that includes **PostToolUse hooks**:
 
 ```json
 {
@@ -3859,7 +3935,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"\\n🚨 ContextVault ACTIVE - Document as you work!\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n📖 Read: ./.claude/vault/index.md NOW\\n✍️  Document IMMEDIATELY after each task\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+            "command": "echo \"\\n ContextVault ACTIVE - Document as you work!\\n Read: ./.claude/vault/index.md NOW\\n Document IMMEDIATELY after each task\\n\""
           }
         ]
       }
@@ -3869,7 +3945,45 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"\\n📝 SESSION ENDING - Did you document?\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n🤝 Run /ctx-handoff NOW for session summary\\n⚠️  Don't lose your work - document it!\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+            "command": "echo \"\\n SESSION ENDING - Did you document?\\n Run /ctx-handoff NOW for session summary\\n Don't lose your work - document it!\\n\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
           }
         ]
       }
@@ -3914,24 +4028,25 @@ Then: `chmod +x .git/hooks/pre-commit`
 
 ## Step 5: Confirm Upgrade
 
-Output:
+Output this:
 ```
-✅ ContextVault Upgraded!
+ContextVault v1.6.2 Upgrade Complete!
 
 Updated:
-├── ./CLAUDE.md           ← Stronger enforcement instructions
-├── .claude/settings.json ← Enhanced hooks
-└── .git/hooks/pre-commit ← Git commit reminder
+  ./CLAUDE.md              Stronger enforcement
+  .claude/settings.json    SessionStart + Stop + PostToolUse hooks
+  .git/hooks/pre-commit    Git reminder
 
-Your documents are SAFE:
-└── .claude/vault/*.md    ← All P### docs preserved!
+NEW in v1.6.2:
+  PostToolUse hooks now in PROJECT settings (not just global)
+  Reminds during work (Edit/Write/Bash/Task)
+  Edit counter (every 5 code edits)
+  Test/build detection
+  Counter resets when you document
 
-Claude will now:
-• Document IMMEDIATELY after tasks (not optionally!)
-• Show stronger reminders at session start/end
-• Remind you when committing code
+Your P### docs are SAFE!
 
-Run /ctx-status to verify.
+IMPORTANT: Restart Claude session to activate new hooks.
 ```
 CMD_EOF
 }
@@ -4889,7 +5004,7 @@ install_contextvault() {
     echo -e "   ${CYAN}🪝${NC} ~/.claude/hooks/             ${DIM}(3 hook scripts)${NC}"
     echo -e "   ${CYAN}⚙️${NC} ~/.claude/settings.json      ${DIM}(Hook triggers)${NC}"
     echo ""
-    echo -e "${BOLD}🪝 Hooks installed (v1.6.1):${NC}"
+    echo -e "${BOLD}🪝 Hooks installed (v1.6.2):${NC}"
     echo -e "   ${GREEN}SessionStart${NC}  → Reminds to read vault indexes"
     echo -e "   ${GREEN}PostToolUse${NC}   → Mid-session reminders (Edit/Bash/Task)"
     echo -e "   ${GREEN}Stop${NC}          → Reminds to document learnings"
