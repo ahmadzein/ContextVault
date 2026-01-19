@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.4] - 2026-01-19
+
+### Added
+- **Large change detection** - Changes with >20 lines trigger immediate reminder
+  - Catches significant feature additions like your 69-line synthetic noise generator
+  - Message: "LARGE CHANGE (~X lines) - Document this feature NOW"
+- **Plan documentation reminders**
+  - First edit: "Task started - Document your PLAN first"
+  - Second edit: "Multi-step task detected - Document plan & track progress"
+- **Progress tracking** - Reminds to update docs with progress every 3 edits
+
+### Changed
+- Edit reminders now prioritized: Large change > First edit > Multi-step > Every 3rd
+- New tracker file: `PLAN_REMINDED_FILE` (`/tmp/ctx-plan-reminded`)
+- All tracker files reset when documenting to vault
+- Stronger messaging: "NOW" emphasis on important reminders
+
+### Technical
+- Line count estimation via `\\n` counting in JSON input
+- Three tracker files: edit count, first edit, plan reminded
+- All trackers reset on vault documentation
+
+---
+
 ## [1.6.3] - 2026-01-19
 
 ### Fixed
@@ -220,6 +244,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.6.4]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.4
 [1.6.3]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.3
 [1.6.1]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.1
 [1.6.0]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.0

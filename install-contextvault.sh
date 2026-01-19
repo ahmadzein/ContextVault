@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.6.3"
+VERSION="1.6.4"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -600,18 +600,19 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the ctx-post-tool hook script (v1.6.3 - Aggressive feature documentation reminders)
+# Create the ctx-post-tool hook script (v1.6.4 - Plan tracking + large change detection)
 create_post_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault PostToolUse Hook v1.6.3
-# Aggressive documentation reminders for feature add/edit/remove (no jq dependency)
+# ContextVault PostToolUse Hook v1.6.4
+# Plan tracking, large change detection, multi-edit reminders (no jq dependency)
 
 EDIT_COUNT_FILE="/tmp/ctx-edit-count"
 FIRST_EDIT_FILE="/tmp/ctx-first-edit-done"
+PLAN_REMINDED_FILE="/tmp/ctx-plan-reminded"
 [ ! -f "$EDIT_COUNT_FILE" ] && echo "0" > "$EDIT_COUNT_FILE"
 
 INPUT=$(cat)
@@ -619,6 +620,10 @@ INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | grep -o '"tool_name"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
 FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
 COMMAND=$(echo "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
+
+# Estimate change size by counting escaped newlines in the input
+# This gives approximate line count for the change
+LINE_COUNT=$(echo "$INPUT" | grep -o '\\n' | wc -l | tr -d ' ')
 
 remind() {
     echo ""
@@ -628,10 +633,10 @@ remind() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
 
-# Reset counters when documenting to vault
+# Reset ALL counters when documenting to vault
 if [[ "$FILE_PATH" == *"vault/"* ]] && [[ "$FILE_PATH" == *".md" ]]; then
     echo "0" > "$EDIT_COUNT_FILE"
-    rm -f "$FIRST_EDIT_FILE" 2>/dev/null
+    rm -f "$FIRST_EDIT_FILE" "$PLAN_REMINDED_FILE" 2>/dev/null
     exit 0
 fi
 
@@ -645,7 +650,7 @@ is_code_file() {
 case "$TOOL_NAME" in
     "Write")
         if is_code_file "$FILE_PATH"; then
-            remind "FEATURE ADDED: $(basename "$FILE_PATH")" "Document this new file: /ctx-doc"
+            remind "FEATURE ADDED: $(basename "$FILE_PATH")" "Document this new file NOW: /ctx-doc"
         fi
         ;;
     "Edit")
@@ -653,13 +658,20 @@ case "$TOOL_NAME" in
             COUNT=$(($(cat "$EDIT_COUNT_FILE" 2>/dev/null || echo "0") + 1))
             echo "$COUNT" > "$EDIT_COUNT_FILE"
 
-            # First edit of session - always remind
-            if [ ! -f "$FIRST_EDIT_FILE" ]; then
+            # PRIORITY 1: Large change detection (>20 lines = significant feature)
+            if [ "$LINE_COUNT" -gt 20 ]; then
+                remind "LARGE CHANGE (~$LINE_COUNT lines)" "Document this feature NOW: /ctx-doc"
+            # PRIORITY 2: First edit - remind to document plan
+            elif [ ! -f "$FIRST_EDIT_FILE" ]; then
                 touch "$FIRST_EDIT_FILE"
-                remind "Code changes started" "Document features you add/edit/remove: /ctx-doc"
-            # Then remind every 3 edits (aggressive)
+                remind "Task started" "Document your PLAN first: /ctx-doc"
+            # PRIORITY 3: Second edit - multi-step task detected
+            elif [ "$COUNT" -eq 2 ] && [ ! -f "$PLAN_REMINDED_FILE" ]; then
+                touch "$PLAN_REMINDED_FILE"
+                remind "Multi-step task detected" "Document plan & track progress: /ctx-doc"
+            # PRIORITY 4: Every 3 edits - regular reminder
             elif [ $((COUNT % 3)) -eq 0 ]; then
-                remind "$COUNT code changes" "Added/edited/removed features? /ctx-doc"
+                remind "$COUNT code changes" "Update docs with progress: /ctx-doc"
             fi
         fi
         ;;
@@ -689,7 +701,7 @@ create_global_hooks() {
     create_post_tool_script
 
     # The hooks JSON content - uses full path with $HOME for proper expansion
-    # v1.6.3: Added PostToolUse hooks for mid-session reminders (now in project settings too)
+    # v1.6.4: Added PostToolUse hooks for mid-session reminders (now in project settings too)
     local hooks_json="{
   \"hooks\": {
     \"SessionStart\": [
@@ -820,7 +832,7 @@ create_global_hooks() {
     secure_file "$settings_file" 600
 }
 
-# Generate project hooks JSON for ctx-init (v1.6.3: includes PostToolUse)
+# Generate project hooks JSON for ctx-init (v1.6.4: includes PostToolUse)
 generate_project_hooks_json() {
     cat << 'HOOKS_EOF'
 {
@@ -896,7 +908,7 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.6.3
+**Version:** 1.6.4
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
 
@@ -1402,7 +1414,7 @@ This is an independent implementation and is not affiliated with or endorsed by 
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.6.3 | $(date +%Y-%m-%d) | PostToolUse hooks for mid-session reminders |
+| 1.6.4 | $(date +%Y-%m-%d) | PostToolUse hooks for mid-session reminders |
 | 1.6.0 | 2026-01-18 | Added 6 new commands (health, note, changelog, link, quiz, explain) |
 | 1.5.3 | 2026-01-18 | Added /ctx-upgrade command |
 | 1.4.0 | 2026-01-17 | Enhanced instructions with clear checklists |
@@ -2840,7 +2852,7 @@ Create manifest.json with metadata:
 
 ```json
 {
-  "contextvault_version": "1.6.3",
+  "contextvault_version": "1.6.4",
   "export_version": "1.1",
   "exported_at": "2026-01-18T12:34:56Z",
   "scope": "all",
@@ -3063,7 +3075,7 @@ Display what will be imported:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Source: contextvault_export_20260118_123456.zip
 Exported: 2026-01-18 12:34:56
-Version: 1.6.3
+Version: 1.6.4
 
 📚 Contents:
 ├── Global: X documents
@@ -4042,14 +4054,14 @@ Then: `chmod +x .git/hooks/pre-commit`
 
 Output this:
 ```
-ContextVault v1.6.3 Upgrade Complete!
+ContextVault v1.6.4 Upgrade Complete!
 
 Updated:
   ./CLAUDE.md              Stronger enforcement
   .claude/settings.json    SessionStart + Stop + PostToolUse hooks
   .git/hooks/pre-commit    Git reminder
 
-NEW in v1.6.3:
+NEW in v1.6.4:
   PostToolUse hooks now in PROJECT settings (not just global)
   Reminds during work (Edit/Write/Bash/Task)
   Edit counter (every 5 code edits)
@@ -5016,7 +5028,7 @@ install_contextvault() {
     echo -e "   ${CYAN}🪝${NC} ~/.claude/hooks/             ${DIM}(3 hook scripts)${NC}"
     echo -e "   ${CYAN}⚙️${NC} ~/.claude/settings.json      ${DIM}(Hook triggers)${NC}"
     echo ""
-    echo -e "${BOLD}🪝 Hooks installed (v1.6.3):${NC}"
+    echo -e "${BOLD}🪝 Hooks installed (v1.6.4):${NC}"
     echo -e "   ${GREEN}SessionStart${NC}  → Reminds to read vault indexes"
     echo -e "   ${GREEN}PostToolUse${NC}   → Mid-session reminders (Edit/Bash/Task)"
     echo -e "   ${GREEN}Stop${NC}          → Reminds to document learnings"

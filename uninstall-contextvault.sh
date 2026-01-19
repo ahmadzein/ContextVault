@@ -22,7 +22,7 @@
 
 set -e
 
-VERSION="1.6.3"
+VERSION="1.6.4"
 
 # Parse arguments
 FORCE_MODE=false
