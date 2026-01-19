@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.9] - 2026-01-19
+
+### Added
+- **BLOCKING PreToolUse Hook** - Blocks further code changes until you document!
+  - New script: `~/.claude/hooks/ctx-pre-tool.sh`
+  - Fires BEFORE Edit/Write tools - can BLOCK them from running
+  - Threshold: 2 changes without docs → BLOCKED
+  - Allows vault writes and non-code files
+
+### Changed
+- **Mid-session enforcement is now REAL** - Not just reminders!
+  - After 2 code changes, Claude CANNOT make more until documenting
+  - PreToolUse with `"blocking": true` prevents tool execution
+  - PostToolUse still reminds on every change
+  - Stop still blocks at session end
+- 5 hook scripts installed: session-start, session-end, stop-enforcer, pre-tool, post-tool
+
+### Technical
+- PreToolUse hooks fire before Edit/Write with `"blocking": true`
+- Returns `{"decision": "block", "reason": "..."}` to prevent tool
+- DOC_THRESHOLD=2 in ctx-pre-tool.sh (configurable)
+
+---
+
 ## [1.6.8] - 2026-01-19
 
 ### Changed
@@ -331,6 +355,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.6.9]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.9
 [1.6.8]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.8
 [1.6.7]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.7
 [1.6.6]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.6

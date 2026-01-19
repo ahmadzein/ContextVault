@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.6.8"
+VERSION="1.6.9"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -676,6 +676,69 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
+# Create the BLOCKING PreToolUse hook (v1.6.9 - Blocks further edits until documented)
+create_pre_tool_script() {
+    local script_path="$CLAUDE_DIR/hooks/ctx-pre-tool.sh"
+    safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
+
+    cat << 'SCRIPT_EOF' > "$script_path"
+#!/bin/bash
+# ContextVault BLOCKING PreToolUse Hook v1.6.9
+# BLOCKS further code changes until you document!
+# This forces mid-session documentation.
+
+EDIT_COUNT_FILE="/tmp/ctx-edit-count"
+WRITE_COUNT_FILE="/tmp/ctx-write-count"
+DOC_THRESHOLD=2  # Block after this many changes without docs
+
+# Get current counts
+edit_count=0
+write_count=0
+[ -f "$EDIT_COUNT_FILE" ] && edit_count=$(cat "$EDIT_COUNT_FILE" 2>/dev/null || echo "0")
+[ -f "$WRITE_COUNT_FILE" ] && write_count=$(cat "$WRITE_COUNT_FILE" 2>/dev/null || echo "0")
+total_changes=$((edit_count + write_count))
+
+# Read input to get tool info
+INPUT=$(cat)
+TOOL_NAME=$(echo "$INPUT" | grep -o '"tool_name"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
+FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
+
+# Allow documentation writes (vault files)
+if [[ "$FILE_PATH" == *"vault/"* ]] && [[ "$FILE_PATH" == *".md" ]]; then
+    exit 0
+fi
+
+# Allow non-code files
+is_code_file() {
+    case "$1" in
+        *.ts|*.tsx|*.js|*.jsx|*.py|*.go|*.rs|*.java|*.rb|*.php|*.swift|*.kt|*.c|*.cpp|*.h|*.cs|*.vue|*.svelte|*.astro|*.sh|*.bash) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+if ! is_code_file "$FILE_PATH"; then
+    exit 0
+fi
+
+# BLOCK if too many changes without documentation
+if [ "$total_changes" -ge "$DOC_THRESHOLD" ]; then
+    cat << BLOCK_EOF
+{
+  "decision": "block",
+  "reason": "🛑 BLOCKED: You have $total_changes undocumented code changes!\n\n⚠️ You CANNOT make more code changes until you document.\n\n✅ Run one of these NOW:\n   /ctx-doc    - Document feature/learning\n   /ctx-error  - Document bug fix\n   /ctx-decision - Document architecture choice\n\n📝 After documenting, you can continue coding."
+}
+BLOCK_EOF
+    exit 0
+fi
+
+# Allow the tool to proceed
+exit 0
+SCRIPT_EOF
+
+    chmod +x "$script_path"
+    secure_file "$script_path" 755
+}
+
 # Create the ctx-post-tool hook script (v1.6.8 - MORE AGGRESSIVE reminders)
 create_post_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
@@ -771,10 +834,11 @@ create_global_hooks() {
     create_session_start_script
     create_session_end_script
     create_stop_enforcer_script
+    create_pre_tool_script
     create_post_tool_script
 
     # The hooks JSON content - uses full path with $HOME for proper expansion
-    # v1.6.7: BLOCKING Stop hook that forces documentation before ending
+    # v1.6.9: BLOCKING PreToolUse + Stop hooks for mid-session AND end-session enforcement
     local hooks_json="{
   \"hooks\": {
     \"SessionStart\": [
@@ -793,6 +857,28 @@ create_global_hooks() {
           {
             \"type\": \"command\",
             \"command\": \"$HOME/.claude/hooks/ctx-stop-enforcer.sh\",
+            \"blocking\": true
+          }
+        ]
+      }
+    ],
+    \"PreToolUse\": [
+      {
+        \"matcher\": \"Edit\",
+        \"hooks\": [
+          {
+            \"type\": \"command\",
+            \"command\": \"$HOME/.claude/hooks/ctx-pre-tool.sh\",
+            \"blocking\": true
+          }
+        ]
+      },
+      {
+        \"matcher\": \"Write\",
+        \"hooks\": [
+          {
+            \"type\": \"command\",
+            \"command\": \"$HOME/.claude/hooks/ctx-pre-tool.sh\",
             \"blocking\": true
           }
         ]
@@ -2025,6 +2111,28 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
           {
             "type": "command",
             "command": "~/.claude/hooks/ctx-stop-enforcer.sh",
+            "blocking": true
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-pre-tool.sh",
+            "blocking": true
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-pre-tool.sh",
             "blocking": true
           }
         ]
@@ -4083,9 +4191,9 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
 
 ---
 
-## Step 3: Update .claude/settings.json (CRITICAL - BLOCKING STOP HOOK!)
+## Step 3: Update .claude/settings.json (CRITICAL - BLOCKING HOOKS!)
 
-**REPLACE** `.claude/settings.json` with this content that includes **BLOCKING Stop hook**:
+**REPLACE** `.claude/settings.json` with this content that includes **BLOCKING PreToolUse + Stop hooks**:
 
 ```json
 {
@@ -4106,6 +4214,28 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
           {
             "type": "command",
             "command": "~/.claude/hooks/ctx-stop-enforcer.sh",
+            "blocking": true
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-pre-tool.sh",
+            "blocking": true
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-pre-tool.sh",
             "blocking": true
           }
         ]

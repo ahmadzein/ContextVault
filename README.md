@@ -221,7 +221,7 @@ Never lose your docs
 ~/.claude/
 ├── 📄 CLAUDE.md                 # Global instructions (all projects)
 ├── 📄 settings.json             # 🪝 Global hooks (SessionStart + Stop + PostToolUse)
-├── 📁 hooks/                    # Hook scripts (v1.6.8+)
+├── 📁 hooks/                    # Hook scripts (v1.6.9+)
 │   ├── ctx-session-start.sh    # Session start status
 │   ├── ctx-session-end.sh      # Session end reminder
 │   └── ctx-post-tool.sh        # Mid-session reminders (NEW!)
@@ -879,7 +879,7 @@ Claude:
     🪝 SessionStart hook fires → "Read vault indexes now!"
     Claude reads indexes → Knows your context
     You work on your task → Claude helps
-    🪝 PostToolUse hooks fire → Reminds during work (v1.6.8+)
+    🪝 PostToolUse hooks fire → Reminds during work (v1.6.9+)
     🪝 Stop hook fires → "Document learnings!"
     Claude documents automatically → No asking!
 ```
@@ -928,7 +928,7 @@ Maximum in context at any time:
 └─────────────────────────────────────┘
 ```
 
-### 🪝 Automatic Hooks (v1.6.8)
+### 🪝 Automatic Hooks (v1.6.9)
 
 **Claude Code hooks enforce ContextVault automatically!**
 
@@ -943,7 +943,7 @@ Maximum in context at any time:
 │                    Global:  ~/.claude/vault/index.md          │
 │                    Project: ./.claude/vault/index.md          │
 │                                                               │
-│  PostToolUse  → 📝 Smart Reminders (v1.6.8)                   │
+│  PostToolUse  → 📝 Smart Reminders (v1.6.9)                   │
 │                 LARGE CHANGE: >20 lines = immediate remind    │
 │                 1st edit: "Document your PLAN first"          │
 │                 2nd edit: "Multi-step task - track progress"  │
@@ -957,7 +957,7 @@ Maximum in context at any time:
 └──────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────┐
-│                    PROJECT HOOKS (v1.6.8)                     │
+│                    PROJECT HOOKS (v1.6.9)                     │
 │              .claude/settings.json                            │
 ├──────────────────────────────────────────────────────────────┤
 │                                                               │
