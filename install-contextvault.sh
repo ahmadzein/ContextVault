@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.7.3"
+VERSION="1.7.4"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -667,6 +667,10 @@ docs_modified=0
 if [ "$session_start" -gt 0 ]; then
     [ -d "$PROJECT_VAULT" ] && docs_modified=$((docs_modified + $(find "$PROJECT_VAULT" -maxdepth 1 -name "P*.md" -newermt "@$session_start" 2>/dev/null | wc -l)))
     [ -d "$GLOBAL_VAULT" ] && docs_modified=$((docs_modified + $(find "$GLOBAL_VAULT" -maxdepth 1 -name "G*.md" -newermt "@$session_start" 2>/dev/null | wc -l)))
+else
+    # BUG FIX v1.7.4: Fallback when no session file - check docs modified in last 30 minutes
+    [ -d "$PROJECT_VAULT" ] && docs_modified=$((docs_modified + $(find "$PROJECT_VAULT" -maxdepth 1 -name "P*.md" -mmin -30 2>/dev/null | wc -l)))
+    [ -d "$GLOBAL_VAULT" ] && docs_modified=$((docs_modified + $(find "$GLOBAL_VAULT" -maxdepth 1 -name "G*.md" -mmin -30 2>/dev/null | wc -l)))
 fi
 
 # BLOCK if ANY code changes but NO documentation

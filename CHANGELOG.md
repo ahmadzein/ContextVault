@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.4] - 2026-01-25
+
+### Fixed
+- **Stop Enforcer Session Fallback** - Bug where `docs_modified` was always 0 when no session file
+  - When `session_start = 0` (no session file found), the `find -newermt` never ran
+  - Now falls back to checking docs modified in last 30 minutes (`-mmin -30`)
+  - Prevents false blocking when session files are missing
+
+### Why This Was Needed
+Investigation revealed that when sessions continued from context compaction, the session file from
+the previous conversation was already cleaned up. This caused the stop enforcer to report 0 docs
+modified even when vault files had been edited.
+
+---
+
 ## [1.7.3] - 2026-01-25
 
 ### Added
