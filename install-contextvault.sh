@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.7.1"
+VERSION="1.7.2"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -1165,7 +1165,7 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.7.1
+**Version:** 1.7.2
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
 
@@ -1344,6 +1344,36 @@ Large file (>50 lines) = MANDATORY STOP & DOCUMENT
 ❌ NEVER create duplicates (same topic, different doc)
 ❌ NEVER append contradicting info (replace outdated info)
 ❌ NEVER load multiple docs "just in case"
+❌ NEVER REPLACE content when editing - ALWAYS APPEND (see below)
+```
+
+---
+
+## ⚠️ CRITICAL: APPEND, NEVER REPLACE
+
+```
+╔═══════════════════════════════════════════════════════════════════╗
+║  WHEN EDITING DOCUMENTS - ESPECIALLY HISTORY SECTIONS:            ║
+║                                                                   ║
+║  ❌ WRONG: Replace existing lines with new content                ║
+║  ✅ RIGHT: Keep ALL existing lines, ADD new lines below           ║
+║                                                                   ║
+║  EXAMPLE - Adding to History:                                     ║
+║                                                                   ║
+║  old_string:                                                      ║
+║    | 2026-01-25 | Did thing A |                                   ║
+║    | 2026-01-25 | Did thing B |                                   ║
+║    ---                         ← Include the ending marker        ║
+║                                                                   ║
+║  new_string:                                                      ║
+║    | 2026-01-25 | Did thing A |  ← KEEP existing                  ║
+║    | 2026-01-25 | Did thing B |  ← KEEP existing                  ║
+║    | 2026-01-25 | Did thing C |  ← ADD new                        ║
+║    ---                                                            ║
+║                                                                   ║
+║  ⚠️  If you lose information while editing, you MUST restore it! ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
 ```
 
 ---
@@ -1359,6 +1389,7 @@ Large file (>50 lines) = MANDATORY STOP & DOCUMENT
 ✅ ALWAYS keep docs under 100 lines
 ✅ ALWAYS keep summaries under 15 words
 ✅ ALWAYS confirm: "Documented to [ID]" (don't ask, just inform)
+✅ ALWAYS APPEND when editing - include ALL existing content in old_string
 ```
 
 ---
@@ -1833,7 +1864,8 @@ This is an independent implementation and is not affiliated with or endorsed by 
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.7.1 | $(date +%Y-%m-%d) | /ctx-plan + archive mechanism for historical content |
+| 1.7.2 | $(date +%Y-%m-%d) | Core rule: APPEND, NEVER REPLACE - prevents info loss |
+| 1.7.1 | 2026-01-25 | /ctx-plan + archive mechanism for historical content |
 | 1.7.0 | 2026-01-25 | Smart detection - suggests right command for your work |
 | 1.6.9 | 2026-01-25 | BLOCKING PreToolUse - Mid-session enforcement |
 | 1.6.8 | 2026-01-19 | More aggressive Stop hook enforcement |

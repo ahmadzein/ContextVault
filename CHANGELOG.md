@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.2] - 2026-01-25
+
+### Added
+- **Core Rule: APPEND, NEVER REPLACE** - Prevents accidental info loss when editing
+  - New section in CLAUDE.md with visual guide
+  - Added to NEVER/ALWAYS rules
+  - Created G002_editing_rules.md global doc for persistence
+
+### Why This Was Needed
+During v1.7.1 implementation, rapid editing caused 3 history entries to be accidentally
+replaced instead of appended. This rule ensures it never happens again.
+
+### The Rule
+When editing docs (especially History sections):
+- `old_string` MUST include ALL existing content being touched
+- `new_string` MUST include ALL that content PLUS new additions
+- NEVER select partial content to replace it
+
+---
+
 ## [1.7.1] - 2026-01-25
 
 ### Added
