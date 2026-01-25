@@ -1835,6 +1835,7 @@ Document to the RIGHT location:
 | `/ctx-error` | Document bug fixes and solutions |
 | `/ctx-decision` | Document architecture/design decisions |
 | `/ctx-plan` | Document multi-step implementation plans |
+| `/ctx-bootstrap` | Auto-scan codebase and generate docs |
 | `/ctx-snippet` | Save reusable code patterns |
 | `/ctx-intel` | Document codebase exploration findings |
 | `/ctx-handoff` | Create session handoff summary |
@@ -1873,6 +1874,10 @@ Document to the RIGHT location:
 │  🔍 EXPLORED THE CODEBASE?                                      │
 │     → /ctx-intel                                                │
 │     Documents: architecture, patterns, how things work          │
+│                                                                 │
+│  🚀 NEW PROJECT / NEED FULL DOCS?                               │
+│     → /ctx-bootstrap                                            │
+│     Auto-creates: architecture + feature docs for whole repo    │
 │                                                                 │
 │  ✨ BUILT A FEATURE/LEARNED SOMETHING?                          │
 │     → /ctx-doc                                                  │
@@ -2884,6 +2889,8 @@ When this command is invoked, display:
 │  ─────────────────────────────────────────────────────────────  │
 │  /ctx-handoff   Generate session handoff summary                 │
 │  /ctx-intel     Generate codebase intelligence file              │
+│  /ctx-bootstrap Auto-scan codebase and generate docs (NEW!)      │
+│  /ctx-plan      Document multi-step implementation plans         │
 │  /ctx-error     Capture error and solution to database           │
 │  /ctx-snippet   Save reusable code snippet with context          │
 │  /ctx-decision  Log decision with rationale and alternatives     │
