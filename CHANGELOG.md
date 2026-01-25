@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.6] - 2026-01-25
+
+### Fixed
+- **Hook Deduplication** - Claude Code runs hooks twice per tool use, causing counters to increment by 2
+  - Added deduplication using timestamp-based key tracking
+  - PreToolUse and PostToolUse now skip duplicate executions within same second
+  - DOC_THRESHOLD reverted from 4 to 2 (dedup handles double-run properly)
+  - Uses `/tmp/ctx-hook-seen` to track seen operations
+
+### Enhanced
+- **Smarter `/ctx-bootstrap` Detection** - Now parses actual code, not just directories
+  - Package.json dependency parsing for framework detection (React, Vue, Express, NestJS, Prisma, etc.)
+  - Code pattern grep commands for API routes, React components, database models, services
+  - Architecture template now shows "Detected From" column
+  - Feature template now includes "Patterns Detected" section
+
+---
+
 ## [1.7.5] - 2026-01-25
 
 ### Added
@@ -479,6 +497,13 @@ When editing docs (especially History sections):
 
 ---
 
+[1.7.6]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.7.6
+[1.7.5]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.7.5
+[1.7.4]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.7.4
+[1.7.3]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.7.3
+[1.7.2]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.7.2
+[1.7.1]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.7.1
+[1.7.0]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.7.0
 [1.6.9]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.9
 [1.6.8]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.8
 [1.6.7]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.6.7

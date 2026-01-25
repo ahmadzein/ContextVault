@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.7.5"
+VERSION="1.7.6"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -720,25 +720,28 @@ create_pre_tool_script() {
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault BLOCKING PreToolUse Hook v1.7.5
+# ContextVault BLOCKING PreToolUse Hook v1.7.6
 # BLOCKS further code changes until you document!
-# This forces mid-session documentation.
+# FIX: Deduplication for Claude Code double-execution bug
 
 EDIT_COUNT_FILE="/tmp/ctx-edit-count"
 WRITE_COUNT_FILE="/tmp/ctx-write-count"
-DOC_THRESHOLD=2  # Block after this many changes without docs
-
-# Get current counts
-edit_count=0
-write_count=0
-[ -f "$EDIT_COUNT_FILE" ] && edit_count=$(cat "$EDIT_COUNT_FILE" 2>/dev/null || echo "0")
-[ -f "$WRITE_COUNT_FILE" ] && write_count=$(cat "$WRITE_COUNT_FILE" 2>/dev/null || echo "0")
-total_changes=$((edit_count + write_count))
+DEDUP_FILE="/tmp/ctx-hook-seen"
+DOC_THRESHOLD=2  # Block after 2 changes (dedup now handles double-run)
 
 # Read input to get tool info
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | grep -o '"tool_name"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
 FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
+
+# DEDUPLICATION: Skip if we've seen this exact operation this second
+DEDUP_KEY="PRE_${TOOL_NAME}_${FILE_PATH}_$(date +%s)"
+if grep -qxF "$DEDUP_KEY" "$DEDUP_FILE" 2>/dev/null; then
+    exit 0  # Duplicate run, skip
+fi
+echo "$DEDUP_KEY" >> "$DEDUP_FILE"
+# Keep file small
+tail -50 "$DEDUP_FILE" 2>/dev/null > "$DEDUP_FILE.tmp" && mv "$DEDUP_FILE.tmp" "$DEDUP_FILE" 2>/dev/null
 
 # Allow documentation writes (vault files)
 if [[ "$FILE_PATH" == *"vault/"* ]] && [[ "$FILE_PATH" == *".md" ]]; then
@@ -756,6 +759,13 @@ is_code_file() {
 if ! is_code_file "$FILE_PATH"; then
     exit 0
 fi
+
+# Get current counts
+edit_count=0
+write_count=0
+[ -f "$EDIT_COUNT_FILE" ] && edit_count=$(cat "$EDIT_COUNT_FILE" 2>/dev/null || echo "0")
+[ -f "$WRITE_COUNT_FILE" ] && write_count=$(cat "$WRITE_COUNT_FILE" 2>/dev/null || echo "0")
+total_changes=$((edit_count + write_count))
 
 # BLOCK if too many changes without documentation
 if [ "$total_changes" -ge "$DOC_THRESHOLD" ]; then
@@ -776,27 +786,41 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the ctx-post-tool hook script (v1.7.5 - MORE AGGRESSIVE reminders)
+# Create the ctx-post-tool hook script (v1.7.6 - with deduplication fix)
 create_post_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault PostToolUse Hook v1.7.5
+# ContextVault PostToolUse Hook v1.7.6
 # SMART DETECTION: Suggests the RIGHT command for each situation
+# FIX: Deduplication for Claude Code double-execution bug
 
 EDIT_COUNT_FILE="/tmp/ctx-edit-count"
 WRITE_COUNT_FILE="/tmp/ctx-write-count"
 FIRST_EDIT_FILE="/tmp/ctx-first-edit-done"
 WORK_TYPE_FILE="/tmp/ctx-work-type"
+DEDUP_FILE="/tmp/ctx-hook-seen"
 [ ! -f "$EDIT_COUNT_FILE" ] && echo "0" > "$EDIT_COUNT_FILE"
 [ ! -f "$WRITE_COUNT_FILE" ] && echo "0" > "$WRITE_COUNT_FILE"
 
 INPUT=$(cat)
 
+# Extract tool info early for dedup check
 TOOL_NAME=$(echo "$INPUT" | grep -o '"tool_name"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
 FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
+
+# DEDUPLICATION: Skip if we've seen this exact operation this second
+DEDUP_KEY="POST_${TOOL_NAME}_${FILE_PATH}_$(date +%s)"
+if grep -qxF "$DEDUP_KEY" "$DEDUP_FILE" 2>/dev/null; then
+    exit 0  # Duplicate run, skip
+fi
+echo "$DEDUP_KEY" >> "$DEDUP_FILE"
+# Keep file small - only recent entries
+tail -50 "$DEDUP_FILE" 2>/dev/null > "$DEDUP_FILE.tmp" && mv "$DEDUP_FILE.tmp" "$DEDUP_FILE" 2>/dev/null
+
+# Extract command for Bash detection
 COMMAND=$(echo "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
 
 LINE_COUNT=$(echo "$INPUT" | grep -o '\\n' | wc -l | tr -d ' ')
@@ -4696,6 +4720,32 @@ Check if `.claude/vault/index.md` exists:
 - Django, Flask, FastAPI (Python)
 - Rails, Sinatra (Ruby)
 
+**SMART: Parse package.json dependencies (if exists):**
+
+Use Grep to detect actual frameworks:
+\`\`\`bash
+# Frontend detection
+grep -E '"(react|vue|angular|svelte)"' package.json  # → Frontend framework
+grep -E '"next"' package.json                        # → Next.js (React SSR)
+grep -E '"nuxt"' package.json                        # → Nuxt (Vue SSR)
+
+# Backend detection
+grep -E '"express"' package.json                     # → Express.js
+grep -E '"fastify"' package.json                     # → Fastify
+grep -E '"@nestjs/core"' package.json                # → Nest.js
+grep -E '"koa"' package.json                         # → Koa.js
+
+# Database/ORM detection
+grep -E '"prisma"|"@prisma"' package.json            # → Prisma ORM
+grep -E '"mongoose"' package.json                    # → MongoDB/Mongoose
+grep -E '"typeorm"' package.json                     # → TypeORM
+grep -E '"sequelize"' package.json                   # → Sequelize
+grep -E '"drizzle-orm"' package.json                 # → Drizzle ORM
+
+# Test framework detection
+grep -E '"jest"|"vitest"|"mocha"' package.json       # → Test framework
+\`\`\`
+
 ---
 
 ## Step 3: Scan Directory Structure
@@ -4732,15 +4782,42 @@ For each significant directory found, determine if it's a "feature":
 - Has index/main file, OR
 - Named after business domain (auth, users, payments, etc.)
 
-**Build feature list:**
-```
+**SMART: Scan code for patterns using Grep:**
+
+\`\`\`bash
+# API Routes Detection
+grep -rEl "app\.(get|post|put|delete|patch)\(" src/     # Express routes
+grep -rEl "@(Get|Post|Put|Delete|Controller)" src/      # NestJS/decorators
+grep -rEl "router\.(get|post|put|delete)" src/          # Router patterns
+
+# React Components Detection
+grep -rEl "export (default )?(function|const) [A-Z]" src/  # Function components
+grep -rEl "extends (React\.)?Component" src/               # Class components
+
+# Database Models Detection
+grep -rEl "^model [A-Z]" prisma/                         # Prisma models
+grep -rEl "new Schema\(\{" src/                          # Mongoose schemas
+grep -rEl "@Entity\(\)" src/                             # TypeORM entities
+grep -rEl "class .* extends Model" src/                  # Sequelize models
+
+# Service/Business Logic Detection
+grep -rEl "@Injectable\(\)" src/                         # NestJS services
+grep -rEl "class .*Service" src/                         # Service classes
+
+# Hooks Detection (React)
+grep -rEl "^export (const|function) use[A-Z]" src/       # Custom hooks
+\`\`\`
+
+**Build feature list from BOTH directories AND code patterns:**
+\`\`\`
 features_found = [
-  { name: "auth", path: "src/auth", files: 5 },
-  { name: "users", path: "src/users", files: 8 },
-  { name: "api", path: "src/api", files: 12 },
+  { name: "auth", path: "src/auth", files: 5, type: "module" },
+  { name: "users", path: "src/users", files: 8, type: "module" },
+  { name: "api-routes", path: "src/routes", files: 12, type: "api", patterns: ["express"] },
+  { name: "database", path: "prisma/schema.prisma", type: "database", patterns: ["prisma"] },
   ...
 ]
-```
+\`\`\`
 
 ---
 
@@ -4783,14 +4860,15 @@ Use the **Write tool** to create `.claude/vault/P001_architecture.md`:
 
 ## Tech Stack
 
-| Category | Technology |
-|----------|------------|
-| Language | [Primary language] |
-| Framework | [Main framework] |
-| Runtime | [Node/Python/etc] |
-| Package Manager | [npm/yarn/pip/etc] |
-| Database | [If detected] |
-| Testing | [Test framework] |
+| Category | Technology | Detected From |
+|----------|------------|---------------|
+| Language | [Primary language] | [file extensions] |
+| Framework | [Main framework] | [package.json deps] |
+| Runtime | [Node/Python/etc] | [config files] |
+| Package Manager | [npm/yarn/pip/etc] | [lock files] |
+| Database/ORM | [If detected] | [code patterns] |
+| Testing | [Test framework] | [package.json deps] |
+| API Style | [REST/GraphQL/tRPC] | [code patterns] |
 
 ---
 
@@ -4892,6 +4970,14 @@ Use the **Write tool** to create `.claude/vault/P[ID]_[feature_name].md`:
 
 - **[Component/Class/Function]**: [What it does]
 - **[Component/Class/Function]**: [What it does]
+
+---
+
+## Patterns Detected
+
+| Pattern | Location | Details |
+|---------|----------|---------|
+| [API routes/Components/Models] | [files] | [grep pattern matched] |
 
 ---
 
@@ -5067,7 +5153,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
 - Update index after EVERY change
 
 ### Commands
-`/ctx-doc` `/ctx-error` `/ctx-snippet` `/ctx-decision` `/ctx-intel` `/ctx-handoff` `/ctx-search` `/ctx-read`
+`/ctx-doc` `/ctx-error` `/ctx-snippet` `/ctx-decision` `/ctx-intel` `/ctx-handoff` `/ctx-search` `/ctx-read` `/ctx-bootstrap`
 ```
 
 ---
@@ -5212,9 +5298,9 @@ Updated:
 Key Features:
   Smart Detection - Suggests right command for your work
   /ctx-plan - Document multi-step tasks
+  /ctx-bootstrap - Auto-scan codebase (NEW!)
   Archive mechanism - Historical content preserved
-  APPEND vs ARCHIVE - Clear decision tree
-  24 slash commands total
+  25 slash commands total
 
 Your P### docs are SAFE!
 
@@ -5984,7 +6070,7 @@ check_and_restore_backup() {
             echo -e "${BOLD}📦 What was restored:${NC}"
             echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
             echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
-            echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(24 slash commands)${NC}"
+            echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(25 slash commands)${NC}"
             echo ""
             echo -e "${BOLD}🚀 Quick Start:${NC}"
             echo -e "   1. Start Claude Code: ${CYAN}claude${NC}"
@@ -6200,7 +6286,7 @@ install_contextvault() {
     echo -e "${BOLD}📦 What was installed:${NC}"
     echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
     echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
-    echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(24 slash commands)${NC}"
+    echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(25 slash commands)${NC}"
     echo -e "   ${CYAN}🪝${NC} ~/.claude/hooks/             ${DIM}(5 hook scripts)${NC}"
     echo -e "   ${CYAN}⚙️${NC} ~/.claude/settings.json      ${DIM}(Hook triggers)${NC}"
     echo ""
