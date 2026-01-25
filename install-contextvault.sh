@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.7.4"
+VERSION="1.7.5"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -600,14 +600,14 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the BLOCKING Stop enforcer hook (v1.7.4 - Forces documentation before stopping)
+# Create the BLOCKING Stop enforcer hook (v1.7.5 - Forces documentation before stopping)
 create_stop_enforcer_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-stop-enforcer.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault BLOCKING Stop Hook v1.7.4
+# ContextVault BLOCKING Stop Hook v1.7.5
 # CONTEXT-AWARE: Suggests the RIGHT command based on what you did
 # Reads work type tracking to give intelligent recommendations
 
@@ -668,13 +668,13 @@ if [ "$session_start" -gt 0 ]; then
     [ -d "$PROJECT_VAULT" ] && docs_modified=$((docs_modified + $(find "$PROJECT_VAULT" -maxdepth 1 -name "P*.md" -newermt "@$session_start" 2>/dev/null | wc -l)))
     [ -d "$GLOBAL_VAULT" ] && docs_modified=$((docs_modified + $(find "$GLOBAL_VAULT" -maxdepth 1 -name "G*.md" -newermt "@$session_start" 2>/dev/null | wc -l)))
 else
-    # BUG FIX v1.7.4: Fallback when no session file - check docs modified in last 30 minutes
+    # BUG FIX v1.7.5: Fallback when no session file - check docs modified in last 30 minutes
     [ -d "$PROJECT_VAULT" ] && docs_modified=$((docs_modified + $(find "$PROJECT_VAULT" -maxdepth 1 -name "P*.md" -mmin -30 2>/dev/null | wc -l)))
     [ -d "$GLOBAL_VAULT" ] && docs_modified=$((docs_modified + $(find "$GLOBAL_VAULT" -maxdepth 1 -name "G*.md" -mmin -30 2>/dev/null | wc -l)))
 fi
 
 # BLOCK if ANY code changes but NO documentation
-# v1.7.4: Context-aware blocking with smart command suggestions
+# v1.7.5: Context-aware blocking with smart command suggestions
 if [ "$total_changes" -gt 0 ] && [ "$docs_modified" -eq 0 ]; then
     # Build context-aware reason message
     reason="🛑 BLOCKED: You made code changes but haven't documented!\n\n"
@@ -713,14 +713,14 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the BLOCKING PreToolUse hook (v1.7.4 - Blocks further edits until documented)
+# Create the BLOCKING PreToolUse hook (v1.7.5 - Blocks further edits until documented)
 create_pre_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-pre-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault BLOCKING PreToolUse Hook v1.7.4
+# ContextVault BLOCKING PreToolUse Hook v1.7.5
 # BLOCKS further code changes until you document!
 # This forces mid-session documentation.
 
@@ -776,14 +776,14 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the ctx-post-tool hook script (v1.7.4 - MORE AGGRESSIVE reminders)
+# Create the ctx-post-tool hook script (v1.7.5 - MORE AGGRESSIVE reminders)
 create_post_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault PostToolUse Hook v1.7.4
+# ContextVault PostToolUse Hook v1.7.5
 # SMART DETECTION: Suggests the RIGHT command for each situation
 
 EDIT_COUNT_FILE="/tmp/ctx-edit-count"
@@ -929,7 +929,7 @@ create_global_hooks() {
     create_post_tool_script
 
     # The hooks JSON content - uses full path with $HOME for proper expansion
-    # v1.7.4: BLOCKING PreToolUse + Stop hooks for mid-session AND end-session enforcement
+    # v1.7.5: BLOCKING PreToolUse + Stop hooks for mid-session AND end-session enforcement
     local hooks_json="{
   \"hooks\": {
     \"SessionStart\": [
@@ -1093,7 +1093,7 @@ create_global_hooks() {
     secure_file "$settings_file" 600
 }
 
-# Generate project hooks JSON for ctx-init (v1.7.4: includes BLOCKING PreToolUse + PostToolUse)
+# Generate project hooks JSON for ctx-init (v1.7.5: includes BLOCKING PreToolUse + PostToolUse)
 generate_project_hooks_json() {
     cat << 'HOOKS_EOF'
 {
@@ -1169,7 +1169,7 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.7.4
+**Version:** 1.7.5
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
 
@@ -1939,7 +1939,8 @@ This is an independent implementation and is not affiliated with or endorsed by 
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.7.4 | $(date +%Y-%m-%d) | Bug fix: Stop enforcer session fallback |
+| 1.7.5 | $(date +%Y-%m-%d) | /ctx-bootstrap: Auto-scan codebase and generate docs |
+| 1.7.4 | 2026-01-25 | Bug fix: Stop enforcer session fallback |
 | 1.7.3 | 2026-01-25 | APPEND vs ARCHIVE decision tree with clear examples |
 | 1.7.2 | 2026-01-25 | Core rule: APPEND, NEVER REPLACE - prevents info loss |
 | 1.7.1 | 2026-01-25 | /ctx-plan + archive mechanism for historical content |
@@ -4620,6 +4621,357 @@ When all tasks are done:
 CMD_EOF
 }
 
+create_cmd_ctx_bootstrap() {
+    cat << 'CMD_EOF'
+---
+description: Auto-scan codebase and generate comprehensive documentation
+---
+
+# /ctx-bootstrap
+
+Crawl the entire codebase, detect features/modules, and automatically create complete documentation. Run this after `/ctx-init` to jumpstart your vault.
+
+## Usage
+
+```
+/ctx-bootstrap              # Auto-create all docs
+/ctx-bootstrap --interactive  # Ask before creating each doc
+```
+
+---
+
+## What This Creates
+
+| Document | Purpose |
+|----------|---------|
+| `P001_architecture.md` | Tech stack, structure, entry points |
+| `P00X_[feature].md` | One doc per feature/module detected |
+| Updates `index.md` | Adds all new entries automatically |
+
+---
+
+## CRITICAL INSTRUCTIONS
+
+**You MUST scan the codebase and create documentation automatically.**
+
+Check for `--interactive` flag in the user's command:
+- **Default (no flag)**: Create all docs automatically
+- **With `--interactive`**: Use AskUserQuestion for each feature found
+
+---
+
+## Step 1: Verify Vault Exists
+
+Check if `.claude/vault/index.md` exists:
+- If NO: Output "Run /ctx-init first!" and stop
+- If YES: Continue
+
+---
+
+## Step 2: Detect Project Type
+
+**Check for package/config files:**
+
+| File | Indicates |
+|------|-----------|
+| `package.json` | Node.js/JavaScript |
+| `requirements.txt` / `pyproject.toml` | Python |
+| `go.mod` | Go |
+| `Cargo.toml` | Rust |
+| `Gemfile` | Ruby |
+| `pom.xml` / `build.gradle` | Java |
+| `composer.json` | PHP |
+| `*.csproj` | C#/.NET |
+
+**Check for frameworks** (in package files):
+- React, Vue, Angular, Svelte (frontend)
+- Express, Fastify, Nest.js (Node backend)
+- Django, Flask, FastAPI (Python)
+- Rails, Sinatra (Ruby)
+
+---
+
+## Step 3: Scan Directory Structure
+
+Use Glob/Bash to list directories. Look for:
+
+**Standard directories to scan:**
+```
+src/          → Source code
+lib/          → Libraries
+app/          → Application code
+components/   → UI components
+services/     → Business logic
+api/          → API endpoints
+routes/       → Route handlers
+controllers/  → Controllers
+models/       → Data models
+utils/        → Utilities
+helpers/      → Helper functions
+hooks/        → Custom hooks (React)
+store/        → State management
+types/        → TypeScript types
+tests/        → Test files
+```
+
+---
+
+## Step 4: Identify Features/Modules
+
+For each significant directory found, determine if it's a "feature":
+
+**Feature = directory with:**
+- 3+ code files, OR
+- Has index/main file, OR
+- Named after business domain (auth, users, payments, etc.)
+
+**Build feature list:**
+```
+features_found = [
+  { name: "auth", path: "src/auth", files: 5 },
+  { name: "users", path: "src/users", files: 8 },
+  { name: "api", path: "src/api", files: 12 },
+  ...
+]
+```
+
+---
+
+## Step 5: Check Interactive Mode
+
+**If user included `--interactive` flag:**
+
+For EACH feature found, use AskUserQuestion:
+```
+"Document the [feature_name] module?"
+Options:
+- Yes, create P00X_[name].md
+- Skip this feature
+- Stop bootstrap (keep what's created so far)
+```
+
+**If no flag (default):** Create all docs automatically.
+
+---
+
+## Step 6: Create P001_architecture.md
+
+Use the **Write tool** to create `.claude/vault/P001_architecture.md`:
+
+```markdown
+# P001 - Project Architecture
+
+> **Status:** Active
+> **Created:** [TODAY]
+> **Last Updated:** [TODAY]
+> **Generated by:** /ctx-bootstrap
+
+---
+
+## Summary
+
+[1-2 sentences: What this project is, its main purpose]
+
+---
+
+## Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| Language | [Primary language] |
+| Framework | [Main framework] |
+| Runtime | [Node/Python/etc] |
+| Package Manager | [npm/yarn/pip/etc] |
+| Database | [If detected] |
+| Testing | [Test framework] |
+
+---
+
+## Project Structure
+
+```
+[directory tree of main folders]
+```
+
+### Key Directories
+
+| Directory | Purpose |
+|-----------|---------|
+| `src/` | [Purpose] |
+| `lib/` | [Purpose] |
+| [etc] | [Purpose] |
+
+---
+
+## Entry Points
+
+| Type | File | Description |
+|------|------|-------------|
+| Main | `[path]` | Application entry |
+| Config | `[path]` | Configuration |
+| Build | `[command]` | Build process |
+
+---
+
+## Features/Modules
+
+| Module | Location | Summary |
+|--------|----------|---------|
+| [Name] | `[path]` | [Brief description] |
+| [Name] | `[path]` | [Brief description] |
+
+---
+
+## Scripts/Commands
+
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | [Description] |
+| `npm test` | [Description] |
+
+---
+
+## History
+
+| Date | Change |
+|------|--------|
+| [TODAY] | Generated by /ctx-bootstrap |
+
+---
+```
+
+---
+
+## Step 7: Create Feature Documents
+
+For EACH feature identified in Step 4:
+
+**Get next available P### ID** (P002, P003, etc.)
+
+Use the **Write tool** to create `.claude/vault/P[ID]_[feature_name].md`:
+
+```markdown
+# P[ID] - [Feature Name] Module
+
+> **Status:** Active
+> **Created:** [TODAY]
+> **Last Updated:** [TODAY]
+> **Generated by:** /ctx-bootstrap
+
+---
+
+## Summary
+
+[1 sentence: What this module does]
+
+---
+
+## Location
+
+`[path/to/feature]`
+
+---
+
+## Files
+
+| File | Purpose |
+|------|---------|
+| `index.*` | [Entry point] |
+| `[file]` | [Purpose] |
+
+---
+
+## Key Components
+
+- **[Component/Class/Function]**: [What it does]
+- **[Component/Class/Function]**: [What it does]
+
+---
+
+## Dependencies
+
+- [What this module imports/uses]
+
+---
+
+## Used By
+
+- [What uses this module]
+
+---
+
+## History
+
+| Date | Change |
+|------|--------|
+| [TODAY] | Generated by /ctx-bootstrap |
+
+---
+```
+
+---
+
+## Step 8: Update Index
+
+Add ALL new documents to `.claude/vault/index.md`:
+
+| ID | Topic | Status | Summary |
+|----|-------|--------|---------|
+| P001 | Project Architecture | Active | Tech stack, structure, [X] modules |
+| P002 | [Feature] Module | Active | [Brief summary] |
+| P003 | [Feature] Module | Active | [Brief summary] |
+| ... | ... | ... | ... |
+
+Also add related terms to the "Related Terms Map":
+- Project name, tech stack keywords → P001
+- Feature names, related concepts → P00X
+
+---
+
+## Step 9: Output Summary
+
+```
+🚀 Bootstrap Complete!
+
+📊 Codebase Scanned:
+   • Project type: [Language/Framework]
+   • Directories scanned: [count]
+   • Features detected: [count]
+
+📄 Documents Created:
+   ✅ P001_architecture.md (Tech stack & structure)
+   ✅ P002_[feature].md
+   ✅ P003_[feature].md
+   [... list all ...]
+
+📋 Index Updated: [count] entries added
+
+💡 Next steps:
+   • Review generated docs for accuracy
+   • Run /ctx-doc to add details
+   • Run /ctx-intel for deeper analysis
+```
+
+---
+
+## When to Run
+
+- After `/ctx-init` on a new project
+- When joining an existing codebase
+- After major restructuring
+- To regenerate stale documentation
+
+---
+
+## Notes
+
+- Scans are read-only (doesn't modify code)
+- Generated docs are starting points - refine them
+- Re-running will detect new features (won't overwrite existing docs)
+- Use `--interactive` for selective documentation
+CMD_EOF
+}
+
 create_cmd_ctx_upgrade() {
     cat << 'CMD_EOF'
 ---
@@ -5774,6 +6126,7 @@ install_contextvault() {
         "ctx-snippet:📎"
         "ctx-decision:⚖️"
         "ctx-plan:📋"
+        "ctx-bootstrap:🚀"
         "ctx-upgrade:⬆️"
         "ctx-health:🏥"
         "ctx-note:📝"
@@ -5805,6 +6158,7 @@ install_contextvault() {
             ctx-snippet) create_cmd_ctx_snippet > "$COMMANDS_DIR/ctx-snippet.md" ;;
             ctx-decision) create_cmd_ctx_decision > "$COMMANDS_DIR/ctx-decision.md" ;;
             ctx-plan) create_cmd_ctx_plan > "$COMMANDS_DIR/ctx-plan.md" ;;
+            ctx-bootstrap) create_cmd_ctx_bootstrap > "$COMMANDS_DIR/ctx-bootstrap.md" ;;
             ctx-upgrade) create_cmd_ctx_upgrade > "$COMMANDS_DIR/ctx-upgrade.md" ;;
             ctx-health) create_cmd_ctx_health > "$COMMANDS_DIR/ctx-health.md" ;;
             ctx-note) create_cmd_ctx_note > "$COMMANDS_DIR/ctx-note.md" ;;
@@ -5819,7 +6173,7 @@ install_contextvault() {
     done
 
     echo ""
-    print_success "24 commands installed"
+    print_success "25 commands installed"
 
     # Install global hooks
     echo ""
@@ -5906,7 +6260,7 @@ uninstall_contextvault() {
         print_success "Removed vault directory"
     fi
 
-    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-plan ctx-upgrade; do
+    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-plan ctx-bootstrap ctx-upgrade; do
         if [ -f "$COMMANDS_DIR/$cmd.md" ]; then
             rm "$COMMANDS_DIR/$cmd.md"
         fi
@@ -5949,10 +6303,10 @@ check_status() {
     if [ -d "$COMMANDS_DIR" ]; then
         print_success "Commands directory exists"
         local cmd_count=0
-        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-plan ctx-upgrade; do
+        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-plan ctx-bootstrap ctx-upgrade ctx-health ctx-note ctx-changelog ctx-link ctx-quiz ctx-explain; do
             [ -f "$COMMANDS_DIR/$cmd.md" ] && ((cmd_count++))
         done
-        [ $cmd_count -eq 17 ] && print_success "  └── All 17 commands ✓" || print_warning "  └── $cmd_count/17 commands"
+        [ $cmd_count -eq 25 ] && print_success "  └── All 25 commands ✓" || print_warning "  └── $cmd_count/25 commands"
     else
         print_error "Commands directory not found"
         installed=false

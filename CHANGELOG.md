@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.5] - 2026-01-25
+
+### Added
+- **`/ctx-bootstrap` Command** - Auto-scan codebase and generate comprehensive documentation
+  - Crawls entire codebase structure automatically
+  - Detects language, framework, and dependencies
+  - Identifies features/modules (components, services, api, etc.)
+  - Auto-creates `P001_architecture.md` + `P00X_[feature].md` for each feature
+  - Supports `--interactive` flag to ask before creating each doc
+  - Updates index.md with all new entries
+
+### Changed
+- Command count: 24 → 25
+- Fixed status check command count (was outdated at 17)
+
+### When to Use
+Run `/ctx-bootstrap` after `/ctx-init` to jumpstart documentation on any codebase.
+
+---
+
 ## [1.7.4] - 2026-01-25
 
 ### Fixed
