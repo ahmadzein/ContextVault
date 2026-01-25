@@ -20,7 +20,7 @@
 
 **Give Claude Code a persistent memory across ALL your projects** 🧠
 
-[![Version](https://img.shields.io/badge/version-1.7.2-blue.svg)](https://github.com/ahmadzein/ContextVault)
+[![Version](https://img.shields.io/badge/version-1.7.3-blue.svg)](https://github.com/ahmadzein/ContextVault)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude-Code-blueviolet)](https://claude.ai)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ahmadzein/ContextVault/pulls)
@@ -242,6 +242,7 @@ Never lose your docs
 │   ├── ctx-error.md             # v1.5.2
 │   ├── ctx-snippet.md           # v1.5.2
 │   ├── ctx-decision.md          # v1.5.2
+│   ├── ctx-plan.md              # v1.7.1
 │   ├── ctx-upgrade.md           # v1.5.3
 │   ├── ctx-health.md            # NEW in v1.6.0
 │   ├── ctx-note.md              # NEW in v1.6.0
@@ -276,7 +277,7 @@ your-project/
 
 ## 🎮 Commands Reference
 
-After installation, you get **23 powerful slash commands** in Claude Code:
+After installation, you get **24 powerful slash commands** in Claude Code:
 
 ### 🏠 Setup & Status
 
@@ -310,7 +311,7 @@ After installation, you get **23 powerful slash commands** in Claude Code:
 | `/ctx-share` | 📤 Export vault to ZIP (with `-upload` for link) | Share knowledge with team |
 | `/ctx-import` | 📥 Import vault from ZIP | Receive shared knowledge |
 
-### 🧠 Session & Codebase (v1.5.2)
+### 🧠 Session & Codebase
 
 | Command | Description | When to Use |
 |---------|-------------|-------------|
@@ -319,6 +320,7 @@ After installation, you get **23 powerful slash commands** in Claude Code:
 | `/ctx-error` | 🐛 Capture error and solution | After fixing a tricky bug |
 | `/ctx-snippet` | 📎 Save reusable code snippet | Found code worth reusing |
 | `/ctx-decision` | ⚖️ Log decision with rationale | Made architectural choice |
+| `/ctx-plan` | 📋 Document multi-step plan | Working on complex multi-task work |
 
 ### 🏥 Vault Maintenance (NEW in v1.6.0!)
 

@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.7.2"
+VERSION="1.7.3"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -1165,7 +1165,7 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.7.2
+**Version:** 1.7.3
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
 
@@ -1423,9 +1423,44 @@ When you find a related doc exists, UPDATE it like this:
 
 ---
 
-## 📦 HOW TO ARCHIVE REMOVED CONTENT
+## 📦 EDITING DECISION TREE: APPEND vs ARCHIVE
 
-When removing significant content (features changed, approaches abandoned), DON'T just delete - ARCHIVE it:
+```
+╔═══════════════════════════════════════════════════════════════════╗
+║  WHAT KIND OF CHANGE ARE YOU MAKING?                              ║
+╠═══════════════════════════════════════════════════════════════════╣
+║                                                                   ║
+║  ┌─────────────────────────────────────────────────────────────┐  ║
+║  │ ADDING new functionality?                                   │  ║
+║  │ UPDATING without removing behavior?                         │  ║
+║  │ ENHANCING existing feature?                                 │  ║
+║  └─────────────────────────────────────────────────────────────┘  ║
+║                           ↓                                       ║
+║                    ✅ APPEND LINES                                ║
+║                    Keep ALL existing content                      ║
+║                    Add new lines below                            ║
+║                                                                   ║
+║  ─────────────────────────────────────────────────────────────    ║
+║                                                                   ║
+║  ┌─────────────────────────────────────────────────────────────┐  ║
+║  │ REMOVING a feature/behavior?                                │  ║
+║  │ REPLACING old approach with new?                            │  ║
+║  │ DEPRECATING functionality?                                  │  ║
+║  └─────────────────────────────────────────────────────────────┘  ║
+║                           ↓                                       ║
+║                    📦 ARCHIVE + NOTE                              ║
+║                    1. Move OLD details to archive/                ║
+║                    2. Add note: "Archived: [date] - [what]"       ║
+║                    3. Write NEW behavior in main doc              ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## 📦 HOW TO ARCHIVE (When Removing/Replacing)
+
+When removing behavior or replacing functionality, DON'T just delete - ARCHIVE it:
 
 ```
 1. IDENTIFY what's being removed:
@@ -1474,6 +1509,42 @@ When removing significant content (features changed, approaches abandoned), DON'
 **Why Archive?**
 - Keeps main vault LEAN (less context to load)
 - Historical details still ACCESSIBLE if needed
+- Documents WHY things changed
+
+---
+
+## 📝 EXAMPLES: APPEND vs ARCHIVE
+
+**Scenario 1: ADDING functionality (use APPEND)**
+```markdown
+# Before:
+- Feature does A and B
+
+# After (APPEND - keep existing, add new):
+- Feature does A and B        ← KEPT
+- Feature now also does C     ← ADDED
+```
+
+**Scenario 2: REMOVING/REPLACING behavior (use ARCHIVE)**
+```markdown
+# Before (in main doc):
+- Feature does A, B, and C
+- Implementation uses approach X
+- [50 lines of details about X]
+
+# After (in main doc - lean):
+- Feature now does D and E (v2.0)
+- Archived: 2026-01-25 - v1.0 behavior (A,B,C with approach X)
+
+# In archive/P001_feature.md:
+## Archived 2026-01-25
+**Reason:** v2.0 rewrite - changed from A,B,C to D,E
+
+### Old v1.0 Behavior
+- Feature did A, B, and C
+- Implementation used approach X
+- [50 lines of details preserved here]
+```
 - Documents WHY things changed
 
 ---
@@ -1864,7 +1935,8 @@ This is an independent implementation and is not affiliated with or endorsed by 
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.7.2 | $(date +%Y-%m-%d) | Core rule: APPEND, NEVER REPLACE - prevents info loss |
+| 1.7.3 | $(date +%Y-%m-%d) | APPEND vs ARCHIVE decision tree with clear examples |
+| 1.7.2 | 2026-01-25 | Core rule: APPEND, NEVER REPLACE - prevents info loss |
 | 1.7.1 | 2026-01-25 | /ctx-plan + archive mechanism for historical content |
 | 1.7.0 | 2026-01-25 | Smart detection - suggests right command for your work |
 | 1.6.9 | 2026-01-25 | BLOCKING PreToolUse - Mid-session enforcement |

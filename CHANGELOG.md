@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.3] - 2026-01-25
+
+### Added
+- **APPEND vs ARCHIVE Decision Tree** - Visual guide for choosing the right approach
+  - ADDING functionality → APPEND (keep all, add new lines)
+  - REMOVING/REPLACING behavior → ARCHIVE (move details to archive/, note in main)
+- **Clear Examples** for both scenarios showing before/after
+
+### Why This Was Needed
+User asked: "Is it clear when to APPEND vs when to ARCHIVE?"
+Answer: Now it is, with a decision tree and examples.
+
+---
+
 ## [1.7.2] - 2026-01-25
 
 ### Added
