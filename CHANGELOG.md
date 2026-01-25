@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.1] - 2026-01-25
+
+### Added
+- **`/ctx-plan` Command** - Document multi-step implementation plans
+  - Auto-suggested when TodoWrite creates 3+ items
+  - Tracks goals, tasks, progress, and related docs
+  - Auto-detects planning activity via PostToolUse hooks
+- **Archive Mechanism** - Don't lose historical content when updating docs
+  - Removed content moves to `archive/[SAME_FILENAME]`
+  - Main doc stays lean with "Archived: [date]" reference
+  - Historical details accessible but out of main context
+
+### Changed
+- **PostToolUse now monitors TodoWrite** - Detects multi-step tasks
+- **CLAUDE.md Template** - Added "How to Archive Removed Content" section
+- Command count: 23 → 24
+
+### Technical
+- New hook matcher: TodoWrite in PostToolUse
+- Work type tracking: "planning" added
+- Archive folder: `.claude/vault/archive/` (already created by installer)
+
+---
+
 ## [1.7.0] - 2026-01-25
 
 ### Added

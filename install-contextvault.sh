@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.7.0"
+VERSION="1.7.1"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -897,6 +897,14 @@ case "$TOOL_NAME" in
         track_work "exploration"
         remind "🔍 Exploration completed" "Document findings: /ctx-intel"
         ;;
+    "TodoWrite")
+        # Count todos in the input (detect multiple items)
+        TODO_COUNT=$(echo "$INPUT" | grep -o '"content"' | wc -l | tr -d ' ')
+        if [ "$TODO_COUNT" -ge 3 ]; then
+            track_work "planning"
+            remind "📋 MULTI-STEP TASK ($TODO_COUNT items)" "Document your plan: /ctx-plan"
+        fi
+        ;;
 esac
 exit 0
 SCRIPT_EOF
@@ -993,6 +1001,15 @@ create_global_hooks() {
       },
       {
         \"matcher\": \"Task\",
+        \"hooks\": [
+          {
+            \"type\": \"command\",
+            \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\"
+          }
+        ]
+      },
+      {
+        \"matcher\": \"TodoWrite\",
         \"hooks\": [
           {
             \"type\": \"command\",
@@ -1148,7 +1165,7 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.7.0
+**Version:** 1.7.1
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
 
@@ -1372,6 +1389,61 @@ When you find a related doc exists, UPDATE it like this:
 - 2026-01-18: Added password reset flow   ← LOG THE CHANGE
 - 2026-01-15: Initial auth documentation
 ```
+
+---
+
+## 📦 HOW TO ARCHIVE REMOVED CONTENT
+
+When removing significant content (features changed, approaches abandoned), DON'T just delete - ARCHIVE it:
+
+```
+1. IDENTIFY what's being removed:
+   → Feature details no longer relevant
+   → Approaches that were abandoned
+   → Old implementations replaced by new
+
+2. MOVE to archive file:
+   → Location: ./.claude/vault/archive/[SAME_FILENAME]
+   → Example: P001_auth.md → archive/P001_auth.md
+
+3. FORMAT the archived content:
+   Add to archive file with date header:
+
+   ## Archived [DATE]
+   **Reason:** [Why this was removed]
+
+   [Full content that was removed]
+
+   ---
+
+4. NOTE in main document:
+   Add brief reference: "Archived: [date] - [what]"
+
+5. KEEP main doc lean:
+   Only current, relevant information in context
+```
+
+**Example:**
+```markdown
+# In main doc (P001_feature.md):
+## Current Implementation
+- Feature now does X and Y (v2.0)
+- Archived: 2026-01-25 - old v1.0 implementation details
+
+# In archive/P001_feature.md:
+## Archived 2026-01-25
+**Reason:** Feature rewritten for v2.0
+
+### Old v1.0 Implementation
+- Feature did A, B, and C
+- Used approach X because...
+[Full details preserved here]
+```
+
+**Why Archive?**
+- Keeps main vault LEAN (less context to load)
+- Historical details still ACCESSIBLE if needed
+- Documents WHY things changed
 
 ---
 
@@ -1656,6 +1728,7 @@ Document to the RIGHT location:
 | `/ctx-doc` | Quick document after task |
 | `/ctx-error` | Document bug fixes and solutions |
 | `/ctx-decision` | Document architecture/design decisions |
+| `/ctx-plan` | Document multi-step implementation plans |
 | `/ctx-snippet` | Save reusable code patterns |
 | `/ctx-intel` | Document codebase exploration findings |
 | `/ctx-handoff` | Create session handoff summary |
@@ -1682,6 +1755,10 @@ Document to the RIGHT location:
 │  🤔 MADE A DECISION?                                            │
 │     → /ctx-decision                                             │
 │     Documents: options considered, why you chose, trade-offs    │
+│                                                                 │
+│  📋 WORKING ON MULTI-STEP TASK?                                 │
+│     → /ctx-plan                                                 │
+│     Documents: goals, tasks, progress tracking                  │
 │                                                                 │
 │  📦 CREATED UTILITY/HELPER CODE?                                │
 │     → /ctx-snippet                                              │
@@ -1756,7 +1833,8 @@ This is an independent implementation and is not affiliated with or endorsed by 
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.7.0 | $(date +%Y-%m-%d) | Smart detection - suggests right command for your work |
+| 1.7.1 | $(date +%Y-%m-%d) | /ctx-plan + archive mechanism for historical content |
+| 1.7.0 | 2026-01-25 | Smart detection - suggests right command for your work |
 | 1.6.9 | 2026-01-25 | BLOCKING PreToolUse - Mid-session enforcement |
 | 1.6.8 | 2026-01-19 | More aggressive Stop hook enforcement |
 | 1.6.7 | 2026-01-19 | BLOCKING Stop hook forces documentation |
@@ -4290,6 +4368,149 @@ Status: Active
 CMD_EOF
 }
 
+create_cmd_ctx_plan() {
+    cat << 'CMD_EOF'
+---
+description: Document implementation plan for multi-step tasks
+---
+
+# /ctx-plan
+
+Document your implementation plan when working on complex multi-step tasks. Tracks goals, tasks, progress, and related docs created during the plan.
+
+## Usage
+
+```
+/ctx-plan [task name]
+```
+
+---
+
+## When to Use
+
+- Starting work on multiple related tasks
+- User provided a list of features/changes
+- Complex implementation requiring coordination
+- When TodoWrite has 3+ items to track
+
+**NOTE:** This command is auto-suggested when hooks detect planning activity.
+
+---
+
+## Step 1: Determine Plan Name
+
+Extract a concise name from what's being planned:
+- "Add authentication system" → `auth_system`
+- "Refactor API endpoints" → `api_refactor`
+- "v2.0 features" → `v2_features`
+
+---
+
+## Step 2: Create/Update Plan Document
+
+Check if `.claude/vault/P###_plan_[name].md` exists:
+- If YES: Read and update progress
+- If NO: Create with next available P### ID
+
+Use the **Write tool** to create `.claude/vault/P[NEXT_ID]_plan_[name].md`:
+
+```markdown
+# P### - Plan: [Task Name]
+
+> **Status:** In Progress
+> **Created:** [TODAY]
+> **Last Updated:** [TODAY]
+
+---
+
+## Goals
+
+[What we're trying to achieve - 2-3 sentences max]
+
+---
+
+## Tasks
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | [Task description] | Pending | |
+| 2 | [Task description] | Pending | |
+| 3 | [Task description] | Pending | |
+
+**Status Legend:** Pending → In Progress → Done → Blocked
+
+---
+
+## Progress Log
+
+| Date | Update |
+|------|--------|
+| [TODAY] | Plan created with X tasks |
+
+---
+
+## Docs Created During This Plan
+
+| Doc | Purpose |
+|-----|---------|
+| (none yet) | |
+
+---
+
+## Notes
+
+[Any important context, constraints, or decisions]
+
+---
+```
+
+---
+
+## Step 3: Update Index
+
+Add the plan to `.claude/vault/index.md`:
+- ID: The P### you used
+- Topic: Plan: [name]
+- Status: In Progress
+- Summary: Planning [brief description], X tasks
+
+---
+
+## Step 4: Confirm Creation
+
+Output:
+```
+✅ Plan Created!
+
+📄 Saved to: .claude/vault/P###_plan_[name].md
+
+Tasks: X items tracked
+Status: In Progress
+
+💡 Update this plan as you complete tasks!
+💡 Link docs you create to this plan.
+```
+
+---
+
+## Updating Progress
+
+When completing tasks, update the plan:
+1. Change task status: Pending → Done
+2. Add progress log entry with date
+3. Link any new docs to "Docs Created" section
+
+---
+
+## Completing the Plan
+
+When all tasks are done:
+1. Change Status header to "Complete"
+2. Update index summary
+3. Final progress log entry
+CMD_EOF
+}
+
 create_cmd_ctx_upgrade() {
     cat << 'CMD_EOF'
 ---
@@ -5442,6 +5663,7 @@ install_contextvault() {
         "ctx-error:🐛"
         "ctx-snippet:📎"
         "ctx-decision:⚖️"
+        "ctx-plan:📋"
         "ctx-upgrade:⬆️"
         "ctx-health:🏥"
         "ctx-note:📝"
@@ -5472,6 +5694,7 @@ install_contextvault() {
             ctx-error) create_cmd_ctx_error > "$COMMANDS_DIR/ctx-error.md" ;;
             ctx-snippet) create_cmd_ctx_snippet > "$COMMANDS_DIR/ctx-snippet.md" ;;
             ctx-decision) create_cmd_ctx_decision > "$COMMANDS_DIR/ctx-decision.md" ;;
+            ctx-plan) create_cmd_ctx_plan > "$COMMANDS_DIR/ctx-plan.md" ;;
             ctx-upgrade) create_cmd_ctx_upgrade > "$COMMANDS_DIR/ctx-upgrade.md" ;;
             ctx-health) create_cmd_ctx_health > "$COMMANDS_DIR/ctx-health.md" ;;
             ctx-note) create_cmd_ctx_note > "$COMMANDS_DIR/ctx-note.md" ;;
@@ -5486,7 +5709,7 @@ install_contextvault() {
     done
 
     echo ""
-    print_success "23 commands installed"
+    print_success "24 commands installed"
 
     # Install global hooks
     echo ""
@@ -5573,7 +5796,7 @@ uninstall_contextvault() {
         print_success "Removed vault directory"
     fi
 
-    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-upgrade; do
+    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-plan ctx-upgrade; do
         if [ -f "$COMMANDS_DIR/$cmd.md" ]; then
             rm "$COMMANDS_DIR/$cmd.md"
         fi
@@ -5616,7 +5839,7 @@ check_status() {
     if [ -d "$COMMANDS_DIR" ]; then
         print_success "Commands directory exists"
         local cmd_count=0
-        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-upgrade; do
+        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-plan ctx-upgrade; do
             [ -f "$COMMANDS_DIR/$cmd.md" ] && ((cmd_count++))
         done
         [ $cmd_count -eq 17 ] && print_success "  └── All 17 commands ✓" || print_warning "  └── $cmd_count/17 commands"
