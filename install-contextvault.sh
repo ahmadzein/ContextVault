@@ -600,14 +600,14 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the BLOCKING Stop enforcer hook (v1.7.0 - Forces documentation before stopping)
+# Create the BLOCKING Stop enforcer hook (v1.7.3 - Forces documentation before stopping)
 create_stop_enforcer_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-stop-enforcer.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault BLOCKING Stop Hook v1.7.0
+# ContextVault BLOCKING Stop Hook v1.7.3
 # CONTEXT-AWARE: Suggests the RIGHT command based on what you did
 # Reads work type tracking to give intelligent recommendations
 
@@ -670,7 +670,7 @@ if [ "$session_start" -gt 0 ]; then
 fi
 
 # BLOCK if ANY code changes but NO documentation
-# v1.7.0: Context-aware blocking with smart command suggestions
+# v1.7.3: Context-aware blocking with smart command suggestions
 if [ "$total_changes" -gt 0 ] && [ "$docs_modified" -eq 0 ]; then
     # Build context-aware reason message
     reason="🛑 BLOCKED: You made code changes but haven't documented!\n\n"
@@ -709,14 +709,14 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the BLOCKING PreToolUse hook (v1.7.0 - Blocks further edits until documented)
+# Create the BLOCKING PreToolUse hook (v1.7.3 - Blocks further edits until documented)
 create_pre_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-pre-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault BLOCKING PreToolUse Hook v1.7.0
+# ContextVault BLOCKING PreToolUse Hook v1.7.3
 # BLOCKS further code changes until you document!
 # This forces mid-session documentation.
 
@@ -772,14 +772,14 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the ctx-post-tool hook script (v1.7.0 - MORE AGGRESSIVE reminders)
+# Create the ctx-post-tool hook script (v1.7.3 - MORE AGGRESSIVE reminders)
 create_post_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault PostToolUse Hook v1.7.0
+# ContextVault PostToolUse Hook v1.7.3
 # SMART DETECTION: Suggests the RIGHT command for each situation
 
 EDIT_COUNT_FILE="/tmp/ctx-edit-count"
@@ -925,7 +925,7 @@ create_global_hooks() {
     create_post_tool_script
 
     # The hooks JSON content - uses full path with $HOME for proper expansion
-    # v1.7.0: BLOCKING PreToolUse + Stop hooks for mid-session AND end-session enforcement
+    # v1.7.3: BLOCKING PreToolUse + Stop hooks for mid-session AND end-session enforcement
     local hooks_json="{
   \"hooks\": {
     \"SessionStart\": [
@@ -1089,7 +1089,7 @@ create_global_hooks() {
     secure_file "$settings_file" 600
 }
 
-# Generate project hooks JSON for ctx-init (v1.7.0: includes BLOCKING PreToolUse + PostToolUse)
+# Generate project hooks JSON for ctx-init (v1.7.3: includes BLOCKING PreToolUse + PostToolUse)
 generate_project_hooks_json() {
     cat << 'HOOKS_EOF'
 {
@@ -4836,20 +4836,21 @@ Then: `chmod +x .git/hooks/pre-commit`
 
 ## Step 5: Confirm Upgrade
 
-Output this:
+Output this (replace X.Y.Z with actual version from VERSION variable):
 ```
-ContextVault v1.7.0 Upgrade Complete!
+ContextVault vX.Y.Z Upgrade Complete!
 
 Updated:
-  ./CLAUDE.md              Stronger enforcement
-  .claude/settings.json    SessionStart + Stop + PreToolUse + PostToolUse hooks
+  ./CLAUDE.md              Latest instructions & rules
+  .claude/settings.json    All hooks (SessionStart, Stop, PreToolUse, PostToolUse)
   .git/hooks/pre-commit    Git reminder
 
-NEW in v1.7.0:
-  BLOCKING PreToolUse - Blocks further edits until you document!
-  After 2 code changes, Claude CANNOT make more until documenting
-  Mid-session enforcement is now REAL (not just reminders)
-  5 hook scripts: session-start, session-end, stop-enforcer, pre-tool, post-tool
+Key Features:
+  Smart Detection - Suggests right command for your work
+  /ctx-plan - Document multi-step tasks
+  Archive mechanism - Historical content preserved
+  APPEND vs ARCHIVE - Clear decision tree
+  24 slash commands total
 
 Your P### docs are SAFE!
 
@@ -5619,7 +5620,7 @@ check_and_restore_backup() {
             echo -e "${BOLD}📦 What was restored:${NC}"
             echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
             echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
-            echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(23 slash commands)${NC}"
+            echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(24 slash commands)${NC}"
             echo ""
             echo -e "${BOLD}🚀 Quick Start:${NC}"
             echo -e "   1. Start Claude Code: ${CYAN}claude${NC}"
@@ -5833,11 +5834,11 @@ install_contextvault() {
     echo -e "${BOLD}📦 What was installed:${NC}"
     echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
     echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
-    echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(23 slash commands)${NC}"
+    echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(24 slash commands)${NC}"
     echo -e "   ${CYAN}🪝${NC} ~/.claude/hooks/             ${DIM}(5 hook scripts)${NC}"
     echo -e "   ${CYAN}⚙️${NC} ~/.claude/settings.json      ${DIM}(Hook triggers)${NC}"
     echo ""
-    echo -e "${BOLD}🪝 Hooks installed (v1.7.0):${NC}"
+    echo -e "${BOLD}🪝 Hooks installed (v${VERSION}):${NC}"
     echo -e "   ${GREEN}SessionStart${NC}  → Reminds to read vault indexes"
     echo -e "   ${RED}PreToolUse${NC}    → BLOCKS edits after 2 undocumented changes!"
     echo -e "   ${GREEN}PostToolUse${NC}  → Reminds on every code change"
