@@ -1871,6 +1871,10 @@ PROJ_INDEX_EOF
 
 create_cmd_ctx_init() {
     cat << 'CMD_EOF'
+---
+description: Initialize ContextVault in current project
+---
+
 # /ctx-init
 
 Initialize ContextVault documentation system in the current project.
@@ -2301,6 +2305,10 @@ CMD_EOF
 create_cmd_ctx_status() {
     # Use unquoted CMD_EOF to allow VERSION substitution
     cat << CMD_EOF
+---
+description: Show vault status and statistics
+---
+
 # /ctx-status
 
 Show current ContextVault documentation system status with version and update check.
@@ -2383,6 +2391,10 @@ CMD_EOF
 
 create_cmd_ctx_mode() {
     cat << 'CMD_EOF'
+---
+description: Switch between local, global, or full mode
+---
+
 # /ctx-mode
 
 Toggle ContextVault mode and configure limits.
@@ -2511,6 +2523,10 @@ CMD_EOF
 
 create_cmd_ctx_help() {
     cat << 'CMD_EOF'
+---
+description: Show all ContextVault commands and usage
+---
+
 # /ctx-help
 
 Show all available ContextVault commands and quick reference.
@@ -2618,6 +2634,10 @@ CMD_EOF
 
 create_cmd_ctx_new() {
     cat << 'CMD_EOF'
+---
+description: Create a new document with guided routing
+---
+
 # /ctx-new
 
 Create a new ContextVault document with guided routing (global vs project).
@@ -2711,6 +2731,10 @@ CMD_EOF
 
 create_cmd_ctx_doc() {
     cat << 'CMD_EOF'
+---
+description: Quick document a learning, feature, or finding
+---
+
 # /ctx-doc
 
 Quick command to document current findings after completing a task.
@@ -2793,6 +2817,10 @@ CMD_EOF
 
 create_cmd_ctx_update() {
     cat << 'CMD_EOF'
+---
+description: Update an existing document by ID
+---
+
 # /ctx-update
 
 Update an existing ContextVault document.
@@ -2861,6 +2889,10 @@ CMD_EOF
 
 create_cmd_ctx_search() {
     cat << 'CMD_EOF'
+---
+description: Search across vault documents
+---
+
 # /ctx-search
 
 Search both global and project ContextVault indexes for a topic.
@@ -2929,6 +2961,10 @@ CMD_EOF
 
 create_cmd_ctx_read() {
     cat << 'CMD_EOF'
+---
+description: Read a document by ID
+---
+
 # /ctx-read
 
 Quick read a ContextVault document by ID.
@@ -2981,6 +3017,10 @@ CMD_EOF
 
 create_cmd_ctx_share() {
     cat << 'CMD_EOF'
+---
+description: Export vault docs for sharing
+---
+
 # /ctx-share
 
 Export ContextVault documents to a shareable ZIP file with optional cloud upload.
@@ -3266,6 +3306,10 @@ CMD_EOF
 
 create_cmd_ctx_import() {
     cat << 'CMD_EOF'
+---
+description: Import external documentation into vault
+---
+
 # /ctx-import
 
 Import ContextVault documents from a shared ZIP file.
@@ -3461,6 +3505,10 @@ CMD_EOF
 
 create_cmd_ctx_handoff() {
     cat << 'CMD_EOF'
+---
+description: Create session handoff summary for continuity
+---
+
 # /ctx-handoff
 
 Generate a session handoff summary before ending your work. This ensures the next session (or another team member) can pick up exactly where you left off.
@@ -3593,6 +3641,10 @@ CMD_EOF
 
 create_cmd_ctx_intel() {
     cat << 'CMD_EOF'
+---
+description: Document codebase exploration findings
+---
+
 # /ctx-intel
 
 Generate a codebase intelligence file that helps Claude understand the project structure instantly.
@@ -3783,6 +3835,10 @@ CMD_EOF
 
 create_cmd_ctx_error() {
     cat << 'CMD_EOF'
+---
+description: Document a bug fix or error resolution
+---
+
 # /ctx-error
 
 Capture an error and its solution for future reference. Build a searchable database of problems you've solved.
@@ -3919,6 +3975,10 @@ CMD_EOF
 
 create_cmd_ctx_snippet() {
     cat << 'CMD_EOF'
+---
+description: Save a useful code snippet
+---
+
 # /ctx-snippet
 
 Save a reusable code snippet with context about when and how to use it.
@@ -4009,6 +4069,10 @@ CMD_EOF
 
 create_cmd_ctx_decision() {
     cat << 'CMD_EOF'
+---
+description: Document an architectural or technical decision
+---
+
 # /ctx-decision
 
 Log a decision with its rationale and alternatives considered. Track WHY, not just WHAT.
@@ -4107,6 +4171,10 @@ CMD_EOF
 
 create_cmd_ctx_upgrade() {
     cat << 'CMD_EOF'
+---
+description: Upgrade ContextVault to latest version
+---
+
 # /ctx-upgrade
 
 Upgrade ContextVault in the current project to the latest version. Updates instructions and hooks while preserving your documents.
@@ -4346,6 +4414,10 @@ CMD_EOF
 
 create_cmd_ctx_health() {
     cat << 'CMD_EOF'
+---
+description: Check vault health and fix issues
+---
+
 # /ctx-health
 
 Diagnose ContextVault health issues. Finds stale docs, over-limit files, orphaned entries, and structural problems.
@@ -4444,6 +4516,10 @@ CMD_EOF
 
 create_cmd_ctx_note() {
     cat << 'CMD_EOF'
+---
+description: Add a quick note to existing document
+---
+
 # /ctx-note
 
 Quick one-liner notes without full document structure. For small learnings that don't need their own doc.
@@ -4537,6 +4613,10 @@ CMD_EOF
 
 create_cmd_ctx_changelog() {
     cat << 'CMD_EOF'
+---
+description: View ContextVault changelog and version history
+---
+
 # /ctx-changelog
 
 Generate a changelog from document history entries across all vault docs.
@@ -4619,6 +4699,10 @@ CMD_EOF
 
 create_cmd_ctx_link() {
     cat << 'CMD_EOF'
+---
+description: Link related documents together
+---
+
 # /ctx-link
 
 Analyze and create bidirectional links between related documents.
@@ -4713,6 +4797,10 @@ CMD_EOF
 
 create_cmd_ctx_quiz() {
     cat << 'CMD_EOF'
+---
+description: Test knowledge retention from vault docs
+---
+
 # /ctx-quiz
 
 Quiz yourself on project knowledge to verify documentation accuracy and recall.
@@ -4813,6 +4901,10 @@ CMD_EOF
 
 create_cmd_ctx_explain() {
     cat << 'CMD_EOF'
+---
+description: Explain a concept and save to vault
+---
+
 # /ctx-explain
 
 Generate a comprehensive project explanation from all documentation.
