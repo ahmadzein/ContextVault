@@ -600,14 +600,14 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the BLOCKING Stop enforcer hook (v1.7.3 - Forces documentation before stopping)
+# Create the BLOCKING Stop enforcer hook (v1.7.4 - Forces documentation before stopping)
 create_stop_enforcer_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-stop-enforcer.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault BLOCKING Stop Hook v1.7.3
+# ContextVault BLOCKING Stop Hook v1.7.4
 # CONTEXT-AWARE: Suggests the RIGHT command based on what you did
 # Reads work type tracking to give intelligent recommendations
 
@@ -674,7 +674,7 @@ else
 fi
 
 # BLOCK if ANY code changes but NO documentation
-# v1.7.3: Context-aware blocking with smart command suggestions
+# v1.7.4: Context-aware blocking with smart command suggestions
 if [ "$total_changes" -gt 0 ] && [ "$docs_modified" -eq 0 ]; then
     # Build context-aware reason message
     reason="🛑 BLOCKED: You made code changes but haven't documented!\n\n"
@@ -713,14 +713,14 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the BLOCKING PreToolUse hook (v1.7.3 - Blocks further edits until documented)
+# Create the BLOCKING PreToolUse hook (v1.7.4 - Blocks further edits until documented)
 create_pre_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-pre-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault BLOCKING PreToolUse Hook v1.7.3
+# ContextVault BLOCKING PreToolUse Hook v1.7.4
 # BLOCKS further code changes until you document!
 # This forces mid-session documentation.
 
@@ -776,14 +776,14 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the ctx-post-tool hook script (v1.7.3 - MORE AGGRESSIVE reminders)
+# Create the ctx-post-tool hook script (v1.7.4 - MORE AGGRESSIVE reminders)
 create_post_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault PostToolUse Hook v1.7.3
+# ContextVault PostToolUse Hook v1.7.4
 # SMART DETECTION: Suggests the RIGHT command for each situation
 
 EDIT_COUNT_FILE="/tmp/ctx-edit-count"
@@ -929,7 +929,7 @@ create_global_hooks() {
     create_post_tool_script
 
     # The hooks JSON content - uses full path with $HOME for proper expansion
-    # v1.7.3: BLOCKING PreToolUse + Stop hooks for mid-session AND end-session enforcement
+    # v1.7.4: BLOCKING PreToolUse + Stop hooks for mid-session AND end-session enforcement
     local hooks_json="{
   \"hooks\": {
     \"SessionStart\": [
@@ -1093,7 +1093,7 @@ create_global_hooks() {
     secure_file "$settings_file" 600
 }
 
-# Generate project hooks JSON for ctx-init (v1.7.3: includes BLOCKING PreToolUse + PostToolUse)
+# Generate project hooks JSON for ctx-init (v1.7.4: includes BLOCKING PreToolUse + PostToolUse)
 generate_project_hooks_json() {
     cat << 'HOOKS_EOF'
 {
@@ -1169,7 +1169,7 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.7.3
+**Version:** 1.7.4
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
 
@@ -1939,7 +1939,8 @@ This is an independent implementation and is not affiliated with or endorsed by 
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.7.3 | $(date +%Y-%m-%d) | APPEND vs ARCHIVE decision tree with clear examples |
+| 1.7.4 | $(date +%Y-%m-%d) | Bug fix: Stop enforcer session fallback |
+| 1.7.3 | 2026-01-25 | APPEND vs ARCHIVE decision tree with clear examples |
 | 1.7.2 | 2026-01-25 | Core rule: APPEND, NEVER REPLACE - prevents info loss |
 | 1.7.1 | 2026-01-25 | /ctx-plan + archive mechanism for historical content |
 | 1.7.0 | 2026-01-25 | Smart detection - suggests right command for your work |
