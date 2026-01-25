@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.6.9"
+VERSION="1.7.0"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -600,22 +600,23 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the BLOCKING Stop enforcer hook (v1.6.9 - Forces documentation before stopping)
+# Create the BLOCKING Stop enforcer hook (v1.7.0 - Forces documentation before stopping)
 create_stop_enforcer_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-stop-enforcer.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault BLOCKING Stop Hook v1.6.9
-# PREVENTS Claude from stopping until documentation is done
-# MORE AGGRESSIVE: Blocks after ANY code change without docs
+# ContextVault BLOCKING Stop Hook v1.7.0
+# CONTEXT-AWARE: Suggests the RIGHT command based on what you did
+# Reads work type tracking to give intelligent recommendations
 
 PROJECT_VAULT="./.claude/vault"
 GLOBAL_VAULT="$HOME/.claude/vault"
 EDIT_COUNT_FILE="/tmp/ctx-edit-count"
 WRITE_COUNT_FILE="/tmp/ctx-write-count"
 FIRST_EDIT_FILE="/tmp/ctx-first-edit-done"
+WORK_TYPE_FILE="/tmp/ctx-work-type"
 
 # Check code edits AND new file writes
 edit_count=0
@@ -623,6 +624,29 @@ write_count=0
 [ -f "$EDIT_COUNT_FILE" ] && edit_count=$(cat "$EDIT_COUNT_FILE" 2>/dev/null || echo "0")
 [ -f "$WRITE_COUNT_FILE" ] && write_count=$(cat "$WRITE_COUNT_FILE" 2>/dev/null || echo "0")
 total_changes=$((edit_count + write_count))
+
+# Read work types to give context-aware suggestions
+work_types=""
+suggested_cmd="/ctx-doc"
+suggested_desc="Document feature/learning"
+if [ -f "$WORK_TYPE_FILE" ]; then
+    work_types=$(cat "$WORK_TYPE_FILE" 2>/dev/null | sort | uniq | tr '\n' ' ')
+
+    # Determine best command based on work done (priority order)
+    if echo "$work_types" | grep -q "bugfix"; then
+        suggested_cmd="/ctx-error"
+        suggested_desc="Document the bug fix you made"
+    elif echo "$work_types" | grep -q "decision"; then
+        suggested_cmd="/ctx-decision"
+        suggested_desc="Document the decision you made"
+    elif echo "$work_types" | grep -q "snippet"; then
+        suggested_cmd="/ctx-snippet"
+        suggested_desc="Save the utility code for reuse"
+    elif echo "$work_types" | grep -q "exploration"; then
+        suggested_cmd="/ctx-intel"
+        suggested_desc="Document your codebase findings"
+    fi
+fi
 
 # Check session start time
 session_file=""
@@ -646,14 +670,22 @@ if [ "$session_start" -gt 0 ]; then
 fi
 
 # BLOCK if ANY code changes but NO documentation
-# v1.6.9: More aggressive - blocks after just 1 change
+# v1.7.0: Context-aware blocking with smart command suggestions
 if [ "$total_changes" -gt 0 ] && [ "$docs_modified" -eq 0 ]; then
-    cat << 'BLOCK_EOF'
-{
-  "decision": "block",
-  "reason": "🛑 BLOCKED: You made code changes but haven't documented!\n\n📊 This session: edits + new files, 0 docs created\n\n✅ You MUST document before ending:\n   /ctx-doc    - Document feature/learning\n   /ctx-error  - Document bug fix\n   /ctx-decision - Document architecture choice\n\n⚠️ Do NOT try to stop again until you create a P###_*.md or G###_*.md document!"
-}
-BLOCK_EOF
+    # Build context-aware reason message
+    reason="🛑 BLOCKED: You made code changes but haven't documented!\n\n"
+    reason+="📊 This session: $edit_count edits + $write_count new files, 0 docs created\n\n"
+    reason+="👉 BEST MATCH FOR YOUR WORK:\n"
+    reason+="   $suggested_cmd - $suggested_desc\n\n"
+    reason+="Other options:\n"
+    reason+="   /ctx-doc      - General documentation\n"
+    reason+="   /ctx-error    - Bug fix documentation\n"
+    reason+="   /ctx-decision - Architecture decisions\n"
+    reason+="   /ctx-snippet  - Reusable code patterns\n"
+    reason+="   /ctx-intel    - Codebase exploration notes\n\n"
+    reason+="⚠️ Create a P###_*.md or G###_*.md document to continue!"
+
+    printf '{\n  "decision": "block",\n  "reason": "%s"\n}' "$reason"
     exit 0
 fi
 
@@ -663,10 +695,11 @@ echo "ContextVault Session Complete"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Code changes: $total_changes"
 echo "  Docs created: $docs_modified"
+[ -n "$work_types" ] && echo "  Work types: $work_types"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Clean up
-rm -f "$EDIT_COUNT_FILE" "$WRITE_COUNT_FILE" "$FIRST_EDIT_FILE" /tmp/ctx-plan-reminded 2>/dev/null
+rm -f "$EDIT_COUNT_FILE" "$WRITE_COUNT_FILE" "$FIRST_EDIT_FILE" "$WORK_TYPE_FILE" /tmp/ctx-plan-reminded 2>/dev/null
 [ -n "$session_file" ] && rm -f "$session_file" 2>/dev/null
 
 exit 0
@@ -676,14 +709,14 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the BLOCKING PreToolUse hook (v1.6.9 - Blocks further edits until documented)
+# Create the BLOCKING PreToolUse hook (v1.7.0 - Blocks further edits until documented)
 create_pre_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-pre-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault BLOCKING PreToolUse Hook v1.6.9
+# ContextVault BLOCKING PreToolUse Hook v1.7.0
 # BLOCKS further code changes until you document!
 # This forces mid-session documentation.
 
@@ -739,19 +772,20 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the ctx-post-tool hook script (v1.6.9 - MORE AGGRESSIVE reminders)
+# Create the ctx-post-tool hook script (v1.7.0 - MORE AGGRESSIVE reminders)
 create_post_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault PostToolUse Hook v1.6.9
-# MORE AGGRESSIVE: Reminds on EVERY code change, tracks writes too
+# ContextVault PostToolUse Hook v1.7.0
+# SMART DETECTION: Suggests the RIGHT command for each situation
 
 EDIT_COUNT_FILE="/tmp/ctx-edit-count"
 WRITE_COUNT_FILE="/tmp/ctx-write-count"
 FIRST_EDIT_FILE="/tmp/ctx-first-edit-done"
+WORK_TYPE_FILE="/tmp/ctx-work-type"
 [ ! -f "$EDIT_COUNT_FILE" ] && echo "0" > "$EDIT_COUNT_FILE"
 [ ! -f "$WRITE_COUNT_FILE" ] && echo "0" > "$WRITE_COUNT_FILE"
 
@@ -771,11 +805,16 @@ remind() {
     echo "🚨━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━🚨"
 }
 
+# Track work type for context-aware suggestions
+track_work() {
+    echo "$1" >> "$WORK_TYPE_FILE"
+}
+
 # Reset ALL counters when documenting to vault
 if [[ "$FILE_PATH" == *"vault/"* ]] && [[ "$FILE_PATH" == *".md" ]]; then
     echo "0" > "$EDIT_COUNT_FILE"
     echo "0" > "$WRITE_COUNT_FILE"
-    rm -f "$FIRST_EDIT_FILE" 2>/dev/null
+    rm -f "$FIRST_EDIT_FILE" "$WORK_TYPE_FILE" 2>/dev/null
     exit 0
 fi
 
@@ -786,12 +825,28 @@ is_code_file() {
     esac
 }
 
+# Detect if file is a utility/helper (for /ctx-snippet suggestion)
+is_utility_file() {
+    case "$1" in
+        *util*|*helper*|*common*|*shared*|*lib/*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
 case "$TOOL_NAME" in
     "Write")
         if is_code_file "$FILE_PATH"; then
             WCOUNT=$(($(cat "$WRITE_COUNT_FILE" 2>/dev/null || echo "0") + 1))
             echo "$WCOUNT" > "$WRITE_COUNT_FILE"
-            remind "🆕 NEW FILE: $(basename "$FILE_PATH")" "STOP! Document this feature NOW: /ctx-doc"
+            FNAME=$(basename "$FILE_PATH")
+
+            if is_utility_file "$FILE_PATH"; then
+                track_work "snippet"
+                remind "🆕 UTILITY FILE: $FNAME" "Save as reusable pattern: /ctx-snippet"
+            else
+                track_work "feature"
+                remind "🆕 NEW FILE: $FNAME" "Document this feature: /ctx-doc"
+            fi
         fi
         ;;
     "Edit")
@@ -799,9 +854,9 @@ case "$TOOL_NAME" in
             COUNT=$(($(cat "$EDIT_COUNT_FILE" 2>/dev/null || echo "0") + 1))
             echo "$COUNT" > "$EDIT_COUNT_FILE"
 
-            # v1.6.9: ALWAYS remind on code changes (more aggressive)
             if [ "$LINE_COUNT" -gt 20 ]; then
-                remind "⚠️ LARGE CHANGE (~$LINE_COUNT lines)" "STOP NOW! Document feature: /ctx-doc"
+                track_work "feature"
+                remind "⚠️ LARGE CHANGE (~$LINE_COUNT lines)" "Document feature: /ctx-doc"
             elif [ ! -f "$FIRST_EDIT_FILE" ]; then
                 touch "$FIRST_EDIT_FILE"
                 remind "📝 Task started ($COUNT edit)" "Document your plan: /ctx-doc"
@@ -812,11 +867,35 @@ case "$TOOL_NAME" in
         ;;
     "Bash")
         CMD_LOWER=$(echo "$COMMAND" | tr '[:upper:]' '[:lower:]')
-        echo "$CMD_LOWER" | grep -qE '(npm test|yarn test|pnpm test|pytest|go test|cargo test|jest|vitest|mocha)' && remind "✅ Tests completed" "Document results: /ctx-doc or /ctx-error"
-        echo "$CMD_LOWER" | grep -qE '(npm run build|yarn build|pnpm build|make |cargo build|go build|tsc|webpack|vite build)' && remind "🔨 Build completed" "Document any issues: /ctx-error"
+
+        # Detect git commit with bug fix keywords
+        if echo "$CMD_LOWER" | grep -qE 'git commit'; then
+            if echo "$CMD_LOWER" | grep -qE '(fix|bug|error|issue|patch|hotfix|resolve)'; then
+                track_work "bugfix"
+                remind "🐛 BUG FIX COMMITTED" "Document the fix: /ctx-error"
+            elif echo "$CMD_LOWER" | grep -qE '(decide|choice|chose|option|vs|instead)'; then
+                track_work "decision"
+                remind "🤔 DECISION MADE" "Document the decision: /ctx-decision"
+            elif echo "$CMD_LOWER" | grep -qE '(feat|feature|add|new|implement)'; then
+                track_work "feature"
+                remind "✨ FEATURE COMMITTED" "Document the feature: /ctx-doc"
+            fi
+        fi
+
+        # Test detection
+        echo "$CMD_LOWER" | grep -qE '(npm test|yarn test|pnpm test|pytest|go test|cargo test|jest|vitest|mocha)' && {
+            track_work "test"
+            remind "✅ Tests completed" "Document results: /ctx-error (if fixed) or /ctx-doc"
+        }
+
+        # Build detection
+        echo "$CMD_LOWER" | grep -qE '(npm run build|yarn build|pnpm build|make |cargo build|go build|tsc|webpack|vite build)' && {
+            remind "🔨 Build completed" "Document any issues: /ctx-error"
+        }
         ;;
     "Task")
-        remind "🔍 Exploration completed" "Document findings: /ctx-doc or /ctx-intel"
+        track_work "exploration"
+        remind "🔍 Exploration completed" "Document findings: /ctx-intel"
         ;;
 esac
 exit 0
@@ -838,7 +917,7 @@ create_global_hooks() {
     create_post_tool_script
 
     # The hooks JSON content - uses full path with $HOME for proper expansion
-    # v1.6.9: BLOCKING PreToolUse + Stop hooks for mid-session AND end-session enforcement
+    # v1.7.0: BLOCKING PreToolUse + Stop hooks for mid-session AND end-session enforcement
     local hooks_json="{
   \"hooks\": {
     \"SessionStart\": [
@@ -993,7 +1072,7 @@ create_global_hooks() {
     secure_file "$settings_file" 600
 }
 
-# Generate project hooks JSON for ctx-init (v1.6.9: includes BLOCKING PreToolUse + PostToolUse)
+# Generate project hooks JSON for ctx-init (v1.7.0: includes BLOCKING PreToolUse + PostToolUse)
 generate_project_hooks_json() {
     cat << 'HOOKS_EOF'
 {
@@ -1069,7 +1148,7 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.6.9
+**Version:** 1.7.0
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
 
@@ -1574,13 +1653,54 @@ Document to the RIGHT location:
 |---------|-------------|
 | `/ctx-init` | Initialize ContextVault in current project |
 | `/ctx-status` | Show global and project status |
-| `/ctx-mode` | Toggle mode: full / local / global |
-| `/ctx-help` | Show all ContextVault commands |
-| `/ctx-new` | Create new document with routing |
 | `/ctx-doc` | Quick document after task |
-| `/ctx-update` | Update existing document by ID |
+| `/ctx-error` | Document bug fixes and solutions |
+| `/ctx-decision` | Document architecture/design decisions |
+| `/ctx-snippet` | Save reusable code patterns |
+| `/ctx-intel` | Document codebase exploration findings |
+| `/ctx-handoff` | Create session handoff summary |
 | `/ctx-search` | Search both indexes |
 | `/ctx-read` | Read document by ID |
+| `/ctx-update` | Update existing document by ID |
+| `/ctx-new` | Create new document with routing |
+| `/ctx-mode` | Toggle mode: full / local / global |
+| `/ctx-help` | Show all ContextVault commands |
+
+---
+
+## When to Use Which Command
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                CHOOSE THE RIGHT COMMAND                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  🐛 FIXED A BUG?                                                │
+│     → /ctx-error                                                │
+│     Documents: error message, root cause, solution              │
+│                                                                 │
+│  🤔 MADE A DECISION?                                            │
+│     → /ctx-decision                                             │
+│     Documents: options considered, why you chose, trade-offs    │
+│                                                                 │
+│  📦 CREATED UTILITY/HELPER CODE?                                │
+│     → /ctx-snippet                                              │
+│     Documents: reusable patterns for future use                 │
+│                                                                 │
+│  🔍 EXPLORED THE CODEBASE?                                      │
+│     → /ctx-intel                                                │
+│     Documents: architecture, patterns, how things work          │
+│                                                                 │
+│  ✨ BUILT A FEATURE/LEARNED SOMETHING?                          │
+│     → /ctx-doc                                                  │
+│     Documents: general knowledge, features, learnings           │
+│                                                                 │
+│  👋 ENDING YOUR SESSION?                                        │
+│     → /ctx-handoff                                              │
+│     Creates: summary for the next session to continue           │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -1636,7 +1756,8 @@ This is an independent implementation and is not affiliated with or endorsed by 
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.6.9 | $(date +%Y-%m-%d) | BLOCKING PreToolUse - Mid-session enforcement |
+| 1.7.0 | $(date +%Y-%m-%d) | Smart detection - suggests right command for your work |
+| 1.6.9 | 2026-01-25 | BLOCKING PreToolUse - Mid-session enforcement |
 | 1.6.8 | 2026-01-19 | More aggressive Stop hook enforcement |
 | 1.6.7 | 2026-01-19 | BLOCKING Stop hook forces documentation |
 | 1.6.0 | 2026-01-18 | Added 6 new commands (health, note, changelog, link, quiz, explain) |
@@ -4392,14 +4513,14 @@ Then: `chmod +x .git/hooks/pre-commit`
 
 Output this:
 ```
-ContextVault v1.6.9 Upgrade Complete!
+ContextVault v1.7.0 Upgrade Complete!
 
 Updated:
   ./CLAUDE.md              Stronger enforcement
   .claude/settings.json    SessionStart + Stop + PreToolUse + PostToolUse hooks
   .git/hooks/pre-commit    Git reminder
 
-NEW in v1.6.9:
+NEW in v1.7.0:
   BLOCKING PreToolUse - Blocks further edits until you document!
   After 2 code changes, Claude CANNOT make more until documenting
   Mid-session enforcement is now REAL (not just reminders)
@@ -5389,7 +5510,7 @@ install_contextvault() {
     echo -e "   ${CYAN}🪝${NC} ~/.claude/hooks/             ${DIM}(5 hook scripts)${NC}"
     echo -e "   ${CYAN}⚙️${NC} ~/.claude/settings.json      ${DIM}(Hook triggers)${NC}"
     echo ""
-    echo -e "${BOLD}🪝 Hooks installed (v1.6.9):${NC}"
+    echo -e "${BOLD}🪝 Hooks installed (v1.7.0):${NC}"
     echo -e "   ${GREEN}SessionStart${NC}  → Reminds to read vault indexes"
     echo -e "   ${RED}PreToolUse${NC}    → BLOCKS edits after 2 undocumented changes!"
     echo -e "   ${GREEN}PostToolUse${NC}  → Reminds on every code change"

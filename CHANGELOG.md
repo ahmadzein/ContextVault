@@ -7,7 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.6.9] - 2026-01-19
+## [1.7.0] - 2026-01-25
+
+### Added
+- **Smart Command Detection** - Hooks now suggest the RIGHT command for your work!
+  - Bug fix detected → suggests `/ctx-error`
+  - Decision keywords → suggests `/ctx-decision`
+  - Utility/helper files → suggests `/ctx-snippet`
+  - Exploration (Task tool) → suggests `/ctx-intel`
+  - New feature files → suggests `/ctx-doc`
+- **"When to Use Which Command" Guide** in CLAUDE.md
+  - Visual reference showing which command fits each situation
+  - Updated Available Commands table with all 14 commands
+
+### Changed
+- **Context-Aware Stop Enforcer** - Blocking messages now show:
+  - Exact counts: "3 edits + 1 new files"
+  - "BEST MATCH FOR YOUR WORK" with intelligent suggestion
+  - Priority: bugfix > decision > snippet > exploration > feature
+  - All available commands with descriptions
+- **Work Type Tracking** via `/tmp/ctx-work-type`
+  - PostToolUse records what type of work was done
+  - Stop hook reads this to make smart recommendations
+  - Cleaned up on session end
+
+### Technical
+- New tracker file: `/tmp/ctx-work-type` for work type detection
+- Git commit message parsing for fix/decision detection
+- `is_utility_file()` function detects util/helper/lib paths
+
+---
+
+## [1.6.9] - 2026-01-25
 
 ### Added
 - **BLOCKING PreToolUse Hook** - Blocks further code changes until you document!
