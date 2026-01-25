@@ -668,7 +668,7 @@ if [ "$session_start" -gt 0 ]; then
     [ -d "$PROJECT_VAULT" ] && docs_modified=$((docs_modified + $(find "$PROJECT_VAULT" -maxdepth 1 -name "P*.md" -newermt "@$session_start" 2>/dev/null | wc -l)))
     [ -d "$GLOBAL_VAULT" ] && docs_modified=$((docs_modified + $(find "$GLOBAL_VAULT" -maxdepth 1 -name "G*.md" -newermt "@$session_start" 2>/dev/null | wc -l)))
 else
-    # BUG FIX v1.7.5: Fallback when no session file - check docs modified in last 30 minutes
+    # BUG FIX v1.7.4: Fallback when no session file - check docs modified in last 30 minutes
     [ -d "$PROJECT_VAULT" ] && docs_modified=$((docs_modified + $(find "$PROJECT_VAULT" -maxdepth 1 -name "P*.md" -mmin -30 2>/dev/null | wc -l)))
     [ -d "$GLOBAL_VAULT" ] && docs_modified=$((docs_modified + $(find "$GLOBAL_VAULT" -maxdepth 1 -name "G*.md" -mmin -30 2>/dev/null | wc -l)))
 fi
@@ -6203,12 +6203,12 @@ install_contextvault() {
     echo -e "   ${GREEN}PostToolUse${NC}  → Reminds on every code change"
     echo -e "   ${RED}Stop${NC}          → BLOCKS session end until documented!"
     echo ""
-    echo -e "${BOLD}🎮 New in v1.7 (24 commands total):${NC}"
-    echo -e "   ${YELLOW}/ctx-plan${NC}      📋 Multi-step task plans ${DIM}(NEW!)${NC}"
+    echo -e "${BOLD}🎮 New in v1.7 (25 commands total):${NC}"
+    echo -e "   ${YELLOW}/ctx-bootstrap${NC} 🚀 Auto-scan codebase ${DIM}(NEW!)${NC}"
+    echo -e "   ${YELLOW}/ctx-plan${NC}      📋 Multi-step task plans"
     echo -e "   ${YELLOW}/ctx-error${NC}     🐛 Bug fix documentation"
     echo -e "   ${YELLOW}/ctx-decision${NC}  ⚖️  Architecture decisions"
-    echo -e "   ${YELLOW}/ctx-handoff${NC}   🤝 Session handoff summary"
-    echo -e "   ${YELLOW}/ctx-help${NC}      📖 See all 24 commands"
+    echo -e "   ${YELLOW}/ctx-help${NC}      📖 See all 25 commands"
     echo ""
     echo -e "${BOLD}🚀 Quick Start:${NC}"
     echo -e "   1. Start Claude Code: ${CYAN}claude${NC}"

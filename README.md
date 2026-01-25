@@ -20,7 +20,7 @@
 
 **Give Claude Code a persistent memory across ALL your projects** 🧠
 
-[![Version](https://img.shields.io/badge/version-1.7.3-blue.svg)](https://github.com/ahmadzein/ContextVault)
+[![Version](https://img.shields.io/badge/version-1.7.5-blue.svg)](https://github.com/ahmadzein/ContextVault)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude-Code-blueviolet)](https://claude.ai)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ahmadzein/ContextVault/pulls)
@@ -162,7 +162,7 @@ Global + Project knowledge
 <td align="center" width="25%">
 
 ### ⚡
-**23 Commands**
+**25 Commands**
 
 Full control at your fingertips
 
@@ -243,6 +243,7 @@ Never lose your docs
 │   ├── ctx-snippet.md           # v1.5.2
 │   ├── ctx-decision.md          # v1.5.2
 │   ├── ctx-plan.md              # v1.7.1
+│   ├── ctx-bootstrap.md         # v1.7.5 - Auto-scan codebase
 │   ├── ctx-upgrade.md           # v1.5.3
 │   ├── ctx-health.md            # NEW in v1.6.0
 │   ├── ctx-note.md              # NEW in v1.6.0
@@ -277,7 +278,7 @@ your-project/
 
 ## 🎮 Commands Reference
 
-After installation, you get **24 powerful slash commands** in Claude Code:
+After installation, you get **25 powerful slash commands** in Claude Code:
 
 ### 🏠 Setup & Status
 
@@ -321,6 +322,7 @@ After installation, you get **24 powerful slash commands** in Claude Code:
 | `/ctx-snippet` | 📎 Save reusable code snippet | Found code worth reusing |
 | `/ctx-decision` | ⚖️ Log decision with rationale | Made architectural choice |
 | `/ctx-plan` | 📋 Document multi-step plan | Working on complex multi-task work |
+| `/ctx-bootstrap` | 🚀 Auto-scan and document codebase | After /ctx-init, jumpstart documentation |
 
 ### 🏥 Vault Maintenance (NEW in v1.6.0!)
 
@@ -352,7 +354,7 @@ Usage: /ctx-help
 ```
 
 When you run this, you'll see a beautiful command reference card with:
-- All 23 commands and their purposes
+- All 25 commands and their purposes
 - Mode options explained
 - Quick reference for limits and rules
 - Routing guide (global vs project)
