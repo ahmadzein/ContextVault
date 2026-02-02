@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.3] - 2026-02-02
+
+### Added - Configurable Enforcement Levels
+- **Three presets**: `light`, `balanced` (default), `strict`
+  - `light`: No mid-work blocking, only Stop at session end
+  - `balanced`: Block after 8 edits across 2+ files if undocumented
+  - `strict`: Block after 4 edits across 2+ files if undocumented
+- **`/ctx-mode enforcement [level]`** to switch levels
+- **PostToolUse Edit/Write are blocking again** (threshold-based, configurable)
+- **ctx-upgrade asks enforcement preference** before applying
+
+---
+
 ## [1.8.2] - 2026-02-02
 
 ### Changed - Smart Blocking at Session End

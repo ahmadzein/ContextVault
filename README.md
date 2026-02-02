@@ -20,7 +20,7 @@
 
 **Give Claude Code a persistent memory across ALL your projects** 🧠
 
-[![Version](https://img.shields.io/badge/version-1.8.2-blue.svg)](https://github.com/ahmadzein/ContextVault)
+[![Version](https://img.shields.io/badge/version-1.8.3-blue.svg)](https://github.com/ahmadzein/ContextVault)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude-Code-blueviolet)](https://claude.ai)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ahmadzein/ContextVault/pulls)
@@ -221,7 +221,7 @@ Never lose your docs
 ~/.claude/
 ├── 📄 CLAUDE.md                 # Global instructions (all projects)
 ├── 📄 settings.json             # 🪝 Global hooks (SessionStart + Stop + PostToolUse)
-├── 📁 hooks/                    # Hook scripts (v1.8.2)
+├── 📁 hooks/                    # Hook scripts (v1.8.3)
 │   ├── ctx-session-start.sh    # Session start status
 │   ├── ctx-session-end.sh      # Session end reminder
 │   ├── ctx-stop-enforcer.sh    # Session summary & self-assessment
@@ -939,7 +939,7 @@ Maximum in context at any time:
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                   GLOBAL HOOKS (v1.8.2)                       │
+│                   GLOBAL HOOKS (v1.8.3)                       │
 │              ~/.claude/settings.json                          │
 ├──────────────────────────────────────────────────────────────┤
 │                                                               │
@@ -948,11 +948,13 @@ Maximum in context at any time:
 │                    Global:  ~/.claude/vault/index.md          │
 │                    Project: ./.claude/vault/index.md          │
 │                                                               │
-│  PostToolUse  → 📝 Completion-Triggered Reminders             │
-│                 TodoWrite: reminds when tasks done + code     │
-│                            was changed (once per session)     │
-│                 Git commit: reminds once per session          │
-│                 Edit/Write: silently tracks files (no noise)  │
+│  PostToolUse  → 📝 Configurable Enforcement (v1.8.3)          │
+│                 Edit/Write: BLOCKING (threshold-based)        │
+│                   light=off, balanced=8 edits, strict=4 edits│
+│                   Only blocks if zero docs + 2+ files        │
+│                 TodoWrite: non-blocking completion reminder   │
+│                 Bash: non-blocking git commit reminder        │
+│                 Set level: /ctx-mode enforcement [level]      │
 │                                                               │
 │  Stop         → 🛡️ Smart Blocking (significant work only)    │
 │                 5+ edits, 2+ files, no docs → blocks once    │
@@ -963,7 +965,7 @@ Maximum in context at any time:
 └──────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────┐
-│                   PROJECT HOOKS (v1.8.2)                      │
+│                   PROJECT HOOKS (v1.8.3)                      │
 │              .claude/settings.json                            │
 ├──────────────────────────────────────────────────────────────┤
 │                                                               │
@@ -971,8 +973,8 @@ Maximum in context at any time:
 │                 📖 Read: ./.claude/vault/index.md             │
 │                 🏷️  Use P### prefix for project docs          │
 │                                                               │
-│  PostToolUse  → 📝 Same as global (completion-triggered)      │
-│                 Ensures reminders work in all projects        │
+│  PostToolUse  → 📝 Same as global (configurable enforcement)  │
+│                 Edit/Write blocking, TodoWrite/Bash reminders │
 │                                                               │
 │  Stop         → 🛡️ Same as global (smart blocking)           │
 │                 Catches significant undocumented work         │

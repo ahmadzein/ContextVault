@@ -1,14 +1,10 @@
 # ContextVault Project Instructions
 
-## 🚨 CONTEXTVAULT - MANDATORY (DO NOT SKIP!) 🚨
-
-**STOP. READ THIS. FOLLOW IT.**
-
-### ⚡ AFTER EVERY TASK - DOCUMENT IMMEDIATELY ⚡
+## 📝 Document at Meaningful Milestones
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  COMPLETED A TASK? → DOCUMENT IT NOW!                           │
+│  AT NATURAL STOPPING POINTS — ASK YOURSELF:                     │
 │                                                                 │
 │  ✅ Fixed a bug?        → /ctx-error                            │
 │  ✅ Made a decision?    → /ctx-decision                         │
@@ -16,9 +12,16 @@
 │  ✅ Found useful code?  → /ctx-snippet                          │
 │  ✅ Explored codebase?  → /ctx-intel                            │
 │                                                                 │
-│  🚫 NEVER ask "Should I document?"                              │
-│  🚫 NEVER wait until later                                      │
-│  🚫 NEVER skip documentation                                    │
+│  WHEN to document:                                              │
+│  • Feature complete (not mid-edit)                              │
+│  • Bug fix solved and verified                                  │
+│  • Architecture decision made                                   │
+│  • Session ending                                               │
+│                                                                 │
+│  WHEN NOT to document:                                          │
+│  • Trivial edits (version bumps, typos, config)                 │
+│  • Mid-refactor (wait until done)                               │
+│  • Nothing meaningful was learned                               │
 │                                                                 │
 │  ✅ Just DO IT. Then say: "Documented to [file]"                │
 └─────────────────────────────────────────────────────────────────┘
@@ -37,4 +40,4 @@
 - Update index after EVERY change
 
 ### Commands
-`/ctx-doc` `/ctx-error` `/ctx-snippet` `/ctx-decision` `/ctx-intel` `/ctx-handoff` `/ctx-search` `/ctx-read`
+`/ctx-doc` `/ctx-error` `/ctx-snippet` `/ctx-decision` `/ctx-intel` `/ctx-handoff` `/ctx-search` `/ctx-read` `/ctx-bootstrap`

@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.8.2"
+VERSION="1.8.3"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -719,23 +719,38 @@ create_pre_tool_script() {
     rm -f "$script_path" 2>/dev/null
 }
 
-# Create the ctx-post-tool hook script (v1.8.0 - milestone-based, no counters)
+# Create the ctx-post-tool hook script (v1.8.3 - configurable enforcement)
 create_post_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault PostToolUse Hook v1.8.2
-# Silent tracking + completion reminders
-# Edit/Write: silently track files (feeds Stop hook's smart blocking)
-# TodoWrite: gentle reminder when tasks updated + code changed
-# Bash: gentle reminder on git commit
+# ContextVault PostToolUse Hook v1.8.3
+# Configurable enforcement: light | balanced (default) | strict
+# Edit/Write: track files + block when threshold reached (balanced/strict)
+# TodoWrite: gentle non-blocking reminder
+# Bash: gentle non-blocking reminder on git commit
 
 FILES_CHANGED="/tmp/ctx-files-changed"
 NEW_FILES="/tmp/ctx-new-files"
 MILESTONE_FILE="/tmp/ctx-milestones"
 DEDUP_FILE="/tmp/ctx-hook-seen"
+
+# Read enforcement level from vault settings (fast grep, no jq needed)
+ENFORCEMENT="balanced"
+VAULT_SETTINGS="$HOME/.claude/vault/settings.json"
+if [ -f "$VAULT_SETTINGS" ]; then
+    level=$(grep -o '"enforcement"[[:space:]]*:[[:space:]]*"[^"]*"' "$VAULT_SETTINGS" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
+    [ -n "$level" ] && ENFORCEMENT="$level"
+fi
+
+# Set thresholds based on enforcement level
+case "$ENFORCEMENT" in
+    "light")  EDIT_THRESH=999; FILE_THRESH=999 ;;  # effectively no mid-work blocking
+    "strict") EDIT_THRESH=4;   FILE_THRESH=2 ;;
+    *)        EDIT_THRESH=8;   FILE_THRESH=2 ;;     # balanced (default)
+esac
 
 INPUT=$(cat)
 
@@ -771,24 +786,70 @@ mark_reminded() {
     echo "$1" >> "$MILESTONE_FILE"
 }
 
+# Check if any vault docs were modified this session (only called at threshold)
+docs_modified_this_session() {
+    local project_vault="./.claude/vault"
+    local global_vault="$HOME/.claude/vault"
+    local session_start=0
+    local my_ppid="${PPID:-0}"
+    local docs=0
+    for f in /tmp/ctx_session_${my_ppid}_* /tmp/ctx_session_*; do
+        if [ -f "$f" ]; then
+            session_start=$(cat "$f" 2>/dev/null | awk '{print $2}')
+            [[ "$f" == *"${my_ppid}_"* ]] && break
+        fi
+    done
+    if [ "$session_start" -gt 0 ]; then
+        [ -d "$project_vault" ] && docs=$((docs + $(find "$project_vault" -maxdepth 1 -name "P*.md" -newermt "@$session_start" 2>/dev/null | wc -l)))
+        [ -d "$global_vault" ] && docs=$((docs + $(find "$global_vault" -maxdepth 1 -name "G*.md" -newermt "@$session_start" 2>/dev/null | wc -l)))
+    else
+        [ -d "$project_vault" ] && docs=$((docs + $(find "$project_vault" -maxdepth 1 -name "P*.md" -mmin -30 2>/dev/null | wc -l)))
+        [ -d "$global_vault" ] && docs=$((docs + $(find "$global_vault" -maxdepth 1 -name "G*.md" -mmin -30 2>/dev/null | wc -l)))
+    fi
+    echo "$docs"
+}
+
+# Check threshold and block if needed (for Edit/Write)
+check_threshold_block() {
+    if [ ! -f "$FILES_CHANGED" ]; then return; fi
+
+    local total_edits=$(wc -l < "$FILES_CHANGED" 2>/dev/null | tr -d ' ')
+    local unique_files=$(sort -u "$FILES_CHANGED" 2>/dev/null | wc -l | tr -d ' ')
+
+    # Only check when threshold reached and not already reminded
+    if [ "$total_edits" -ge "$EDIT_THRESH" ] && [ "$unique_files" -ge "$FILE_THRESH" ] && ! already_reminded "threshold_block"; then
+        # Now do the expensive docs check (only runs once per session)
+        local docs=$(docs_modified_this_session)
+        if [ "$docs" -eq 0 ]; then
+            mark_reminded "threshold_block"
+            local reason="📋 $total_edits changes across $unique_files files without documentation.\n\n"
+            reason+="Quick options:\n"
+            reason+="  /ctx-doc      → Document feature or learning\n"
+            reason+="  /ctx-error    → Document a bug fix\n"
+            reason+="  /ctx-handoff  → Session summary\n\n"
+            reason+="Document something, then continue editing."
+            printf '{\n  "decision": "block",\n  "reason": "%s"\n}' "$reason"
+            exit 0
+        fi
+    fi
+}
+
 case "$TOOL_NAME" in
     "Write")
-        # Silently track + detect new files (for Stop hook significance check)
         if is_code_file "$FILE_PATH"; then
             echo "$FILE_PATH" >> "$FILES_CHANGED"
-            # Track new file creation separately (Write = new file, Edit = existing)
             echo "$FILE_PATH" >> "$NEW_FILES"
+            check_threshold_block
         fi
         ;;
     "Edit")
-        # Silently track edits — no reminders mid-work
         if is_code_file "$FILE_PATH"; then
             echo "$FILE_PATH" >> "$FILES_CHANGED"
+            check_threshold_block
         fi
         ;;
     "TodoWrite")
-        # COMPLETION TRIGGER: Tasks being managed = potential milestone
-        # Only remind if actual code changes happened this session
+        # Non-blocking completion reminder
         if [ -f "$FILES_CHANGED" ]; then
             total_edits=$(wc -l < "$FILES_CHANGED" 2>/dev/null | tr -d ' ')
             unique_files=$(sort -u "$FILES_CHANGED" 2>/dev/null | wc -l | tr -d ' ')
@@ -802,7 +863,7 @@ case "$TOOL_NAME" in
         fi
         ;;
     "Bash")
-        # Only fire on git commit (a natural completion point)
+        # Non-blocking reminder on git commit
         CMD_LOWER=$(echo "$COMMAND" | tr '[:upper:]' '[:lower:]')
         if echo "$CMD_LOWER" | grep -qE 'git commit' && ! already_reminded "commit"; then
             mark_reminded "commit"
@@ -832,9 +893,10 @@ create_global_hooks() {
     create_post_tool_script
 
     # The hooks JSON content - uses full path with $HOME for proper expansion
-    # v1.8.2: Smart blocking Stop + completion-triggered PostToolUse reminders
-    # Stop: blocks once for significant undocumented work, passes on second try
-    # PostToolUse: Edit/Write track silently, TodoWrite + commit remind gently
+    # v1.8.3: Configurable enforcement (light/balanced/strict)
+    # Stop: smart blocking for significant undocumented work
+    # PostToolUse Edit/Write: blocking (threshold-based, reads enforcement from settings)
+    # PostToolUse Bash/TodoWrite: non-blocking reminders
     local hooks_json="{
   \"hooks\": {
     \"SessionStart\": [
@@ -864,7 +926,8 @@ create_global_hooks() {
         \"hooks\": [
           {
             \"type\": \"command\",
-            \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\"
+            \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\",
+            \"blocking\": true
           }
         ]
       },
@@ -873,7 +936,8 @@ create_global_hooks() {
         \"hooks\": [
           {
             \"type\": \"command\",
-            \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\"
+            \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\",
+            \"blocking\": true
           }
         ]
       },
@@ -999,7 +1063,8 @@ generate_project_hooks_json() {
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
+            "command": "~/.claude/hooks/ctx-post-tool.sh",
+            "blocking": true
           }
         ]
       },
@@ -1008,7 +1073,8 @@ generate_project_hooks_json() {
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
+            "command": "~/.claude/hooks/ctx-post-tool.sh",
+            "blocking": true
           }
         ]
       },
@@ -1503,15 +1569,22 @@ Always check `~/.claude/vault/settings.json`:
 
 ```json
 {
-  "mode": "local",      ← Determines what indexes to read/write
+  "mode": "local",           ← Determines what indexes to read/write
+  "enforcement": "balanced", ← light | balanced | strict
   "limits": {
-    "max_global_docs": 50,    ← Don't exceed these
+    "max_global_docs": 50,   ← Don't exceed these
     "max_project_docs": 50,
     "max_doc_lines": 100,
     "max_summary_words": 15
   }
 }
 ```
+
+**Enforcement levels:**
+- `light` → No mid-work blocking. Only Stop hook at session end.
+- `balanced` (default) → Blocks after 8 edits across 2+ files if undocumented.
+- `strict` → Blocks after 4 edits across 2+ files if undocumented.
+- Change with: `/ctx-mode enforcement balanced`
 
 **Mode behavior:**
 - `local` (default): Only use project vault, ignore global
@@ -1867,12 +1940,18 @@ create_settings_json() {
     cat << 'SETTINGS_EOF'
 {
   "mode": "local",
+  "enforcement": "balanced",
   "updated": "$(date +%Y-%m-%d)",
   "limits": {
     "max_global_docs": 50,
     "max_project_docs": 50,
     "max_doc_lines": 100,
     "max_summary_words": 15
+  },
+  "enforcement_levels": {
+    "light": "No mid-work blocking, only Stop hook at session end",
+    "balanced": "Block after 8 edits across 2+ files if undocumented (default)",
+    "strict": "Block after 4 edits across 2+ files if undocumented"
   },
   "modes": {
     "full": "Use both global and project documentation",
@@ -2307,7 +2386,8 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
+            "command": "~/.claude/hooks/ctx-post-tool.sh",
+            "blocking": true
           }
         ]
       },
@@ -2316,7 +2396,8 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
+            "command": "~/.claude/hooks/ctx-post-tool.sh",
+            "blocking": true
           }
         ]
       },
@@ -2553,18 +2634,19 @@ description: Switch between local, global, or full mode
 
 # /ctx-mode
 
-Toggle ContextVault mode and configure limits.
+Toggle ContextVault mode, enforcement level, and limits.
 
 ## Usage
 
 ```
-/ctx-mode [mode|limit] [value]
+/ctx-mode [mode|enforcement|limit] [value]
 ```
 
 ## Arguments
 
-- No args: Show current mode and limits
+- No args: Show current mode, enforcement, and limits
 - `mode`: `full`, `local`, `global` - change mode
+- `enforcement`: `light`, `balanced`, `strict` - change enforcement level
 - `limit`: `max-global`, `max-project`, `max-lines`, `max-summary` - change limits
 
 ## Modes
@@ -2574,6 +2656,14 @@ Toggle ContextVault mode and configure limits.
 | `local` | Project-only, ignore global (DEFAULT) | Only `./.claude/vault/index.md` |
 | `full` | Use both global and project docs | Both indexes |
 | `global` | Global-only, ignore project | Only `~/.claude/vault/index.md` |
+
+## Enforcement Levels
+
+| Level | PostToolUse (Edit/Write) | Stop Hook |
+|-------|--------------------------|-----------|
+| `light` | No mid-work blocking | Smart block (significant work only) |
+| `balanced` | Block after 8 edits, 2+ files (DEFAULT) | Smart block (significant work only) |
+| `strict` | Block after 4 edits, 2+ files | Smart block (significant work only) |
 
 ## Instructions
 
@@ -2588,7 +2678,8 @@ Read `~/.claude/vault/settings.json` and display:
 │                 CONTEXTVAULT SETTINGS                        │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
-│  MODE: [LOCAL / FULL / GLOBAL]                              │
+│  MODE:        [LOCAL / FULL / GLOBAL]                       │
+│  ENFORCEMENT: [LIGHT / BALANCED / STRICT]                   │
 │                                                              │
 │  LIMITS:                                                     │
 │  ├── Max global docs:   50                                  │
@@ -2597,11 +2688,13 @@ Read `~/.claude/vault/settings.json` and display:
 │  └── Max summary words: 15                                  │
 │                                                              │
 │  COMMANDS:                                                   │
-│  • /ctx-mode local        → Project only (default)          │
-│  • /ctx-mode full         → Use global + project            │
-│  • /ctx-mode global       → Global only                     │
-│  • /ctx-mode max-global 100  → Change global doc limit      │
-│  • /ctx-mode max-project 30  → Change project doc limit     │
+│  • /ctx-mode local              → Project only (default)    │
+│  • /ctx-mode full               → Use global + project      │
+│  • /ctx-mode global             → Global only               │
+│  • /ctx-mode enforcement light  → No mid-work blocking      │
+│  • /ctx-mode enforcement balanced → Block after 8 edits     │
+│  • /ctx-mode enforcement strict → Block after 4 edits       │
+│  • /ctx-mode max-global 100     → Change global doc limit   │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -2609,13 +2702,19 @@ Read `~/.claude/vault/settings.json` and display:
 ### If Mode Argument: Set Mode
 
 1. Validate mode is one of: `full`, `local`, `global`
-
 2. Update `~/.claude/vault/settings.json` mode field
+3. Confirm: `✓ ContextVault mode changed to [MODE]`
 
-3. Confirm change:
-```
-✓ ContextVault mode changed to [MODE]
-```
+### If Enforcement Argument: Set Enforcement Level
+
+1. Validate level is one of: `light`, `balanced`, `strict`
+2. Update `~/.claude/vault/settings.json` enforcement field
+3. Confirm: `✓ Enforcement changed to [LEVEL] — [description]`
+
+Descriptions:
+- `light`: "No mid-work blocking. Stop hook catches significant work at session end."
+- `balanced`: "Blocks after 8 edits across 2+ files if undocumented."
+- `strict`: "Blocks after 4 edits across 2+ files if undocumented."
 
 ### If Limit Argument: Set Limit
 
@@ -2625,10 +2724,7 @@ Valid limit commands:
 - `/ctx-mode max-lines 150` → Set max lines per doc to 150
 - `/ctx-mode max-summary 20` → Set max summary words to 20
 
-Update `~/.claude/vault/settings.json` limits section and confirm:
-```
-✓ Max global docs changed to 100
-```
+Update `~/.claude/vault/settings.json` limits section and confirm.
 
 ### Behavior Based on Mode
 
@@ -2636,7 +2732,6 @@ Update `~/.claude/vault/settings.json` limits section and confirm:
 - Skip global index entirely
 - Only read `./.claude/vault/index.md`
 - New docs only go to project
-- Useful for: focused project work, isolated context
 
 **When mode is `full`:**
 - Read `~/.claude/vault/index.md` first
@@ -2647,7 +2742,6 @@ Update `~/.claude/vault/settings.json` limits section and confirm:
 - Only read `~/.claude/vault/index.md`
 - Skip project index
 - New docs only go to global
-- Useful for: building up global knowledge base
 
 ## Settings File
 
@@ -2655,6 +2749,7 @@ Update `~/.claude/vault/settings.json` limits section and confirm:
 ```json
 {
   "mode": "local",
+  "enforcement": "balanced",
   "limits": {
     "max_global_docs": 50,
     "max_project_docs": 50,
@@ -2667,12 +2762,13 @@ Update `~/.claude/vault/settings.json` limits section and confirm:
 ## Examples
 
 ```
-/ctx-mode              → Show current mode and limits
-/ctx-mode local        → Switch to project-only (default)
-/ctx-mode full         → Switch to global + project
-/ctx-mode global       → Switch to global-only
-/ctx-mode max-global 100   → Allow up to 100 global docs
-/ctx-mode max-project 25   → Allow up to 25 project docs
+/ctx-mode                        → Show current settings
+/ctx-mode local                  → Switch to project-only (default)
+/ctx-mode full                   → Switch to global + project
+/ctx-mode enforcement light      → Disable mid-work blocking
+/ctx-mode enforcement balanced   → Default (block after 8 edits)
+/ctx-mode enforcement strict     → Aggressive (block after 4 edits)
+/ctx-mode max-global 100         → Allow up to 100 global docs
 ```
 CMD_EOF
 }
@@ -4975,7 +5071,15 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
 
 ## Step 3: Update .claude/settings.json (Hooks Configuration)
 
-**REPLACE** `.claude/settings.json` with this content (Stop is blocking for significant work):
+**ASK the user** which enforcement level they want before applying:
+
+| Level | Behavior |
+|-------|----------|
+| `light` | No mid-work blocking. Only Stop hook at session end. |
+| `balanced` (recommended) | Blocks after 8 edits across 2+ files if undocumented. |
+| `strict` | Blocks after 4 edits across 2+ files if undocumented. |
+
+Then **REPLACE** `.claude/settings.json` with this content (Edit/Write are blocking for threshold enforcement):
 
 ```json
 {
@@ -5007,7 +5111,8 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
+            "command": "~/.claude/hooks/ctx-post-tool.sh",
+            "blocking": true
           }
         ]
       },
@@ -5016,7 +5121,8 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
+            "command": "~/.claude/hooks/ctx-post-tool.sh",
+            "blocking": true
           }
         ]
       },
@@ -5084,16 +5190,17 @@ Output this (replace X.Y.Z with actual version from VERSION variable):
 ContextVault vX.Y.Z Upgrade Complete!
 
 Updated:
-  ./CLAUDE.md              Latest instructions & rules
-  .claude/settings.json    All hooks (SessionStart, Stop, PostToolUse)
-  .git/hooks/pre-commit    Git reminder
+  ./CLAUDE.md              Milestone-based documentation instructions
+  .claude/settings.json    Hooks (SessionStart, Stop, PostToolUse)
+  .git/hooks/pre-commit    Git commit reminder
 
-Key Features:
-  Smart Detection - Suggests right command for your work
-  /ctx-plan - Document multi-step tasks
-  /ctx-bootstrap - Auto-scan codebase (NEW!)
-  Archive mechanism - Historical content preserved
-  25 slash commands total
+Enforcement: [LEVEL]
+  light    → No mid-work blocking, Stop at session end only
+  balanced → Block after 8 edits/2+ files if undocumented (default)
+  strict   → Block after 4 edits/2+ files if undocumented
+  Change:  /ctx-mode enforcement [level]
+
+25 slash commands • /ctx-bootstrap • Archive mechanism
 
 Your P### docs are SAFE!
 
