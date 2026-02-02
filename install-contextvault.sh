@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.8.0"
+VERSION="1.8.1"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -699,12 +699,13 @@ create_post_tool_script() {
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault PostToolUse Hook v1.8.0
-# MILESTONE-BASED: Only reminds at meaningful checkpoints
-# No counters, no blocking, no spam. Just gentle nudges.
+# ContextVault PostToolUse Hook v1.8.1
+# COMPLETION-TRIGGERED: Only reminds when work is actually done
+# Fires on: TodoWrite (task completion), git commit
+# Edit/Write just silently track files for the Stop summary
 
-MILESTONE_FILE="/tmp/ctx-milestones"
 FILES_CHANGED="/tmp/ctx-files-changed"
+MILESTONE_FILE="/tmp/ctx-milestones"
 DEDUP_FILE="/tmp/ctx-hook-seen"
 
 INPUT=$(cat)
@@ -714,7 +715,7 @@ FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"
 COMMAND=$(echo "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
 
 # DEDUP: Skip duplicate runs within same second (Claude Code double-execution bug)
-DEDUP_KEY="POST_${TOOL_NAME}_${FILE_PATH}_$(date +%s)"
+DEDUP_KEY="POST_${TOOL_NAME}_$(date +%s)"
 if grep -qxF "$DEDUP_KEY" "$DEDUP_FILE" 2>/dev/null; then
     exit 0
 fi
@@ -726,21 +727,6 @@ if [[ "$FILE_PATH" == *"vault/"* ]] && [[ "$FILE_PATH" == *".md" ]]; then
     exit 0
 fi
 
-remind() {
-    echo ""
-    echo "💡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━💡"
-    echo "  ContextVault: $1"
-    echo "  → $2"
-    echo "💡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━💡"
-}
-
-is_code_file() {
-    case "$1" in
-        *.ts|*.tsx|*.js|*.jsx|*.py|*.go|*.rs|*.java|*.rb|*.php|*.swift|*.kt|*.c|*.cpp|*.h|*.cs|*.vue|*.svelte|*.astro|*.sh|*.bash) return 0 ;;
-        *) return 1 ;;
-    esac
-}
-
 already_reminded() {
     grep -qxF "$1" "$MILESTONE_FILE" 2>/dev/null
 }
@@ -750,55 +736,38 @@ mark_reminded() {
 }
 
 case "$TOOL_NAME" in
-    "Write")
-        # Track file for session summary
-        if is_code_file "$FILE_PATH"; then
-            echo "$FILE_PATH" >> "$FILES_CHANGED"
-
-            # Milestone: New code file created (remind once)
-            if ! already_reminded "new_file"; then
-                mark_reminded "new_file"
-                FNAME=$(basename "$FILE_PATH")
-                remind "New file: $FNAME" "Consider /ctx-doc when this feature is complete"
-            fi
-        fi
+    "Write"|"Edit")
+        # Silently track files changed — no reminders mid-work
+        case "$FILE_PATH" in
+            *.ts|*.tsx|*.js|*.jsx|*.py|*.go|*.rs|*.java|*.rb|*.php|*.swift|*.kt|*.c|*.cpp|*.h|*.cs|*.vue|*.svelte|*.astro|*.sh|*.bash)
+                echo "$FILE_PATH" >> "$FILES_CHANGED"
+                ;;
+        esac
         ;;
-    "Edit")
-        # Track file for session summary
-        if is_code_file "$FILE_PATH"; then
-            echo "$FILE_PATH" >> "$FILES_CHANGED"
-
-            # Milestone: Significant refactor (10+ edits across 3+ files)
-            if [ -f "$FILES_CHANGED" ]; then
-                total_edits=$(wc -l < "$FILES_CHANGED" 2>/dev/null | tr -d ' ')
-                unique_files=$(sort -u "$FILES_CHANGED" 2>/dev/null | wc -l | tr -d ' ')
-                if [ "$total_edits" -ge 10 ] && [ "$unique_files" -ge 3 ] && ! already_reminded "refactor"; then
-                    mark_reminded "refactor"
-                    remind "Significant work: $total_edits edits across $unique_files files" "When done: /ctx-doc or /ctx-handoff"
-                fi
+    "TodoWrite")
+        # COMPLETION TRIGGER: Tasks being managed = potential milestone
+        # Only remind if actual code changes happened this session
+        if [ -f "$FILES_CHANGED" ]; then
+            total_edits=$(wc -l < "$FILES_CHANGED" 2>/dev/null | tr -d ' ')
+            unique_files=$(sort -u "$FILES_CHANGED" 2>/dev/null | wc -l | tr -d ' ')
+            if [ "$total_edits" -gt 0 ] && ! already_reminded "todo_complete"; then
+                mark_reminded "todo_complete"
+                echo ""
+                echo "📋 ContextVault: $total_edits changes across $unique_files files this session"
+                echo "   When tasks are done → /ctx-doc, /ctx-error, or /ctx-handoff"
+                echo ""
             fi
         fi
         ;;
     "Bash")
+        # Only fire on git commit (a natural completion point)
         CMD_LOWER=$(echo "$COMMAND" | tr '[:upper:]' '[:lower:]')
-
-        # Milestone: Git commit (remind once per session)
         if echo "$CMD_LOWER" | grep -qE 'git commit' && ! already_reminded "commit"; then
             mark_reminded "commit"
-            if echo "$CMD_LOWER" | grep -qE '(fix|bug|error|issue|patch|hotfix|resolve)'; then
-                remind "Bug fix committed" "Worth documenting? /ctx-error"
-            elif echo "$CMD_LOWER" | grep -qE '(feat|feature|add|new|implement)'; then
-                remind "Feature committed" "Worth documenting? /ctx-doc"
-            else
-                remind "Code committed" "Worth documenting? /ctx-doc"
-            fi
-        fi
-        ;;
-    "Task")
-        # Milestone: Exploration completed (remind once)
-        if ! already_reminded "exploration"; then
-            mark_reminded "exploration"
-            remind "Exploration completed" "Useful findings? /ctx-intel"
+            echo ""
+            echo "📋 ContextVault: Code committed — worth documenting?"
+            echo "   → /ctx-doc, /ctx-error, or /ctx-decision"
+            echo ""
         fi
         ;;
 esac
@@ -821,7 +790,8 @@ create_global_hooks() {
     create_post_tool_script
 
     # The hooks JSON content - uses full path with $HOME for proper expansion
-    # v1.8.0: Removed PreToolUse blocking, Stop is non-blocking self-assessment
+    # v1.8.1: Completion-triggered reminders only (TodoWrite + git commit)
+    # Edit/Write track files silently for Stop summary, no mid-work reminders
     local hooks_json="{
   \"hooks\": {
     \"SessionStart\": [
@@ -873,7 +843,7 @@ create_global_hooks() {
         ]
       },
       {
-        \"matcher\": \"Task\",
+        \"matcher\": \"TodoWrite\",
         \"hooks\": [
           {
             \"type\": \"command\",
@@ -1007,7 +977,7 @@ generate_project_hooks_json() {
         ]
       },
       {
-        "matcher": "Task",
+        "matcher": "TodoWrite",
         "hooks": [
           {
             "type": "command",
@@ -2314,7 +2284,7 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         ]
       },
       {
-        "matcher": "Task",
+        "matcher": "TodoWrite",
         "hooks": [
           {
             "type": "command",
@@ -5013,7 +4983,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         ]
       },
       {
-        "matcher": "Task",
+        "matcher": "TodoWrite",
         "hooks": [
           {
             "type": "command",
@@ -6068,7 +6038,7 @@ install_contextvault() {
     echo ""
     echo -e "${BOLD}🪝 Hooks installed (v${VERSION}):${NC}"
     echo -e "   ${GREEN}SessionStart${NC}  → Loads vault indexes at session start"
-    echo -e "   ${GREEN}PostToolUse${NC}   → Milestone-based documentation reminders"
+    echo -e "   ${GREEN}PostToolUse${NC}   → Reminds on task completion & git commit"
     echo -e "   ${GREEN}Stop${NC}          → Session summary & self-assessment"
     echo ""
     echo -e "${BOLD}🎮 New in v1.8 (25 commands total):${NC}"

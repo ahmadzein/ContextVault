@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.1] - 2026-02-02
+
+### Changed - Completion-Triggered Reminders
+- **PostToolUse now triggers on task completion, not edit counts**
+  - `TodoWrite` matcher: reminds when tasks are being completed and code was changed
+  - `Bash` matcher: reminds once on `git commit`
+  - `Edit`/`Write` matchers: silently track files changed (no reminders mid-work)
+  - Removed `Task` matcher (exploration reminders were noise)
+- Reminder fires once per session per trigger (deduped)
+
+### Why This Change
+Real-world feedback: milestone-based reminders (new file, 10+ edits) still didn't align with
+actual work completion. The AI forgot to document until prompted. But blocking created garbage docs.
+The solution: trigger reminders when TodoWrite marks tasks complete — that's the real "I finished
+something" signal.
+
+---
+
 ## [1.8.0] - 2026-02-02
 
 ### Changed - "Remind, Don't Block" Enforcement Model
