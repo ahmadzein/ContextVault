@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.8.1"
+VERSION="1.8.2"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -600,35 +600,41 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the BLOCKING Stop enforcer hook (v1.7.5 - Forces documentation before stopping)
+# Create the Stop enforcer hook (v1.8.2 - Smart blocking at session end)
+# Only blocks for SIGNIFICANT undocumented work. Trivial changes pass through.
 create_stop_enforcer_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-stop-enforcer.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault Stop Hook v1.8.0
-# SELF-ASSESSMENT: Shows session summary, lets AI decide what to document
-# Non-blocking - provides information, not friction
+# ContextVault Stop Hook v1.8.2
+# SMART BLOCKING: Only blocks when significant work is undocumented
+# Trivial changes (version bumps, typos, config) → pass through
+# Already documented this session → pass through
+# Significant work + zero docs → block once, then let go
 
 PROJECT_VAULT="./.claude/vault"
 GLOBAL_VAULT="$HOME/.claude/vault"
 FILES_CHANGED="/tmp/ctx-files-changed"
 MILESTONE_FILE="/tmp/ctx-milestones"
+STOP_REMINDED="/tmp/ctx-stop-reminded"
 
 # Count files changed this session
 total_edits=0
 unique_files=0
+new_files=0
 if [ -f "$FILES_CHANGED" ]; then
     total_edits=$(wc -l < "$FILES_CHANGED" 2>/dev/null | tr -d ' ')
     unique_files=$(sort -u "$FILES_CHANGED" 2>/dev/null | wc -l | tr -d ' ')
 fi
+# Check for new files created (tracked by PostToolUse Write handler)
+[ -f "/tmp/ctx-new-files" ] && new_files=$(wc -l < "/tmp/ctx-new-files" 2>/dev/null | tr -d ' ')
 
-# Check session docs
+# Detect session start for doc counting
 session_file=""
 session_start=0
 my_ppid="${PPID:-0}"
-
 for f in /tmp/ctx_session_${my_ppid}_* /tmp/ctx_session_*; do
     if [ -f "$f" ]; then
         session_data=$(cat "$f" 2>/dev/null)
@@ -638,6 +644,7 @@ for f in /tmp/ctx_session_${my_ppid}_* /tmp/ctx_session_*; do
     fi
 done
 
+# Count docs modified this session
 docs_modified=0
 if [ "$session_start" -gt 0 ]; then
     [ -d "$PROJECT_VAULT" ] && docs_modified=$((docs_modified + $(find "$PROJECT_VAULT" -maxdepth 1 -name "P*.md" -newermt "@$session_start" 2>/dev/null | wc -l)))
@@ -647,34 +654,54 @@ else
     [ -d "$GLOBAL_VAULT" ] && docs_modified=$((docs_modified + $(find "$GLOBAL_VAULT" -maxdepth 1 -name "G*.md" -mmin -30 2>/dev/null | wc -l)))
 fi
 
-# Show session summary
-echo ""
-echo "📊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  ContextVault - Session Summary"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Code changes: $total_edits edits across $unique_files files"
-echo "  Docs updated: $docs_modified"
-
-# If changes were made but nothing documented, give a gentle nudge
-if [ "$total_edits" -gt 0 ] && [ "$docs_modified" -eq 0 ]; then
-    echo ""
-    echo "  💭 You made changes but didn't document."
-    echo "  Worth capturing anything? Quick options:"
-    echo "     /ctx-doc      - Feature or learning"
-    echo "     /ctx-error    - Bug fix you solved"
-    echo "     /ctx-handoff  - Session summary for next time"
-    echo ""
-    echo "  Skip if nothing meaningful was learned."
-elif [ "$docs_modified" -gt 0 ]; then
-    echo "  ✅ Documentation up to date!"
+# Determine if work was SIGNIFICANT (worth documenting)
+# Significant = (5+ edits across 2+ files) OR (any new code files created)
+significant=0
+if [ "$total_edits" -ge 5 ] && [ "$unique_files" -ge 2 ]; then
+    significant=1
+fi
+if [ "$new_files" -gt 0 ]; then
+    significant=1
 fi
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+# DECISION: Block, pass, or summary?
+if [ "$significant" -eq 1 ] && [ "$docs_modified" -eq 0 ] && [ ! -f "$STOP_REMINDED" ]; then
+    # BLOCK: Significant work with zero docs, first attempt
+    # Create reminder file so second attempt passes (one-time block)
+    touch "$STOP_REMINDED"
+
+    reason="📋 You did significant work this session but haven't documented anything.\n\n"
+    reason+="📊 Session: $total_edits edits across $unique_files files"
+    [ "$new_files" -gt 0 ] && reason+=", $new_files new files"
+    reason+="\n\n"
+    reason+="Quick options (pick one):\n"
+    reason+="  /ctx-doc      → Document feature or learning\n"
+    reason+="  /ctx-error    → Document a bug fix\n"
+    reason+="  /ctx-handoff  → Session summary for next time\n\n"
+    reason+="Or if nothing meaningful was learned, just try stopping again."
+
+    printf '{\n  "decision": "block",\n  "reason": "%s"\n}' "$reason"
+    exit 0
+fi
+
+# PASS: Show summary (trivial work, already documented, or second attempt)
+echo ""
+echo "📊 ContextVault Session Summary"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Changes: $total_edits edits, $unique_files files"
+[ "$new_files" -gt 0 ] && echo "  New files: $new_files"
+echo "  Docs: $docs_modified updated"
+if [ "$docs_modified" -gt 0 ]; then
+    echo "  ✅ Documentation captured"
+elif [ "$total_edits" -eq 0 ]; then
+    echo "  ℹ️  No code changes this session"
+fi
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Clean up ALL temp files
-rm -f "$FILES_CHANGED" "$MILESTONE_FILE" /tmp/ctx-hook-seen \
-      /tmp/ctx-edit-count /tmp/ctx-write-count /tmp/ctx-first-edit-done \
-      /tmp/ctx-work-type /tmp/ctx-plan-reminded 2>/dev/null
+rm -f "$FILES_CHANGED" "$MILESTONE_FILE" /tmp/ctx-hook-seen /tmp/ctx-new-files \
+      "$STOP_REMINDED" /tmp/ctx-edit-count /tmp/ctx-write-count \
+      /tmp/ctx-first-edit-done /tmp/ctx-work-type /tmp/ctx-plan-reminded 2>/dev/null
 [ -n "$session_file" ] && rm -f "$session_file" 2>/dev/null
 
 exit 0
@@ -699,12 +726,14 @@ create_post_tool_script() {
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault PostToolUse Hook v1.8.1
-# COMPLETION-TRIGGERED: Only reminds when work is actually done
-# Fires on: TodoWrite (task completion), git commit
-# Edit/Write just silently track files for the Stop summary
+# ContextVault PostToolUse Hook v1.8.2
+# Silent tracking + completion reminders
+# Edit/Write: silently track files (feeds Stop hook's smart blocking)
+# TodoWrite: gentle reminder when tasks updated + code changed
+# Bash: gentle reminder on git commit
 
 FILES_CHANGED="/tmp/ctx-files-changed"
+NEW_FILES="/tmp/ctx-new-files"
 MILESTONE_FILE="/tmp/ctx-milestones"
 DEDUP_FILE="/tmp/ctx-hook-seen"
 
@@ -727,6 +756,13 @@ if [[ "$FILE_PATH" == *"vault/"* ]] && [[ "$FILE_PATH" == *".md" ]]; then
     exit 0
 fi
 
+is_code_file() {
+    case "$1" in
+        *.ts|*.tsx|*.js|*.jsx|*.py|*.go|*.rs|*.java|*.rb|*.php|*.swift|*.kt|*.c|*.cpp|*.h|*.cs|*.vue|*.svelte|*.astro|*.sh|*.bash) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
 already_reminded() {
     grep -qxF "$1" "$MILESTONE_FILE" 2>/dev/null
 }
@@ -736,13 +772,19 @@ mark_reminded() {
 }
 
 case "$TOOL_NAME" in
-    "Write"|"Edit")
-        # Silently track files changed — no reminders mid-work
-        case "$FILE_PATH" in
-            *.ts|*.tsx|*.js|*.jsx|*.py|*.go|*.rs|*.java|*.rb|*.php|*.swift|*.kt|*.c|*.cpp|*.h|*.cs|*.vue|*.svelte|*.astro|*.sh|*.bash)
-                echo "$FILE_PATH" >> "$FILES_CHANGED"
-                ;;
-        esac
+    "Write")
+        # Silently track + detect new files (for Stop hook significance check)
+        if is_code_file "$FILE_PATH"; then
+            echo "$FILE_PATH" >> "$FILES_CHANGED"
+            # Track new file creation separately (Write = new file, Edit = existing)
+            echo "$FILE_PATH" >> "$NEW_FILES"
+        fi
+        ;;
+    "Edit")
+        # Silently track edits — no reminders mid-work
+        if is_code_file "$FILE_PATH"; then
+            echo "$FILE_PATH" >> "$FILES_CHANGED"
+        fi
         ;;
     "TodoWrite")
         # COMPLETION TRIGGER: Tasks being managed = potential milestone
@@ -790,8 +832,9 @@ create_global_hooks() {
     create_post_tool_script
 
     # The hooks JSON content - uses full path with $HOME for proper expansion
-    # v1.8.1: Completion-triggered reminders only (TodoWrite + git commit)
-    # Edit/Write track files silently for Stop summary, no mid-work reminders
+    # v1.8.2: Smart blocking Stop + completion-triggered PostToolUse reminders
+    # Stop: blocks once for significant undocumented work, passes on second try
+    # PostToolUse: Edit/Write track silently, TodoWrite + commit remind gently
     local hooks_json="{
   \"hooks\": {
     \"SessionStart\": [
@@ -809,7 +852,8 @@ create_global_hooks() {
         \"hooks\": [
           {
             \"type\": \"command\",
-            \"command\": \"$HOME/.claude/hooks/ctx-stop-enforcer.sh\"
+            \"command\": \"$HOME/.claude/hooks/ctx-stop-enforcer.sh\",
+            \"blocking\": true
           }
         ]
       }
@@ -943,7 +987,8 @@ generate_project_hooks_json() {
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-stop-enforcer.sh"
+            "command": "~/.claude/hooks/ctx-stop-enforcer.sh",
+            "blocking": true
           }
         ]
       }
@@ -2250,7 +2295,8 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-stop-enforcer.sh"
+            "command": "~/.claude/hooks/ctx-stop-enforcer.sh",
+            "blocking": true
           }
         ]
       }
@@ -4929,7 +4975,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
 
 ## Step 3: Update .claude/settings.json (Hooks Configuration)
 
-**REPLACE** `.claude/settings.json` with this content:
+**REPLACE** `.claude/settings.json` with this content (Stop is blocking for significant work):
 
 ```json
 {
@@ -4949,7 +4995,8 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-stop-enforcer.sh"
+            "command": "~/.claude/hooks/ctx-stop-enforcer.sh",
+            "blocking": true
           }
         ]
       }
@@ -6039,7 +6086,7 @@ install_contextvault() {
     echo -e "${BOLD}🪝 Hooks installed (v${VERSION}):${NC}"
     echo -e "   ${GREEN}SessionStart${NC}  → Loads vault indexes at session start"
     echo -e "   ${GREEN}PostToolUse${NC}   → Reminds on task completion & git commit"
-    echo -e "   ${GREEN}Stop${NC}          → Session summary & self-assessment"
+    echo -e "   ${YELLOW}Stop${NC}          → Smart block: catches significant undocumented work"
     echo ""
     echo -e "${BOLD}🎮 New in v1.8 (25 commands total):${NC}"
     echo -e "   ${YELLOW}/ctx-bootstrap${NC} 🚀 Auto-scan codebase ${DIM}(NEW!)${NC}"

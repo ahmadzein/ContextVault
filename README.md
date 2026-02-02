@@ -20,7 +20,7 @@
 
 **Give Claude Code a persistent memory across ALL your projects** 🧠
 
-[![Version](https://img.shields.io/badge/version-1.8.1-blue.svg)](https://github.com/ahmadzein/ContextVault)
+[![Version](https://img.shields.io/badge/version-1.8.2-blue.svg)](https://github.com/ahmadzein/ContextVault)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude-Code-blueviolet)](https://claude.ai)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ahmadzein/ContextVault/pulls)
@@ -221,7 +221,7 @@ Never lose your docs
 ~/.claude/
 ├── 📄 CLAUDE.md                 # Global instructions (all projects)
 ├── 📄 settings.json             # 🪝 Global hooks (SessionStart + Stop + PostToolUse)
-├── 📁 hooks/                    # Hook scripts (v1.8.1)
+├── 📁 hooks/                    # Hook scripts (v1.8.2)
 │   ├── ctx-session-start.sh    # Session start status
 │   ├── ctx-session-end.sh      # Session end reminder
 │   ├── ctx-stop-enforcer.sh    # Session summary & self-assessment
@@ -939,7 +939,7 @@ Maximum in context at any time:
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                   GLOBAL HOOKS (v1.8.1)                       │
+│                   GLOBAL HOOKS (v1.8.2)                       │
 │              ~/.claude/settings.json                          │
 ├──────────────────────────────────────────────────────────────┤
 │                                                               │
@@ -954,15 +954,16 @@ Maximum in context at any time:
 │                 Git commit: reminds once per session          │
 │                 Edit/Write: silently tracks files (no noise)  │
 │                                                               │
-│  Stop         → 📊 Session Summary & Self-Assessment          │
-│                 Shows: files changed, docs modified           │
-│                 Suggests what to document (non-blocking)      │
-│                 Lets AI decide what's worth documenting       │
+│  Stop         → 🛡️ Smart Blocking (significant work only)    │
+│                 5+ edits, 2+ files, no docs → blocks once    │
+│                 New files created, no docs → blocks once      │
+│                 Trivial work or already documented → passes   │
+│                 Second attempt always passes (escape valve)   │
 │                                                               │
 └──────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────┐
-│                   PROJECT HOOKS (v1.8.1)                      │
+│                   PROJECT HOOKS (v1.8.2)                      │
 │              .claude/settings.json                            │
 ├──────────────────────────────────────────────────────────────┤
 │                                                               │
@@ -973,8 +974,8 @@ Maximum in context at any time:
 │  PostToolUse  → 📝 Same as global (completion-triggered)      │
 │                 Ensures reminders work in all projects        │
 │                                                               │
-│  Stop         → 📊 Same as global (session summary)           │
-│                 Non-blocking self-assessment                  │
+│  Stop         → 🛡️ Same as global (smart blocking)           │
+│                 Catches significant undocumented work         │
 │                                                               │
 └──────────────────────────────────────────────────────────────┘
 ```

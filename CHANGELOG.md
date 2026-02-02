@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.2] - 2026-02-02
+
+### Changed - Smart Blocking at Session End
+- **Stop hook is blocking again — but smart about it**
+  - Only blocks for SIGNIFICANT undocumented work (5+ edits across 2+ files, or new files created)
+  - Trivial changes (version bumps, typos, config) → pass through with summary
+  - Already documented this session → pass through
+  - Blocks ONCE, then lets you go on second attempt ("or just try stopping again")
+- **PostToolUse tracks new file creation** separately for Stop hook significance check
+- No mid-work interruptions — blocking only happens at session end
+
+### Why This Change
+Three iterations of testing proved: non-blocking = AI forgets to document entirely.
+Blocking mid-work = AI creates garbage. Smart blocking at session end = the sweet spot.
+At session end the AI has completed its work, has full context, and isn't being interrupted.
+The one-time block + second-attempt escape valve prevents infinite loops.
+
+---
+
 ## [1.8.1] - 2026-02-02
 
 ### Changed - Completion-Triggered Reminders
