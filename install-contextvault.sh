@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.8.3"
+VERSION="1.8.4"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -1110,777 +1110,223 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.8.0
-**Last Updated:** $(date +%Y-%m-%d)
-**System:** ContextVault - External Context Management
+**Version:** 1.8.4 | **System:** ContextVault | **Updated:** $(date +%Y-%m-%d)
 
 ---
 
-# 📝 DOCUMENT AT MEANINGFUL MILESTONES
+## Session Start (Automatic, Silent)
 
-```
-╔═══════════════════════════════════════════════════════════════════╗
-║  AT NATURAL STOPPING POINTS — ASK YOURSELF:                       ║
-║                                                                   ║
-║  Did I learn something? Fix a bug? Make a decision? Find a quirk?║
-║                                                                   ║
-║  → If YES: Document it. Search index → UPDATE existing or CREATE ║
-║  → Tell user: "Documented to [ID]_topic.md"                       ║
-║                                                                   ║
-║  WHEN to document (natural milestones):                           ║
-║  • Feature complete (not mid-edit)                                ║
-║  • Bug fix solved and verified                                    ║
-║  • Architecture decision made                                     ║
-║  • Session ending                                                 ║
-║                                                                   ║
-║  WHEN NOT to document:                                            ║
-║  • Trivial edits (version bumps, typos, config)                   ║
-║  • Mid-refactor (wait until the refactor is done)                 ║
-║  • Nothing meaningful was learned                                 ║
-╚═══════════════════════════════════════════════════════════════════╝
-```
+1. Read `~/.claude/vault/settings.json` → note mode
+2. Read indexes based on mode:
+   - `local` (default): `./.claude/vault/index.md` only
+   - `full`: both global + project indexes
+   - `global`: `~/.claude/vault/index.md` only
+3. Note what docs exist — use throughout session
+4. If `./.claude/vault/index.md` missing → suggest `/ctx-init` once, then continue
+
+Do not announce these steps.
 
 ---
 
-## ⚠️ BEFORE STARTING ANY WORK (MANDATORY)
+## After Completing Work — Document at Milestones
 
-**At the START of every session, BEFORE doing anything else:**
+At natural stopping points (feature complete, bug fixed, decision made, session ending):
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    PRE-WORK CHECKLIST                           │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  STEP 1: Read settings                                          │
-│  ────────────────────                                           │
-│  → Read ~/.claude/vault/settings.json                           │
-│  → Note the mode: local | full | global                         │
-│                                                                 │
-│  STEP 2: Read index(es) based on mode                           │
-│  ────────────────────────────────────                           │
-│  → local mode:  Read ./.claude/vault/index.md ONLY              │
-│  → full mode:   Read BOTH global + project indexes              │
-│  → global mode: Read ~/.claude/vault/index.md ONLY              │
-│                                                                 │
-│  STEP 3: Note existing knowledge                                │
-│  ───────────────────────────────                                │
-│  → What docs exist? What do they cover?                         │
-│  → Use this knowledge throughout the session                    │
-│                                                                 │
-│  STEP 4: Check if project initialized                           │
-│  ─────────────────────────────────────                          │
-│  → Does ./.claude/vault/index.md exist?                         │
-│  → If NO: Suggest "/ctx-init" once, then continue               │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+**Step 1 — Assess.** Did you:
+- Understand how something works?
+- Find and fix a bug?
+- Make a decision with reasoning?
+- Discover a pattern or best practice?
+- Configure or set up something?
+- Find a gotcha, edge case, or quirk?
+- Explore code and learn architecture?
 
-**This is AUTOMATIC and SILENT. Do not announce these steps.**
+If ALL = NO → skip documentation. If ANY = YES → continue:
+
+**Step 2 — Search.** Check index for existing doc on this topic.
+Search exact terms + synonyms (auth/login/signin = same topic, docker/container/image = same).
+
+**Step 3 — Update or Create.** Related doc exists → UPDATE it. No match → CREATE new.
+
+**Step 4 — Route** (new docs only).
+- Reusable across projects → Global `G###` in `~/.claude/vault/` (patterns, best practices, tool configs)
+- Project-specific → Project `P###` in `./.claude/vault/` (architecture, configs, local decisions)
+
+**Step 5 — Write.** Follow `_template.md` structure. Max 100 lines. Concise, factual, actionable.
+
+**Step 6 — Index.** Update the correct index IMMEDIATELY. Summary: max 15 words.
+
+**Step 7 — Confirm.** Tell user: "Documented to [ID]_topic.md" — don't ask permission, just inform.
+
+**Skip documentation for:** trivial edits, version bumps, typos, mid-refactor, nothing learned.
 
 ---
 
-## ⚠️ AFTER COMPLETING ANY WORK (MANDATORY)
+## Core Rules
 
-**After EVERY task, bug fix, exploration, or decision:**
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                   POST-WORK CHECKLIST                           │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  STEP 1: Assess - Did I learn something?                        │
-│  ───────────────────────────────────────                        │
-│  Ask yourself:                                                  │
-│  □ Did I understand how something works?                        │
-│  □ Did I find a bug and fix it?                                 │
-│  □ Did I make a decision with reasoning?                        │
-│  □ Did I discover a pattern or best practice?                   │
-│  □ Did I configure or set up something?                         │
-│  □ Did I find a gotcha, edge case, or quirk?                    │
-│  □ Did I explore code and learn the architecture?               │
-│                                                                 │
-│  → If ANY checkbox = YES → MUST DOCUMENT                        │
-│  → If ALL checkboxes = NO → Skip documentation                  │
-│                                                                 │
-│  STEP 2: Search - Does related doc exist?                       │
-│  ─────────────────────────────────────────                      │
-│  → Search index for: exact topic, related terms, synonyms       │
-│  → Examples: auth/login/signin = SAME topic                     │
-│              docker/container/image = SAME topic                │
-│                                                                 │
-│  STEP 3: Decide - UPDATE or CREATE?                             │
-│  ──────────────────────────────────                             │
-│                                                                 │
-│       ┌─── Related doc EXISTS? ───┐                             │
-│       │                           │                             │
-│      YES                         NO                             │
-│       │                           │                             │
-│       ▼                           ▼                             │
-│    UPDATE IT                   CREATE NEW                       │
-│    (Rule 2: No duplicates)     (with proper routing)            │
-│                                                                 │
-│  STEP 4: Route - Global or Project?                             │
-│  ──────────────────────────────────                             │
-│  (Only if creating NEW doc)                                     │
-│                                                                 │
-│       ┌─── Reusable in OTHER projects? ───┐                     │
-│       │                                    │                    │
-│      YES                                  NO                    │
-│       │                                    │                    │
-│       ▼                                    ▼                    │
-│    GLOBAL (G###)                      PROJECT (P###)            │
-│    ~/.claude/vault/                   ./.claude/vault/          │
-│    • Patterns                         • This codebase only      │
-│    • Best practices                   • Architecture here       │
-│    • Tool configs                     • Local decisions         │
-│    • Reusable knowledge               • Project-specific        │
-│                                                                 │
-│  STEP 5: Save - Write the document                              │
-│  ─────────────────────────────────                              │
-│  → Follow document template structure                           │
-│  → Max 100 lines per document                                   │
-│  → Be concise, factual, actionable                              │
-│                                                                 │
-│  STEP 6: Index - Update the index IMMEDIATELY                   │
-│  ─────────────────────────────────────────────                  │
-│  → Add/update entry in the correct index                        │
-│  → Summary: max 15 words, reflect current state                 │
-│  → Update "Last updated" date                                   │
-│                                                                 │
-│  STEP 7: Confirm - Brief notification                           │
-│  ────────────────────────────────────                           │
-│  → Tell user: "Documented to P001_topic.md"                     │
-│  → Do NOT ask permission, just confirm it's done                │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+1. **Read indexes first** — Always at session start. Search BOTH before creating any doc.
+2. **No duplicates** — Check both indexes for exact topic + related terms + synonyms. Exists anywhere → UPDATE.
+3. **No redundancy** — One topic = one document. Merge related info. If unsure → UPDATE existing.
+4. **No conflicts** — Replace outdated info, don't append contradictions. "Current Understanding" = current truth only. Move old info to History with date.
+5. **Correct routing** — Reusable knowledge → Global `G###`. Project-specific → Project `P###`.
+6. **Minimal context** — Load: indexes + ONE doc max. Never load multiple docs "just in case."
+7. **Size limits** — Index: 50 entries. Doc: 100 lines. Summary: 15 words.
+8. **Always update index** — After ANY doc change, immediately. Summary must reflect current state.
 
 ---
 
-## 🚫 NEVER DO THESE THINGS
+## Editing Rules
+
+### APPEND (adding, enhancing, updating without removing)
+
+Keep ALL existing lines, add new below. Include ALL existing content in old_string when using Edit tool.
 
 ```
-❌ NEVER ask: "Should I document this?"
-❌ NEVER ask: "Want me to save this to the vault?"
-❌ NEVER ask: "I could create a doc for this..."
-❌ NEVER create a doc without checking if one exists
-❌ NEVER forget to update the index after changes
-❌ NEVER create duplicates (same topic, different doc)
-❌ NEVER append contradicting info (replace outdated info)
-❌ NEVER load multiple docs "just in case"
-❌ NEVER REPLACE content when editing - ALWAYS APPEND (see below)
+old_string:                        new_string:
+| 2026-01-25 | Did thing A |      | 2026-01-25 | Did thing A |  ← KEPT
+| 2026-01-25 | Did thing B |      | 2026-01-25 | Did thing B |  ← KEPT
+---                                | 2026-01-26 | Did thing C |  ← ADDED
+                                   ---
 ```
 
----
+If you lose information while editing, you MUST restore it.
 
-## ⚠️ CRITICAL: APPEND, NEVER REPLACE
+### ARCHIVE (removing, replacing, deprecating)
 
-```
-╔═══════════════════════════════════════════════════════════════════╗
-║  WHEN EDITING DOCUMENTS - ESPECIALLY HISTORY SECTIONS:            ║
-║                                                                   ║
-║  ❌ WRONG: Replace existing lines with new content                ║
-║  ✅ RIGHT: Keep ALL existing lines, ADD new lines below           ║
-║                                                                   ║
-║  EXAMPLE - Adding to History:                                     ║
-║                                                                   ║
-║  old_string:                                                      ║
-║    | 2026-01-25 | Did thing A |                                   ║
-║    | 2026-01-25 | Did thing B |                                   ║
-║    ---                         ← Include the ending marker        ║
-║                                                                   ║
-║  new_string:                                                      ║
-║    | 2026-01-25 | Did thing A |  ← KEEP existing                  ║
-║    | 2026-01-25 | Did thing B |  ← KEEP existing                  ║
-║    | 2026-01-25 | Did thing C |  ← ADD new                        ║
-║    ---                                                            ║
-║                                                                   ║
-║  ⚠️  If you lose information while editing, you MUST restore it! ║
-║                                                                   ║
-╚═══════════════════════════════════════════════════════════════════╝
-```
+1. Move removed content to `./.claude/vault/archive/[SAME_FILENAME]` with date + reason header
+2. Add note in main doc: "Archived: [date] - [what was removed]"
+3. Write new behavior in main doc
 
----
-
-## ✅ ALWAYS DO THESE THINGS
-
-```
-✅ ALWAYS read indexes at session start
-✅ ALWAYS search before creating
-✅ ALWAYS update existing docs instead of creating duplicates
-✅ ALWAYS update the index after any doc change
-✅ ALWAYS use correct prefix (G### global, P### project)
-✅ ALWAYS keep docs under 100 lines
-✅ ALWAYS keep summaries under 15 words
-✅ ALWAYS confirm: "Documented to [ID]" (don't ask, just inform)
-✅ ALWAYS APPEND when editing - include ALL existing content in old_string
-```
-
----
-
-## 📝 HOW TO UPDATE AN EXISTING DOCUMENT
-
-When you find a related doc exists, UPDATE it like this:
-
-```
-1. READ the existing document fully
-2. IDENTIFY what section needs updating:
-   → New info? Add to "Current Understanding"
-   → Outdated info? Replace it, move old to "History"
-   → Bug fix? Add to "Gotchas" or "History"
-3. PRESERVE the document structure
-4. UPDATE the "Last Updated" date
-5. UPDATE the index summary if meaning changed
-```
-
-**Example update:**
 ```markdown
-## Current Understanding
-- Auth uses JWT tokens (15min expiry)     ← EXISTING
-- Refresh tokens stored in Redis          ← EXISTING
-- Added: Password reset uses email link   ← NEW (you add this)
-
-## History
-- 2026-01-18: Added password reset flow   ← LOG THE CHANGE
-- 2026-01-15: Initial auth documentation
-```
-
----
-
-## 📦 EDITING DECISION TREE: APPEND vs ARCHIVE
-
-```
-╔═══════════════════════════════════════════════════════════════════╗
-║  WHAT KIND OF CHANGE ARE YOU MAKING?                              ║
-╠═══════════════════════════════════════════════════════════════════╣
-║                                                                   ║
-║  ┌─────────────────────────────────────────────────────────────┐  ║
-║  │ ADDING new functionality?                                   │  ║
-║  │ UPDATING without removing behavior?                         │  ║
-║  │ ENHANCING existing feature?                                 │  ║
-║  └─────────────────────────────────────────────────────────────┘  ║
-║                           ↓                                       ║
-║                    ✅ APPEND LINES                                ║
-║                    Keep ALL existing content                      ║
-║                    Add new lines below                            ║
-║                                                                   ║
-║  ─────────────────────────────────────────────────────────────    ║
-║                                                                   ║
-║  ┌─────────────────────────────────────────────────────────────┐  ║
-║  │ REMOVING a feature/behavior?                                │  ║
-║  │ REPLACING old approach with new?                            │  ║
-║  │ DEPRECATING functionality?                                  │  ║
-║  └─────────────────────────────────────────────────────────────┘  ║
-║                           ↓                                       ║
-║                    📦 ARCHIVE + NOTE                              ║
-║                    1. Move OLD details to archive/                ║
-║                    2. Add note: "Archived: [date] - [what]"       ║
-║                    3. Write NEW behavior in main doc              ║
-║                                                                   ║
-╚═══════════════════════════════════════════════════════════════════╝
-```
-
----
-
-## 📦 HOW TO ARCHIVE (When Removing/Replacing)
-
-When removing behavior or replacing functionality, DON'T just delete - ARCHIVE it:
-
-```
-1. IDENTIFY what's being removed:
-   → Feature details no longer relevant
-   → Approaches that were abandoned
-   → Old implementations replaced by new
-
-2. MOVE to archive file:
-   → Location: ./.claude/vault/archive/[SAME_FILENAME]
-   → Example: P001_auth.md → archive/P001_auth.md
-
-3. FORMAT the archived content:
-   Add to archive file with date header:
-
-   ## Archived [DATE]
-   **Reason:** [Why this was removed]
-
-   [Full content that was removed]
-
-   ---
-
-4. NOTE in main document:
-   Add brief reference: "Archived: [date] - [what]"
-
-5. KEEP main doc lean:
-   Only current, relevant information in context
-```
-
-**Example:**
-```markdown
-# In main doc (P001_feature.md):
-## Current Implementation
+# Main doc (lean):
 - Feature now does X and Y (v2.0)
-- Archived: 2026-01-25 - old v1.0 implementation details
+- Archived: 2026-01-25 - old v1.0 implementation
 
-# In archive/P001_feature.md:
+# archive/P001_feature.md:
 ## Archived 2026-01-25
 **Reason:** Feature rewritten for v2.0
-
-### Old v1.0 Implementation
-- Feature did A, B, and C
-- Used approach X because...
-[Full details preserved here]
+[Full old content preserved here]
 ```
 
-**Why Archive?**
-- Keeps main vault LEAN (less context to load)
-- Historical details still ACCESSIBLE if needed
-- Documents WHY things changed
+Why archive: keeps vault lean, history accessible, documents why things changed.
 
 ---
 
-## 📝 EXAMPLES: APPEND vs ARCHIVE
+## Document Granularity
 
-**Scenario 1: ADDING functionality (use APPEND)**
-```markdown
-# Before:
-- Feature does A and B
+Each topic gets its OWN document — never lump everything into one doc.
 
-# After (APPEND - keep existing, add new):
-- Feature does A and B        ← KEPT
-- Feature now also does C     ← ADDED
-```
+| Type | Contains | Does NOT contain |
+|------|----------|------------------|
+| P001_architecture | Tech stack, structure, design | Feature details |
+| P00X_feature_* | How ONE feature works | Other features |
+| P00X_plan_* | Steps, progress, decisions | Implementation code |
+| P00X_error_* | Error, root cause, solution | Unrelated bugs |
+| P00X_decision_* | What, why, trade-offs | Other decisions |
 
-**Scenario 2: REMOVING/REPLACING behavior (use ARCHIVE)**
-```markdown
-# Before (in main doc):
-- Feature does A, B, and C
-- Implementation uses approach X
-- [50 lines of details about X]
-
-# After (in main doc - lean):
-- Feature now does D and E (v2.0)
-- Archived: 2026-01-25 - v1.0 behavior (A,B,C with approach X)
-
-# In archive/P001_feature.md:
-## Archived 2026-01-25
-**Reason:** v2.0 rewrite - changed from A,B,C to D,E
-
-### Old v1.0 Behavior
-- Feature did A, B, and C
-- Implementation used approach X
-- [50 lines of details preserved here]
-```
-- Documents WHY things changed
+- Same feature + more details → UPDATE existing
+- New feature/bug/decision → CREATE new doc
+- Anti-pattern: one 200-line doc covering everything
 
 ---
 
-## 📝 HOW TO CREATE A NEW DOCUMENT
+## Updating an Existing Document
 
-When no related doc exists, CREATE new:
+1. Read the full document
+2. New info → add to "Current Understanding". Outdated → replace, move old to "History" with date. Bug → add to "Gotchas"
+3. Preserve document structure
+4. Update "Last Updated" date + index summary if meaning changed
+
+---
+
+## Creating a New Document
+
+1. Route: `G###` (global, reusable) or `P###` (project-specific)
+2. Next ID: read index, find highest, increment
+3. Create: `[vault]/[ID]_topic_name.md` using `_template.md` structure
+4. Content: Summary, Current Understanding (Key Points, Details), Gotchas, History
+5. Index: add to Active Documents table + Related Terms Map + update Quick Stats
+6. Confirm: "Created P003_topic.md"
+
+---
+
+## Settings
+
+Read from `~/.claude/vault/settings.json`:
+
+| Setting | Values | Effect |
+|---------|--------|--------|
+| mode | `local` / `full` / `global` | Which indexes to read/write |
+| enforcement | `light` / `balanced` / `strict` | How aggressively hooks block |
+| limits | max_docs: 50, max_lines: 100, max_summary: 15w | Document size caps |
+
+**Enforcement:** light = no mid-work blocking, balanced = blocks after 8 edits across 2+ files (default), strict = blocks after 4 edits. Change: `/ctx-mode enforcement [level]`
+
+**Mode:** local = project vault only (default), full = both vaults, global = global vault only.
+
+---
+
+## System Structure
 
 ```
-1. DETERMINE routing:
-   → Reusable? → Global G### in ~/.claude/vault/
-   → Project-only? → Project P### in ./.claude/vault/
-
-2. GET next ID:
-   → Read index, find highest ID, increment
-   → Global: G001, G002, G003...
-   → Project: P001, P002, P003...
-
-3. CREATE file with template structure:
-   → Location: [vault]/[ID]_topic_name.md
-   → Example: ./.claude/vault/P003_payment_integration.md
-
-4. WRITE content:
-   → Summary (1 paragraph)
-   → Current Understanding (the facts)
-   → Key Points (bullet points)
-   → Gotchas (if any)
-   → History (creation date)
-
-5. UPDATE index:
-   → Add row to "Active Documents" table
-   → Add related terms to "Related Terms Map"
-   → Update "Quick Stats" count
-
-6. CONFIRM to user:
-   → "Created P003_payment_integration.md"
+~/.claude/vault/      Global docs (G### prefix) — cross-project, reusable
+./.claude/vault/      Project docs (P### prefix) — this project only
+~/.claude/commands/   Slash commands (/ctx-*)
+~/.claude/hooks/      Hook scripts (session, stop, post-tool)
 ```
 
 ---
 
-## 📊 DOCUMENT TEMPLATE
+## Commands
 
-Every document should follow this structure:
-
-```markdown
-# [ID] - [Topic Title]
-
-> **Status:** Active
-> **Created:** YYYY-MM-DD
-> **Last Updated:** YYYY-MM-DD
-
----
-
-## Summary
-
-[One paragraph: What is this about? Why does it matter?]
-
----
-
-## Current Understanding
-
-[The current, accurate facts. Always up-to-date truth.]
-
-### Key Points
-- Point 1
-- Point 2
-- Point 3
-
-### Details
-[Deeper explanation if needed]
-
----
-
-## Gotchas & Edge Cases
-
-[Things that surprised you, bugs found, quirks]
-
-- Gotcha 1: explanation
-- Edge case: how to handle
-
----
-
-## History
-
-| Date | Change |
-|------|--------|
-| YYYY-MM-DD | Initial creation |
-| YYYY-MM-DD | Added X, updated Y |
-
----
-```
-
----
-
-## 📊 Respect Settings
-
-Always check `~/.claude/vault/settings.json`:
-
-```json
-{
-  "mode": "local",           ← Determines what indexes to read/write
-  "enforcement": "balanced", ← light | balanced | strict
-  "limits": {
-    "max_global_docs": 50,   ← Don't exceed these
-    "max_project_docs": 50,
-    "max_doc_lines": 100,
-    "max_summary_words": 15
-  }
-}
-```
-
-**Enforcement levels:**
-- `light` → No mid-work blocking. Only Stop hook at session end.
-- `balanced` (default) → Blocks after 8 edits across 2+ files if undocumented.
-- `strict` → Blocks after 4 edits across 2+ files if undocumented.
-- Change with: `/ctx-mode enforcement balanced`
-
-**Mode behavior:**
-- `local` (default): Only use project vault, ignore global
-- `full`: Use both global and project vaults
-- `global`: Only use global vault, ignore project
-
----
-
-## Overview
-
-This document defines a **two-tier documentation system** for efficient context management across all projects. Inspired by concepts from arxiv:2512.24601, this system ensures:
-
-- Minimal context loading (max: 2 indexes + 1 doc)
-- No information loss across sessions
-- No duplicates, conflicts, or redundancy
-- Cross-project knowledge retention
-- Project-specific isolation when needed
-
----
-
-## System Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                   TWO-TIER CONTEXTVAULT SYSTEM                  │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   TIER 1: GLOBAL (~/.claude/vault/)                            │
-│   ├── Cross-project knowledge                                   │
-│   ├── Patterns, best practices, tools                          │
-│   ├── Reusable learnings                                        │
-│   └── Available in ALL projects                                 │
-│                                                                 │
-│   TIER 2: PROJECT (./.claude/vault/)                           │
-│   ├── Project-specific knowledge                                │
-│   ├── This codebase's architecture, configs                    │
-│   ├── Local decisions and implementations                       │
-│   └── Only relevant to THIS project                            │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Folder Structure
-
-```
-~/.claude/                          # GLOBAL (all projects)
-├── CLAUDE.md                       # This file (global instructions)
-├── commands/                       # Custom slash commands
-│   ├── ctx-init.md
-│   ├── ctx-status.md
-│   ├── ctx-mode.md
-│   ├── ctx-help.md
-│   ├── ctx-new.md
-│   ├── ctx-doc.md
-│   ├── ctx-update.md
-│   ├── ctx-search.md
-│   └── ctx-read.md
-└── vault/
-    ├── index.md                    # Global knowledge index
-    ├── settings.json               # Mode settings
-    ├── _template.md                # Template for new docs
-    ├── G001_topic.md               # Global docs (G prefix)
-    └── archive/                    # Deprecated global docs
-
-./.claude/                          # PROJECT-SPECIFIC (per project)
-└── vault/
-    ├── index.md                    # Project knowledge index
-    ├── P001_topic.md               # Project docs (P prefix)
-    └── archive/                    # Deprecated project docs
-```
-
-### Naming Convention
-
-| Prefix | Meaning | Location | Example |
-|--------|---------|----------|---------|
-| `G###` | Global knowledge | `~/.claude/vault/` | `G001_docker_patterns.md` |
-| `P###` | Project knowledge | `./.claude/vault/` | `P001_auth_system.md` |
-
----
-
-## Core Rules (NEVER BREAK)
-
-### Rule 1: READ INDEXES FIRST
-- **Always** read global index: `~/.claude/vault/index.md`
-- **Then** read project index (if exists): `./.claude/vault/index.md`
-- Search BOTH before creating any doc
-
-### Rule 2: NO DUPLICATES
-- Check BOTH indexes for exact topic
-- Check for RELATED terms (auth/login/signin = same)
-- Check for SYNONYMS and similar concepts
-- If exists ANYWHERE → UPDATE, don't create
-
-### Rule 3: NO REDUNDANCY
-- One topic = One document (globally unique)
-- Merge related info into existing doc
-- If unsure → UPDATE existing rather than create new
-
-### Rule 4: NO CONFLICTS
-- When updating → REPLACE outdated info (don't append contradictions)
-- "Current Understanding" = ONLY current truth
-- Move old info to History section with date
-- If info contradicts existing → UPDATE that doc
-
-### Rule 5: CORRECT ROUTING
-Document to the RIGHT location:
-
-| If knowledge is... | Route to... | Prefix |
-|-------------------|-------------|--------|
-| General pattern, reusable | Global `~/.claude/vault/` | G### |
-| Tool/tech best practice | Global `~/.claude/vault/` | G### |
-| Project architecture | Project `./.claude/vault/` | P### |
-| Project-specific config | Project `./.claude/vault/` | P### |
-| This codebase only | Project `./.claude/vault/` | P### |
-
-### Rule 6: MINIMAL CONTEXT LOADING
-- Load: Global index + Project index + ONE doc
-- **NEVER** load multiple docs "just in case"
-- **NEVER** load all docs from either location
-
-### Rule 7: SIZE LIMITS
-| Item | Max Size |
-|------|----------|
-| Global index | 50 entries |
-| Project index | 50 entries |
-| Each document | 100 lines |
-| Index summary | 15 words |
-
-### Rule 8: ALWAYS UPDATE INDEX
-- After ANY doc change → Update that doc's index IMMEDIATELY
-- Index summary must reflect CURRENT state
-- Index is source of truth
-
----
-
-## DOCUMENT GRANULARITY (CRITICAL!)
-
-**Each topic type gets its OWN document. DO NOT lump everything into one doc!**
-
-### What Goes Where:
-
-| Doc Type | Contains | Does NOT Contain |
-|----------|----------|------------------|
-| P001_architecture.md | Tech stack, file structure, high-level design | Features, implementations, details |
-| P00X_feature_name.md | How ONE feature works, its API, gotchas | Other features |
-| P00X_plan_task.md | Steps, progress tracking, decisions | Implementation details |
-| P00X_error_desc.md | Error message, root cause, solution | Unrelated bugs |
-| P00X_decision_topic.md | What decided, why, trade-offs | Other decisions |
-
-### When to CREATE NEW vs UPDATE:
-
-| Situation | Action |
-|-----------|--------|
-| Same feature, more details | UPDATE existing feature doc |
-| NEW feature added | CREATE new P00X_feature.md |
-| Bug in existing feature | UPDATE that feature's doc |
-| New unrelated bug | CREATE new P00X_error.md |
-| Architecture changed | UPDATE P001_architecture.md |
-| Starting new task | CREATE new P00X_plan.md |
-
-### Anti-Pattern:
-
-- BAD: P001_architecture.md with 200 lines covering everything
-- GOOD: Multiple focused docs (P001=structure, P002=audio, P003=visual, etc.)
-
----
-
-## Available Commands
-
-| Command | Description |
+| Command | When to use |
 |---------|-------------|
-| `/ctx-init` | Initialize ContextVault in current project |
-| `/ctx-status` | Show global and project status |
-| `/ctx-doc` | Quick document after task |
-| `/ctx-error` | Document bug fixes and solutions |
-| `/ctx-decision` | Document architecture/design decisions |
-| `/ctx-plan` | Document multi-step implementation plans |
-| `/ctx-bootstrap` | Auto-scan codebase and generate docs |
-| `/ctx-snippet` | Save reusable code patterns |
-| `/ctx-intel` | Document codebase exploration findings |
-| `/ctx-handoff` | Create session handoff summary |
-| `/ctx-search` | Search both indexes |
-| `/ctx-read` | Read document by ID |
-| `/ctx-update` | Update existing document by ID |
-| `/ctx-new` | Create new document with routing |
-| `/ctx-mode` | Toggle mode: full / local / global |
-| `/ctx-help` | Show all ContextVault commands |
+| `/ctx-doc` | Built a feature, learned something |
+| `/ctx-error` | Fixed a bug (error, root cause, solution) |
+| `/ctx-decision` | Made architecture/design choice (options, trade-offs) |
+| `/ctx-plan` | Working on multi-step task (goals, progress) |
+| `/ctx-snippet` | Found reusable code pattern |
+| `/ctx-intel` | Explored codebase (architecture, patterns) |
+| `/ctx-bootstrap` | New project — auto-generate all docs |
+| `/ctx-handoff` | Ending session (summary for next time) |
+| `/ctx-search` | Find existing docs |
+| `/ctx-read` | Read doc by ID |
+| `/ctx-update` | Update doc by ID |
+| `/ctx-new` | Create doc with guided routing |
+| `/ctx-mode` | Change mode or enforcement level |
+| `/ctx-init` | Initialize vault in project |
+| `/ctx-status` | Show vault status |
+| `/ctx-help` | Show all commands |
 
 ---
 
-## When to Use Which Command
+## Never
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                CHOOSE THE RIGHT COMMAND                         │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  🐛 FIXED A BUG?                                                │
-│     → /ctx-error                                                │
-│     Documents: error message, root cause, solution              │
-│                                                                 │
-│  🤔 MADE A DECISION?                                            │
-│     → /ctx-decision                                             │
-│     Documents: options considered, why you chose, trade-offs    │
-│                                                                 │
-│  📋 WORKING ON MULTI-STEP TASK?                                 │
-│     → /ctx-plan                                                 │
-│     Documents: goals, tasks, progress tracking                  │
-│                                                                 │
-│  📦 CREATED UTILITY/HELPER CODE?                                │
-│     → /ctx-snippet                                              │
-│     Documents: reusable patterns for future use                 │
-│                                                                 │
-│  🔍 EXPLORED THE CODEBASE?                                      │
-│     → /ctx-intel                                                │
-│     Documents: architecture, patterns, how things work          │
-│                                                                 │
-│  🚀 NEW PROJECT / NEED FULL DOCS?                               │
-│     → /ctx-bootstrap                                            │
-│     Auto-creates: architecture + feature docs for whole repo    │
-│                                                                 │
-│  ✨ BUILT A FEATURE/LEARNED SOMETHING?                          │
-│     → /ctx-doc                                                  │
-│     Documents: general knowledge, features, learnings           │
-│                                                                 │
-│  👋 ENDING YOUR SESSION?                                        │
-│     → /ctx-handoff                                              │
-│     Creates: summary for the next session to continue           │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+- Ask "Should I document this?" or "Want me to save this?" — just do it
+- Create a doc without checking if one exists first
+- Forget to update the index after changes
+- Create duplicates (same topic, different doc)
+- Load multiple docs "just in case"
+- Replace content when editing — always APPEND (or ARCHIVE if removing)
 
 ---
 
-## Quick Reference
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                 CONTEXTVAULT QUICK REFERENCE                    │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│ START:    Read ~/.claude/vault/index.md (global)               │
-│           Read ./.claude/vault/index.md (project, if exists)   │
-│                                                                 │
-│ SEARCH:   Check BOTH indexes for exact + related + synonyms    │
-│                                                                 │
-│ LOAD:     2 indexes + ONE doc maximum                          │
-│                                                                 │
-│ EXISTS:   UPDATE existing doc (never create duplicate)         │
-│                                                                 │
-│ NEW:      Complete pre-creation checklist first                │
-│           Route: Global (G###) or Project (P###)               │
-│                                                                 │
-│ ALWAYS:   Update index after any doc change                    │
-│                                                                 │
-│ LIMITS:   Index: 50 entries | Doc: 100 lines | Summary: 15w    │
-│                                                                 │
-│ NEVER:    Duplicate | Load all | Append conflicts | Skip index │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Task Tracking Integration
-
-In addition to ContextVault documentation:
-- Always document before starting task
-- Mark tasks as done when completed
-- Use TodoWrite for complex multi-step tasks
-
----
-
-## Acknowledgments
-
-This project is inspired by concepts from:
-- "Recursive Language Models" (arxiv:2512.24601)
-
-This is an independent implementation and is not affiliated with or endorsed by the paper's authors.
-
----
-
-## Version History
+*Inspired by arxiv:2512.24601. Independent implementation.*
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.7.5 | $(date +%Y-%m-%d) | /ctx-bootstrap: Auto-scan codebase and generate docs |
+| 1.8.4 | $(date +%Y-%m-%d) | Optimized CLAUDE.md: 775 to ~170 lines, zero info loss |
+| 1.8.3 | 2026-02-02 | Configurable enforcement levels (light/balanced/strict) |
+| 1.8.2 | 2026-02-02 | Smart blocking at session end for significant work |
+| 1.8.1 | 2026-02-02 | Completion-triggered reminders (TodoWrite + git commit) |
+| 1.8.0 | 2026-02-02 | Remind Don't Block - milestone-based enforcement |
+| 1.7.5 | 2026-02-02 | /ctx-bootstrap: Auto-scan codebase and generate docs |
 | 1.7.4 | 2026-01-25 | Bug fix: Stop enforcer session fallback |
-| 1.7.3 | 2026-01-25 | APPEND vs ARCHIVE decision tree with clear examples |
-| 1.7.2 | 2026-01-25 | Core rule: APPEND, NEVER REPLACE - prevents info loss |
-| 1.7.1 | 2026-01-25 | /ctx-plan + archive mechanism for historical content |
-| 1.7.0 | 2026-01-25 | Smart detection - suggests right command for your work |
-| 1.6.9 | 2026-01-25 | BLOCKING PreToolUse - Mid-session enforcement |
-| 1.6.8 | 2026-01-19 | More aggressive Stop hook enforcement |
-| 1.6.7 | 2026-01-19 | BLOCKING Stop hook forces documentation |
-| 1.6.0 | 2026-01-18 | Added 6 new commands (health, note, changelog, link, quiz, explain) |
+| 1.7.3 | 2026-01-25 | APPEND vs ARCHIVE decision tree |
+| 1.7.2 | 2026-01-25 | Core rule: APPEND, NEVER REPLACE |
+| 1.7.1 | 2026-01-25 | /ctx-plan + archive mechanism |
+| 1.7.0 | 2026-01-25 | Smart detection - suggests right command |
+| 1.6.0 | 2026-01-18 | Added 6 new commands |
 | 1.5.3 | 2026-01-18 | Added /ctx-upgrade command |
 | 1.4.0 | 2026-01-17 | Enhanced instructions with clear checklists |
 CLAUDE_MD_EOF

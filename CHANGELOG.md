@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.4] - 2026-02-02
+
+### Changed - Optimized Global CLAUDE.md
+- **775 lines → ~170 lines** (78% reduction, zero information loss)
+- Removed all ASCII art boxes, replaced with compact markdown
+- Merged duplicate sections: "Quick Reference" (was 100% duplicate of Core Rules), "Always" list (was duplicate of Core Rules), "Choose right command" flowchart (merged into commands table)
+- Replaced inline document template (50 lines) with reference to existing `_template.md`
+- Condensed system architecture diagram to 4-line structure listing
+- Merged append/archive examples into single concise section
+- Updated version history with v1.8.0–1.8.3 entries that were missing from template
+
+---
+
 ## [1.8.3] - 2026-02-02
 
 ### Added - Configurable Enforcement Levels
