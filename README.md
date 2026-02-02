@@ -20,7 +20,7 @@
 
 **Give Claude Code a persistent memory across ALL your projects** 🧠
 
-[![Version](https://img.shields.io/badge/version-1.7.6-blue.svg)](https://github.com/ahmadzein/ContextVault)
+[![Version](https://img.shields.io/badge/version-1.8.0-blue.svg)](https://github.com/ahmadzein/ContextVault)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude-Code-blueviolet)](https://claude.ai)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ahmadzein/ContextVault/pulls)
@@ -198,7 +198,7 @@ Full / Local / Global
 ### 🪝
 **Auto-Hooks**
 
-SessionStart + PreToolUse + PostToolUse + Stop
+SessionStart + PostToolUse + Stop
 
 </td>
 <td align="center">
@@ -221,12 +221,11 @@ Never lose your docs
 ~/.claude/
 ├── 📄 CLAUDE.md                 # Global instructions (all projects)
 ├── 📄 settings.json             # 🪝 Global hooks (SessionStart + Stop + PostToolUse)
-├── 📁 hooks/                    # Hook scripts (v1.7.6)
+├── 📁 hooks/                    # Hook scripts (v1.8.0)
 │   ├── ctx-session-start.sh    # Session start status
 │   ├── ctx-session-end.sh      # Session end reminder
-│   ├── ctx-stop-enforcer.sh    # BLOCKING - forces docs before stop
-│   ├── ctx-pre-tool.sh         # BLOCKING - limits undocumented changes
-│   └── ctx-post-tool.sh        # Smart reminders with deduplication
+│   ├── ctx-stop-enforcer.sh    # Session summary & self-assessment
+│   └── ctx-post-tool.sh        # Milestone-based reminders
 ├── 📁 commands/                 # Your new superpowers ⚡
 │   ├── ctx-init.md
 │   ├── ctx-status.md
@@ -940,34 +939,30 @@ Maximum in context at any time:
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                     GLOBAL HOOKS                              │
+│                   GLOBAL HOOKS (v1.8.0)                       │
 │              ~/.claude/settings.json                          │
 ├──────────────────────────────────────────────────────────────┤
 │                                                               │
 │  SessionStart → 🔐 ContextVault Active                        │
-│                 📚 MANDATORY: Read vault indexes now!         │
+│                 📚 Read vault indexes at session start        │
 │                    Global:  ~/.claude/vault/index.md          │
 │                    Project: ./.claude/vault/index.md          │
 │                                                               │
-│  PreToolUse   → 🛑 BLOCKING (v1.6.9+, dedup v1.7.6)           │
-│                 Blocks code changes after 2 undocumented edits│
-│                 Forces documentation before continuing!       │
-│                 Dedup: Handles Claude Code's double-execution │
+│  PostToolUse  → 📝 Milestone-Based Reminders                  │
+│                 New file created: gentle nudge                │
+│                 Major refactor (10+ edits, 3+ files): remind │
+│                 Git commit detected: remind                   │
+│                 Dedup: Handles Claude Code double-execution   │
 │                                                               │
-│  PostToolUse  → 📝 Smart Reminders (v1.7.6 with dedup)        │
-│                 LARGE CHANGE: >20 lines = immediate remind    │
-│                 1st edit: "Document your PLAN first"          │
-│                 New file: "FEATURE ADDED: filename"           │
-│                 Dedup: Won't spam on double-execution         │
-│                                                               │
-│  Stop         → 🛑 BLOCKING - Forces documentation!           │
-│                 Cannot end session without documenting        │
-│                 Run /ctx-doc to document learnings!           │
+│  Stop         → 📊 Session Summary & Self-Assessment          │
+│                 Shows: files changed, docs modified           │
+│                 Suggests what to document (non-blocking)      │
+│                 Lets AI decide what's worth documenting       │
 │                                                               │
 └──────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────┐
-│                    PROJECT HOOKS (v1.7.6)                     │
+│                   PROJECT HOOKS (v1.8.0)                      │
 │              .claude/settings.json                            │
 ├──────────────────────────────────────────────────────────────┤
 │                                                               │
@@ -975,19 +970,16 @@ Maximum in context at any time:
 │                 📖 Read: ./.claude/vault/index.md             │
 │                 🏷️  Use P### prefix for project docs          │
 │                                                               │
-│  PreToolUse   → 🛑 Same as global (BLOCKING)                  │
-│                 Enforces documentation in this project        │
+│  PostToolUse  → 📝 Same as global (milestone-based)           │
+│                 Ensures reminders work in all projects        │
 │                                                               │
-│  PostToolUse  → 📝 Same as global (with deduplication)        │
-│                 Ensures reminders work in all projects!       │
-│                                                               │
-│  Stop         → 🛑 BLOCKING - Must document before stopping!  │
-│                 Use /ctx-doc with P### prefix                 │
+│  Stop         → 📊 Same as global (session summary)           │
+│                 Non-blocking self-assessment                  │
 │                                                               │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-**Two layers of enforcement:**
+**Two layers of gentle enforcement:**
 - **Global hooks** → Installed by the installer, apply to ALL projects
 - **Project hooks** → Installed by `/ctx-init`, apply to THIS project
 

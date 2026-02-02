@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.7.6"
+VERSION="1.8.0"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -607,48 +607,24 @@ create_stop_enforcer_script() {
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault BLOCKING Stop Hook v1.7.5
-# CONTEXT-AWARE: Suggests the RIGHT command based on what you did
-# Reads work type tracking to give intelligent recommendations
+# ContextVault Stop Hook v1.8.0
+# SELF-ASSESSMENT: Shows session summary, lets AI decide what to document
+# Non-blocking - provides information, not friction
 
 PROJECT_VAULT="./.claude/vault"
 GLOBAL_VAULT="$HOME/.claude/vault"
-EDIT_COUNT_FILE="/tmp/ctx-edit-count"
-WRITE_COUNT_FILE="/tmp/ctx-write-count"
-FIRST_EDIT_FILE="/tmp/ctx-first-edit-done"
-WORK_TYPE_FILE="/tmp/ctx-work-type"
+FILES_CHANGED="/tmp/ctx-files-changed"
+MILESTONE_FILE="/tmp/ctx-milestones"
 
-# Check code edits AND new file writes
-edit_count=0
-write_count=0
-[ -f "$EDIT_COUNT_FILE" ] && edit_count=$(cat "$EDIT_COUNT_FILE" 2>/dev/null || echo "0")
-[ -f "$WRITE_COUNT_FILE" ] && write_count=$(cat "$WRITE_COUNT_FILE" 2>/dev/null || echo "0")
-total_changes=$((edit_count + write_count))
-
-# Read work types to give context-aware suggestions
-work_types=""
-suggested_cmd="/ctx-doc"
-suggested_desc="Document feature/learning"
-if [ -f "$WORK_TYPE_FILE" ]; then
-    work_types=$(cat "$WORK_TYPE_FILE" 2>/dev/null | sort | uniq | tr '\n' ' ')
-
-    # Determine best command based on work done (priority order)
-    if echo "$work_types" | grep -q "bugfix"; then
-        suggested_cmd="/ctx-error"
-        suggested_desc="Document the bug fix you made"
-    elif echo "$work_types" | grep -q "decision"; then
-        suggested_cmd="/ctx-decision"
-        suggested_desc="Document the decision you made"
-    elif echo "$work_types" | grep -q "snippet"; then
-        suggested_cmd="/ctx-snippet"
-        suggested_desc="Save the utility code for reuse"
-    elif echo "$work_types" | grep -q "exploration"; then
-        suggested_cmd="/ctx-intel"
-        suggested_desc="Document your codebase findings"
-    fi
+# Count files changed this session
+total_edits=0
+unique_files=0
+if [ -f "$FILES_CHANGED" ]; then
+    total_edits=$(wc -l < "$FILES_CHANGED" 2>/dev/null | tr -d ' ')
+    unique_files=$(sort -u "$FILES_CHANGED" 2>/dev/null | wc -l | tr -d ' ')
 fi
 
-# Check session start time
+# Check session docs
 session_file=""
 session_start=0
 my_ppid="${PPID:-0}"
@@ -662,48 +638,43 @@ for f in /tmp/ctx_session_${my_ppid}_* /tmp/ctx_session_*; do
     fi
 done
 
-# Count docs modified this session (project OR global)
 docs_modified=0
 if [ "$session_start" -gt 0 ]; then
     [ -d "$PROJECT_VAULT" ] && docs_modified=$((docs_modified + $(find "$PROJECT_VAULT" -maxdepth 1 -name "P*.md" -newermt "@$session_start" 2>/dev/null | wc -l)))
     [ -d "$GLOBAL_VAULT" ] && docs_modified=$((docs_modified + $(find "$GLOBAL_VAULT" -maxdepth 1 -name "G*.md" -newermt "@$session_start" 2>/dev/null | wc -l)))
 else
-    # BUG FIX v1.7.4: Fallback when no session file - check docs modified in last 30 minutes
     [ -d "$PROJECT_VAULT" ] && docs_modified=$((docs_modified + $(find "$PROJECT_VAULT" -maxdepth 1 -name "P*.md" -mmin -30 2>/dev/null | wc -l)))
     [ -d "$GLOBAL_VAULT" ] && docs_modified=$((docs_modified + $(find "$GLOBAL_VAULT" -maxdepth 1 -name "G*.md" -mmin -30 2>/dev/null | wc -l)))
 fi
 
-# BLOCK if ANY code changes but NO documentation
-# v1.7.5: Context-aware blocking with smart command suggestions
-if [ "$total_changes" -gt 0 ] && [ "$docs_modified" -eq 0 ]; then
-    # Build context-aware reason message
-    reason="🛑 BLOCKED: You made code changes but haven't documented!\n\n"
-    reason+="📊 This session: $edit_count edits + $write_count new files, 0 docs created\n\n"
-    reason+="👉 BEST MATCH FOR YOUR WORK:\n"
-    reason+="   $suggested_cmd - $suggested_desc\n\n"
-    reason+="Other options:\n"
-    reason+="   /ctx-doc      - General documentation\n"
-    reason+="   /ctx-error    - Bug fix documentation\n"
-    reason+="   /ctx-decision - Architecture decisions\n"
-    reason+="   /ctx-snippet  - Reusable code patterns\n"
-    reason+="   /ctx-intel    - Codebase exploration notes\n\n"
-    reason+="⚠️ Create a P###_*.md or G###_*.md document to continue!"
+# Show session summary
+echo ""
+echo "📊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  ContextVault - Session Summary"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Code changes: $total_edits edits across $unique_files files"
+echo "  Docs updated: $docs_modified"
 
-    printf '{\n  "decision": "block",\n  "reason": "%s"\n}' "$reason"
-    exit 0
+# If changes were made but nothing documented, give a gentle nudge
+if [ "$total_edits" -gt 0 ] && [ "$docs_modified" -eq 0 ]; then
+    echo ""
+    echo "  💭 You made changes but didn't document."
+    echo "  Worth capturing anything? Quick options:"
+    echo "     /ctx-doc      - Feature or learning"
+    echo "     /ctx-error    - Bug fix you solved"
+    echo "     /ctx-handoff  - Session summary for next time"
+    echo ""
+    echo "  Skip if nothing meaningful was learned."
+elif [ "$docs_modified" -gt 0 ]; then
+    echo "  ✅ Documentation up to date!"
 fi
 
-# ALLOW - show summary
-echo ""
-echo "ContextVault Session Complete"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Code changes: $total_changes"
-echo "  Docs created: $docs_modified"
-[ -n "$work_types" ] && echo "  Work types: $work_types"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# Clean up
-rm -f "$EDIT_COUNT_FILE" "$WRITE_COUNT_FILE" "$FIRST_EDIT_FILE" "$WORK_TYPE_FILE" /tmp/ctx-plan-reminded 2>/dev/null
+# Clean up ALL temp files
+rm -f "$FILES_CHANGED" "$MILESTONE_FILE" /tmp/ctx-hook-seen \
+      /tmp/ctx-edit-count /tmp/ctx-write-count /tmp/ctx-first-edit-done \
+      /tmp/ctx-work-type /tmp/ctx-plan-reminded 2>/dev/null
 [ -n "$session_file" ] && rm -f "$session_file" 2>/dev/null
 
 exit 0
@@ -713,138 +684,55 @@ SCRIPT_EOF
     secure_file "$script_path" 755
 }
 
-# Create the BLOCKING PreToolUse hook (v1.7.5 - Blocks further edits until documented)
+# PreToolUse hook removed in v1.8.0 - no more mid-work blocking
+# Keeping function as no-op for clean upgrade path
 create_pre_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-pre-tool.sh"
-    safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
-
-    cat << 'SCRIPT_EOF' > "$script_path"
-#!/bin/bash
-# ContextVault BLOCKING PreToolUse Hook v1.7.6
-# BLOCKS further code changes until you document!
-# FIX: Deduplication for Claude Code double-execution bug
-
-EDIT_COUNT_FILE="/tmp/ctx-edit-count"
-WRITE_COUNT_FILE="/tmp/ctx-write-count"
-DEDUP_FILE="/tmp/ctx-hook-seen"
-DOC_THRESHOLD=2  # Block after 2 changes (dedup now handles double-run)
-
-# Read input to get tool info
-INPUT=$(cat)
-TOOL_NAME=$(echo "$INPUT" | grep -o '"tool_name"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
-FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
-
-# DEDUPLICATION: Skip if we've seen this exact operation this second
-DEDUP_KEY="PRE_${TOOL_NAME}_${FILE_PATH}_$(date +%s)"
-if grep -qxF "$DEDUP_KEY" "$DEDUP_FILE" 2>/dev/null; then
-    exit 0  # Duplicate run, skip
-fi
-echo "$DEDUP_KEY" >> "$DEDUP_FILE"
-# Keep file small
-tail -50 "$DEDUP_FILE" 2>/dev/null > "$DEDUP_FILE.tmp" && mv "$DEDUP_FILE.tmp" "$DEDUP_FILE" 2>/dev/null
-
-# Allow documentation writes (vault files)
-if [[ "$FILE_PATH" == *"vault/"* ]] && [[ "$FILE_PATH" == *".md" ]]; then
-    exit 0
-fi
-
-# Allow non-code files
-is_code_file() {
-    case "$1" in
-        *.ts|*.tsx|*.js|*.jsx|*.py|*.go|*.rs|*.java|*.rb|*.php|*.swift|*.kt|*.c|*.cpp|*.h|*.cs|*.vue|*.svelte|*.astro|*.sh|*.bash) return 0 ;;
-        *) return 1 ;;
-    esac
+    # Remove old blocking script if it exists
+    rm -f "$script_path" 2>/dev/null
 }
 
-if ! is_code_file "$FILE_PATH"; then
-    exit 0
-fi
-
-# Get current counts
-edit_count=0
-write_count=0
-[ -f "$EDIT_COUNT_FILE" ] && edit_count=$(cat "$EDIT_COUNT_FILE" 2>/dev/null || echo "0")
-[ -f "$WRITE_COUNT_FILE" ] && write_count=$(cat "$WRITE_COUNT_FILE" 2>/dev/null || echo "0")
-total_changes=$((edit_count + write_count))
-
-# BLOCK if too many changes without documentation
-if [ "$total_changes" -ge "$DOC_THRESHOLD" ]; then
-    cat << BLOCK_EOF
-{
-  "decision": "block",
-  "reason": "🛑 BLOCKED: You have $total_changes undocumented code changes!\n\n⚠️ You CANNOT make more code changes until you document.\n\n✅ Run one of these NOW:\n   /ctx-doc    - Document feature/learning\n   /ctx-error  - Document bug fix\n   /ctx-decision - Document architecture choice\n\n📝 After documenting, you can continue coding."
-}
-BLOCK_EOF
-    exit 0
-fi
-
-# Allow the tool to proceed
-exit 0
-SCRIPT_EOF
-
-    chmod +x "$script_path"
-    secure_file "$script_path" 755
-}
-
-# Create the ctx-post-tool hook script (v1.7.6 - with deduplication fix)
+# Create the ctx-post-tool hook script (v1.8.0 - milestone-based, no counters)
 create_post_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault PostToolUse Hook v1.7.6
-# SMART DETECTION: Suggests the RIGHT command for each situation
-# FIX: Deduplication for Claude Code double-execution bug
+# ContextVault PostToolUse Hook v1.8.0
+# MILESTONE-BASED: Only reminds at meaningful checkpoints
+# No counters, no blocking, no spam. Just gentle nudges.
 
-EDIT_COUNT_FILE="/tmp/ctx-edit-count"
-WRITE_COUNT_FILE="/tmp/ctx-write-count"
-FIRST_EDIT_FILE="/tmp/ctx-first-edit-done"
-WORK_TYPE_FILE="/tmp/ctx-work-type"
+MILESTONE_FILE="/tmp/ctx-milestones"
+FILES_CHANGED="/tmp/ctx-files-changed"
 DEDUP_FILE="/tmp/ctx-hook-seen"
-[ ! -f "$EDIT_COUNT_FILE" ] && echo "0" > "$EDIT_COUNT_FILE"
-[ ! -f "$WRITE_COUNT_FILE" ] && echo "0" > "$WRITE_COUNT_FILE"
 
 INPUT=$(cat)
 
-# Extract tool info early for dedup check
 TOOL_NAME=$(echo "$INPUT" | grep -o '"tool_name"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
 FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
-
-# DEDUPLICATION: Skip if we've seen this exact operation this second
-DEDUP_KEY="POST_${TOOL_NAME}_${FILE_PATH}_$(date +%s)"
-if grep -qxF "$DEDUP_KEY" "$DEDUP_FILE" 2>/dev/null; then
-    exit 0  # Duplicate run, skip
-fi
-echo "$DEDUP_KEY" >> "$DEDUP_FILE"
-# Keep file small - only recent entries
-tail -50 "$DEDUP_FILE" 2>/dev/null > "$DEDUP_FILE.tmp" && mv "$DEDUP_FILE.tmp" "$DEDUP_FILE" 2>/dev/null
-
-# Extract command for Bash detection
 COMMAND=$(echo "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
 
-LINE_COUNT=$(echo "$INPUT" | grep -o '\\n' | wc -l | tr -d ' ')
+# DEDUP: Skip duplicate runs within same second (Claude Code double-execution bug)
+DEDUP_KEY="POST_${TOOL_NAME}_${FILE_PATH}_$(date +%s)"
+if grep -qxF "$DEDUP_KEY" "$DEDUP_FILE" 2>/dev/null; then
+    exit 0
+fi
+echo "$DEDUP_KEY" >> "$DEDUP_FILE"
+tail -50 "$DEDUP_FILE" 2>/dev/null > "$DEDUP_FILE.tmp" && mv "$DEDUP_FILE.tmp" "$DEDUP_FILE" 2>/dev/null
+
+# Skip vault file operations silently
+if [[ "$FILE_PATH" == *"vault/"* ]] && [[ "$FILE_PATH" == *".md" ]]; then
+    exit 0
+fi
 
 remind() {
     echo ""
-    echo "🚨━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━🚨"
+    echo "💡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━💡"
     echo "  ContextVault: $1"
-    echo "  👉 $2"
-    echo "🚨━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━🚨"
+    echo "  → $2"
+    echo "💡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━💡"
 }
-
-# Track work type for context-aware suggestions
-track_work() {
-    echo "$1" >> "$WORK_TYPE_FILE"
-}
-
-# Reset ALL counters when documenting to vault
-if [[ "$FILE_PATH" == *"vault/"* ]] && [[ "$FILE_PATH" == *".md" ]]; then
-    echo "0" > "$EDIT_COUNT_FILE"
-    echo "0" > "$WRITE_COUNT_FILE"
-    rm -f "$FIRST_EDIT_FILE" "$WORK_TYPE_FILE" 2>/dev/null
-    exit 0
-fi
 
 is_code_file() {
     case "$1" in
@@ -853,84 +741,64 @@ is_code_file() {
     esac
 }
 
-# Detect if file is a utility/helper (for /ctx-snippet suggestion)
-is_utility_file() {
-    case "$1" in
-        *util*|*helper*|*common*|*shared*|*lib/*) return 0 ;;
-        *) return 1 ;;
-    esac
+already_reminded() {
+    grep -qxF "$1" "$MILESTONE_FILE" 2>/dev/null
+}
+
+mark_reminded() {
+    echo "$1" >> "$MILESTONE_FILE"
 }
 
 case "$TOOL_NAME" in
     "Write")
+        # Track file for session summary
         if is_code_file "$FILE_PATH"; then
-            WCOUNT=$(($(cat "$WRITE_COUNT_FILE" 2>/dev/null || echo "0") + 1))
-            echo "$WCOUNT" > "$WRITE_COUNT_FILE"
-            FNAME=$(basename "$FILE_PATH")
+            echo "$FILE_PATH" >> "$FILES_CHANGED"
 
-            if is_utility_file "$FILE_PATH"; then
-                track_work "snippet"
-                remind "🆕 UTILITY FILE: $FNAME" "Save as reusable pattern: /ctx-snippet"
-            else
-                track_work "feature"
-                remind "🆕 NEW FILE: $FNAME" "Document this feature: /ctx-doc"
+            # Milestone: New code file created (remind once)
+            if ! already_reminded "new_file"; then
+                mark_reminded "new_file"
+                FNAME=$(basename "$FILE_PATH")
+                remind "New file: $FNAME" "Consider /ctx-doc when this feature is complete"
             fi
         fi
         ;;
     "Edit")
+        # Track file for session summary
         if is_code_file "$FILE_PATH"; then
-            COUNT=$(($(cat "$EDIT_COUNT_FILE" 2>/dev/null || echo "0") + 1))
-            echo "$COUNT" > "$EDIT_COUNT_FILE"
+            echo "$FILE_PATH" >> "$FILES_CHANGED"
 
-            if [ "$LINE_COUNT" -gt 20 ]; then
-                track_work "feature"
-                remind "⚠️ LARGE CHANGE (~$LINE_COUNT lines)" "Document feature: /ctx-doc"
-            elif [ ! -f "$FIRST_EDIT_FILE" ]; then
-                touch "$FIRST_EDIT_FILE"
-                remind "📝 Task started ($COUNT edit)" "Document your plan: /ctx-doc"
-            else
-                remind "✏️ Code edit #$COUNT" "Remember to document: /ctx-doc"
+            # Milestone: Significant refactor (10+ edits across 3+ files)
+            if [ -f "$FILES_CHANGED" ]; then
+                total_edits=$(wc -l < "$FILES_CHANGED" 2>/dev/null | tr -d ' ')
+                unique_files=$(sort -u "$FILES_CHANGED" 2>/dev/null | wc -l | tr -d ' ')
+                if [ "$total_edits" -ge 10 ] && [ "$unique_files" -ge 3 ] && ! already_reminded "refactor"; then
+                    mark_reminded "refactor"
+                    remind "Significant work: $total_edits edits across $unique_files files" "When done: /ctx-doc or /ctx-handoff"
+                fi
             fi
         fi
         ;;
     "Bash")
         CMD_LOWER=$(echo "$COMMAND" | tr '[:upper:]' '[:lower:]')
 
-        # Detect git commit with bug fix keywords
-        if echo "$CMD_LOWER" | grep -qE 'git commit'; then
+        # Milestone: Git commit (remind once per session)
+        if echo "$CMD_LOWER" | grep -qE 'git commit' && ! already_reminded "commit"; then
+            mark_reminded "commit"
             if echo "$CMD_LOWER" | grep -qE '(fix|bug|error|issue|patch|hotfix|resolve)'; then
-                track_work "bugfix"
-                remind "🐛 BUG FIX COMMITTED" "Document the fix: /ctx-error"
-            elif echo "$CMD_LOWER" | grep -qE '(decide|choice|chose|option|vs|instead)'; then
-                track_work "decision"
-                remind "🤔 DECISION MADE" "Document the decision: /ctx-decision"
+                remind "Bug fix committed" "Worth documenting? /ctx-error"
             elif echo "$CMD_LOWER" | grep -qE '(feat|feature|add|new|implement)'; then
-                track_work "feature"
-                remind "✨ FEATURE COMMITTED" "Document the feature: /ctx-doc"
+                remind "Feature committed" "Worth documenting? /ctx-doc"
+            else
+                remind "Code committed" "Worth documenting? /ctx-doc"
             fi
         fi
-
-        # Test detection
-        echo "$CMD_LOWER" | grep -qE '(npm test|yarn test|pnpm test|pytest|go test|cargo test|jest|vitest|mocha)' && {
-            track_work "test"
-            remind "✅ Tests completed" "Document results: /ctx-error (if fixed) or /ctx-doc"
-        }
-
-        # Build detection
-        echo "$CMD_LOWER" | grep -qE '(npm run build|yarn build|pnpm build|make |cargo build|go build|tsc|webpack|vite build)' && {
-            remind "🔨 Build completed" "Document any issues: /ctx-error"
-        }
         ;;
     "Task")
-        track_work "exploration"
-        remind "🔍 Exploration completed" "Document findings: /ctx-intel"
-        ;;
-    "TodoWrite")
-        # Count todos in the input (detect multiple items)
-        TODO_COUNT=$(echo "$INPUT" | grep -o '"content"' | wc -l | tr -d ' ')
-        if [ "$TODO_COUNT" -ge 3 ]; then
-            track_work "planning"
-            remind "📋 MULTI-STEP TASK ($TODO_COUNT items)" "Document your plan: /ctx-plan"
+        # Milestone: Exploration completed (remind once)
+        if ! already_reminded "exploration"; then
+            mark_reminded "exploration"
+            remind "Exploration completed" "Useful findings? /ctx-intel"
         fi
         ;;
 esac
@@ -949,11 +817,11 @@ create_global_hooks() {
     create_session_start_script
     create_session_end_script
     create_stop_enforcer_script
-    create_pre_tool_script
+    create_pre_tool_script    # v1.8.0: removes old blocking script
     create_post_tool_script
 
     # The hooks JSON content - uses full path with $HOME for proper expansion
-    # v1.7.5: BLOCKING PreToolUse + Stop hooks for mid-session AND end-session enforcement
+    # v1.8.0: Removed PreToolUse blocking, Stop is non-blocking self-assessment
     local hooks_json="{
   \"hooks\": {
     \"SessionStart\": [
@@ -971,30 +839,7 @@ create_global_hooks() {
         \"hooks\": [
           {
             \"type\": \"command\",
-            \"command\": \"$HOME/.claude/hooks/ctx-stop-enforcer.sh\",
-            \"blocking\": true
-          }
-        ]
-      }
-    ],
-    \"PreToolUse\": [
-      {
-        \"matcher\": \"Edit\",
-        \"hooks\": [
-          {
-            \"type\": \"command\",
-            \"command\": \"$HOME/.claude/hooks/ctx-pre-tool.sh\",
-            \"blocking\": true
-          }
-        ]
-      },
-      {
-        \"matcher\": \"Write\",
-        \"hooks\": [
-          {
-            \"type\": \"command\",
-            \"command\": \"$HOME/.claude/hooks/ctx-pre-tool.sh\",
-            \"blocking\": true
+            \"command\": \"$HOME/.claude/hooks/ctx-stop-enforcer.sh\"
           }
         ]
       }
@@ -1035,15 +880,6 @@ create_global_hooks() {
             \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\"
           }
         ]
-      },
-      {
-        \"matcher\": \"TodoWrite\",
-        \"hooks\": [
-          {
-            \"type\": \"command\",
-            \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\"
-          }
-        ]
       }
     ]
   }
@@ -1073,10 +909,10 @@ create_global_hooks() {
             merged=$(echo "$existing" | jq --argjson new_hooks "$hooks_json" '
                 # Ensure hooks object exists
                 .hooks //= {} |
-                # Replace SessionStart, Stop, PreToolUse, and PostToolUse with our hooks
+                # v1.8.0: Replace hooks, remove PreToolUse blocking
                 .hooks.SessionStart = $new_hooks.hooks.SessionStart |
                 .hooks.Stop = $new_hooks.hooks.Stop |
-                .hooks.PreToolUse = $new_hooks.hooks.PreToolUse |
+                del(.hooks.PreToolUse) |
                 .hooks.PostToolUse = $new_hooks.hooks.PostToolUse
             ' 2>/dev/null)
 
@@ -1117,7 +953,7 @@ create_global_hooks() {
     secure_file "$settings_file" 600
 }
 
-# Generate project hooks JSON for ctx-init (v1.7.5: includes BLOCKING PreToolUse + PostToolUse)
+# Generate project hooks JSON for ctx-init (v1.8.0: non-blocking, milestone-based)
 generate_project_hooks_json() {
     cat << 'HOOKS_EOF'
 {
@@ -1137,7 +973,7 @@ generate_project_hooks_json() {
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"\\n💾 Project Documentation Reminder\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nDocument project-specific learnings!\\nUse /ctx-doc with P### prefix\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\""
+            "command": "~/.claude/hooks/ctx-stop-enforcer.sh"
           }
         ]
       }
@@ -1193,55 +1029,34 @@ create_claude_md() {
     cat << 'CLAUDE_MD_EOF'
 # Global Claude Instructions
 
-**Version:** 1.7.5
+**Version:** 1.8.0
 **Last Updated:** $(date +%Y-%m-%d)
 **System:** ContextVault - External Context Management
 
 ---
 
-# ⚡ CRITICAL: DOCUMENT AS YOU WORK ⚡
+# 📝 DOCUMENT AT MEANINGFUL MILESTONES
 
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
-║  AFTER *EVERY* COMPLETED TASK — ASK YOURSELF:                     ║
+║  AT NATURAL STOPPING POINTS — ASK YOURSELF:                       ║
 ║                                                                   ║
 ║  Did I learn something? Fix a bug? Make a decision? Find a quirk?║
 ║                                                                   ║
-║  → If YES: DOCUMENT IT NOW. Not later. NOW.                       ║
-║  → Search index → UPDATE existing OR CREATE new                   ║
+║  → If YES: Document it. Search index → UPDATE existing or CREATE ║
 ║  → Tell user: "Documented to [ID]_topic.md"                       ║
 ║                                                                   ║
-║  ⚠️  DO NOT WAIT until session end. Document IMMEDIATELY.         ║
+║  WHEN to document (natural milestones):                           ║
+║  • Feature complete (not mid-edit)                                ║
+║  • Bug fix solved and verified                                    ║
+║  • Architecture decision made                                     ║
+║  • Session ending                                                 ║
+║                                                                   ║
+║  WHEN NOT to document:                                            ║
+║  • Trivial edits (version bumps, typos, config)                   ║
+║  • Mid-refactor (wait until the refactor is done)                 ║
+║  • Nothing meaningful was learned                                 ║
 ╚═══════════════════════════════════════════════════════════════════╝
-```
-
----
-
-# 🛑 STOP-AND-DOCUMENT RULES (MANDATORY!)
-
-```
-╔═══════════════════════════════════════════════════════════════════╗
-║  🛑 STOP AFTER EACH OF THESE - DO NOT CONTINUE UNTIL DOCUMENTED:  ║
-╠═══════════════════════════════════════════════════════════════════╣
-║                                                                   ║
-║  ■ Created a new file (>20 lines)?     → STOP → Document feature  ║
-║  ■ Added a new feature/module?         → STOP → Document feature  ║
-║  ■ User asked for MULTIPLE things?     → STOP after EACH one      ║
-║  ■ Completed a significant change?     → STOP → Document it       ║
-║                                                                   ║
-║  ⛔ NEVER batch multiple features without documenting each!       ║
-║  ⛔ NEVER move to "next feature" without documenting current!     ║
-║  ⛔ NEVER say "Adding X... Next: Y" - document X first!           ║
-║                                                                   ║
-╚═══════════════════════════════════════════════════════════════════╝
-
-USER: "Create 4 features" → RIGHT WAY:
-  1. Create plan doc first
-  2. Create feature 1 → STOP → Document it → Update plan ✅
-  3. Create feature 2 → STOP → Document it → Update plan ✅
-  ... and so on
-
-Large file (>50 lines) = MANDATORY STOP & DOCUMENT
 ```
 
 ---
@@ -2270,9 +2085,9 @@ Use the **Write tool** to create `./CLAUDE.md` with this EXACT content:
 │  ✅ Explored codebase?  → /ctx-intel or /ctx-doc                │
 │  ✅ Ending session?     → /ctx-handoff                          │
 │                                                                 │
-│  🚫 NEVER ask "Should I document?"                              │
-│  🚫 NEVER wait until later                                      │
-│  🚫 NEVER skip documentation                                    │
+│  💭 Not every edit needs documenting                             │
+│  💭 Document at milestones, not mid-edit                         │
+│  💭 Skip if nothing meaningful was learned                       │
 └─────────────────────────────────────────────────────────────────┘
 
 ### SESSION START (AUTOMATIC):
@@ -2280,15 +2095,20 @@ Use the **Write tool** to create `./CLAUDE.md` with this EXACT content:
 2. Review what's already documented
 3. Use that knowledge in your work
 
+### WHEN TO DOCUMENT:
+- Feature complete → /ctx-doc
+- Bug fix solved → /ctx-error
+- Architecture decision → /ctx-decision
+- Session ending → /ctx-handoff
+- NOT: trivial edits, version bumps, mid-refactor
+
 ### RULES:
-- NEVER ask "Should I document this?" → Just document it
-- NEVER ask "Want me to save this?" → Just save it
 - Project docs → `./.claude/vault/` with P### prefix
-- ALWAYS update index after every change
-- DOCUMENT FIRST, then move to next task
+- ALWAYS update index after doc changes
+- Search before creating (no duplicates)
 
 ### COMMANDS:
-`/ctx-doc` `/ctx-error` `/ctx-decision` `/ctx-snippet` `/ctx-handoff` `/ctx-intel` `/ctx-status`
+`/ctx-doc` `/ctx-error` `/ctx-decision` `/ctx-snippet` `/ctx-handoff` `/ctx-intel` `/ctx-bootstrap`
 ```
 
 #### OPTION 2: If ./CLAUDE.md EXISTS but has NO "ContextVault" section → APPEND TO IT
@@ -2317,9 +2137,9 @@ Use the **Write tool** to create `./CLAUDE.md` with this EXACT content:
 │  ✅ Explored codebase?  → /ctx-intel or /ctx-doc                │
 │  ✅ Ending session?     → /ctx-handoff                          │
 │                                                                 │
-│  🚫 NEVER ask "Should I document?"                              │
-│  🚫 NEVER wait until later                                      │
-│  🚫 NEVER skip documentation                                    │
+│  💭 Not every edit needs documenting                             │
+│  💭 Document at milestones, not mid-edit                         │
+│  💭 Skip if nothing meaningful was learned                       │
 └─────────────────────────────────────────────────────────────────┘
 
 ### SESSION START (AUTOMATIC):
@@ -2327,15 +2147,20 @@ Use the **Write tool** to create `./CLAUDE.md` with this EXACT content:
 2. Review what's already documented
 3. Use that knowledge in your work
 
+### WHEN TO DOCUMENT:
+- Feature complete → /ctx-doc
+- Bug fix solved → /ctx-error
+- Architecture decision → /ctx-decision
+- Session ending → /ctx-handoff
+- NOT: trivial edits, version bumps, mid-refactor
+
 ### RULES:
-- NEVER ask "Should I document this?" → Just document it
-- NEVER ask "Want me to save this?" → Just save it
 - Project docs → `./.claude/vault/` with P### prefix
-- ALWAYS update index after every change
-- DOCUMENT FIRST, then move to next task
+- ALWAYS update index after doc changes
+- Search before creating (no duplicates)
 
 ### COMMANDS:
-`/ctx-doc` `/ctx-error` `/ctx-decision` `/ctx-snippet` `/ctx-handoff` `/ctx-intel` `/ctx-status`
+`/ctx-doc` `/ctx-error` `/ctx-decision` `/ctx-snippet` `/ctx-handoff` `/ctx-intel` `/ctx-bootstrap`
 ```
 
 #### OPTION 3: If ./CLAUDE.md EXISTS and ALREADY has "ContextVault" section → SKIP
@@ -2455,30 +2280,7 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-stop-enforcer.sh",
-            "blocking": true
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/ctx-pre-tool.sh",
-            "blocking": true
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/ctx-pre-tool.sh",
-            "blocking": true
+            "command": "~/.claude/hooks/ctx-stop-enforcer.sh"
           }
         ]
       }
@@ -2607,7 +2409,7 @@ Created/Updated:
 ├── ./CLAUDE.md                ← ContextVault instructions (FORCES ctx usage!)
 ├── .claude/vault/index.md     ← Project documentation index
 ├── .claude/vault/_template.md ← Document template
-├── .claude/settings.json      ← Project hooks (SessionStart + Stop + PreToolUse + PostToolUse)
+├── .claude/settings.json      ← Project hooks (SessionStart + Stop + PostToolUse)
 └── .git/hooks/pre-commit      ← Git hook (documentation reminder on commit)
 
 🪝 Hooks installed:
@@ -5116,27 +4918,24 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
 ```markdown
 # Project Instructions
 
-## 🚨 CONTEXTVAULT - MANDATORY (DO NOT SKIP!) 🚨
+## 📝 CONTEXTVAULT - Document at Milestones
 
-**STOP. READ THIS. FOLLOW IT.**
-
-### ⚡ AFTER EVERY TASK - DOCUMENT IMMEDIATELY ⚡
+### When to Document
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  COMPLETED A TASK? → DOCUMENT IT NOW!                           │
+│  AT MEANINGFUL MILESTONES:                                       │
 │                                                                 │
 │  ✅ Fixed a bug?        → /ctx-error                            │
 │  ✅ Made a decision?    → /ctx-decision                         │
-│  ✅ Learned something?  → /ctx-doc                              │
+│  ✅ Built a feature?    → /ctx-doc                              │
 │  ✅ Found useful code?  → /ctx-snippet                          │
 │  ✅ Explored codebase?  → /ctx-intel                            │
+│  ✅ Ending session?     → /ctx-handoff                          │
 │                                                                 │
-│  🚫 NEVER ask "Should I document?"                              │
-│  🚫 NEVER wait until later                                      │
-│  🚫 NEVER skip documentation                                    │
-│                                                                 │
-│  ✅ Just DO IT. Then say: "Documented to [file]"                │
+│  💭 Not every edit needs documenting                             │
+│  💭 Document at milestones, not mid-edit                         │
+│  💭 Skip if nothing meaningful was learned                       │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -5150,7 +4949,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
 ### 🏷️ Project Docs
 - Location: `./.claude/vault/`
 - Prefix: P### (P001, P002, etc.)
-- Update index after EVERY change
+- Update index after doc changes
 
 ### Commands
 `/ctx-doc` `/ctx-error` `/ctx-snippet` `/ctx-decision` `/ctx-intel` `/ctx-handoff` `/ctx-search` `/ctx-read` `/ctx-bootstrap`
@@ -5158,9 +4957,9 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
 
 ---
 
-## Step 3: Update .claude/settings.json (CRITICAL - BLOCKING HOOKS!)
+## Step 3: Update .claude/settings.json (Hooks Configuration)
 
-**REPLACE** `.claude/settings.json` with this content that includes **BLOCKING PreToolUse + Stop hooks**:
+**REPLACE** `.claude/settings.json` with this content:
 
 ```json
 {
@@ -5180,30 +4979,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/ctx-stop-enforcer.sh",
-            "blocking": true
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/ctx-pre-tool.sh",
-            "blocking": true
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/ctx-pre-tool.sh",
-            "blocking": true
+            "command": "~/.claude/hooks/ctx-stop-enforcer.sh"
           }
         ]
       }
@@ -5292,7 +5068,7 @@ ContextVault vX.Y.Z Upgrade Complete!
 
 Updated:
   ./CLAUDE.md              Latest instructions & rules
-  .claude/settings.json    All hooks (SessionStart, Stop, PreToolUse, PostToolUse)
+  .claude/settings.json    All hooks (SessionStart, Stop, PostToolUse)
   .git/hooks/pre-commit    Git reminder
 
 Key Features:
@@ -6287,16 +6063,15 @@ install_contextvault() {
     echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
     echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
     echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(25 slash commands)${NC}"
-    echo -e "   ${CYAN}🪝${NC} ~/.claude/hooks/             ${DIM}(5 hook scripts)${NC}"
+    echo -e "   ${CYAN}🪝${NC} ~/.claude/hooks/             ${DIM}(4 hook scripts)${NC}"
     echo -e "   ${CYAN}⚙️${NC} ~/.claude/settings.json      ${DIM}(Hook triggers)${NC}"
     echo ""
     echo -e "${BOLD}🪝 Hooks installed (v${VERSION}):${NC}"
-    echo -e "   ${GREEN}SessionStart${NC}  → Reminds to read vault indexes"
-    echo -e "   ${RED}PreToolUse${NC}    → BLOCKS edits after 2 undocumented changes!"
-    echo -e "   ${GREEN}PostToolUse${NC}  → Reminds on every code change"
-    echo -e "   ${RED}Stop${NC}          → BLOCKS session end until documented!"
+    echo -e "   ${GREEN}SessionStart${NC}  → Loads vault indexes at session start"
+    echo -e "   ${GREEN}PostToolUse${NC}   → Milestone-based documentation reminders"
+    echo -e "   ${GREEN}Stop${NC}          → Session summary & self-assessment"
     echo ""
-    echo -e "${BOLD}🎮 New in v1.7 (25 commands total):${NC}"
+    echo -e "${BOLD}🎮 New in v1.8 (25 commands total):${NC}"
     echo -e "   ${YELLOW}/ctx-bootstrap${NC} 🚀 Auto-scan codebase ${DIM}(NEW!)${NC}"
     echo -e "   ${YELLOW}/ctx-plan${NC}      📋 Multi-step task plans"
     echo -e "   ${YELLOW}/ctx-error${NC}     🐛 Bug fix documentation"

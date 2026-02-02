@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.0] - 2026-02-02
+
+### Changed - "Remind, Don't Block" Enforcement Model
+- **Removed PreToolUse blocking** - No more blocking edits mid-work
+  - PreToolUse hook is now a no-op (removes old blocking script on install)
+  - Counter-based blocking (`DOC_THRESHOLD`) completely removed
+- **Stop hook → Non-blocking self-assessment** - Shows session summary instead of blocking
+  - Displays files changed, unique files, docs modified
+  - Suggests what to document with gentle nudge
+  - AI decides what's worth documenting (no forced stops)
+- **PostToolUse → Milestone-based reminders** - Only nudges at meaningful checkpoints
+  - New file created (once per file)
+  - Major refactor (10+ edits across 3+ files)
+  - Git commit detected
+  - Codebase exploration completed
+  - No more "every edit" counters or spam
+- **Softened CLAUDE.md templates** - Replaced aggressive "MANDATORY/STOP/BLOCK" language
+  - Now uses "Document at Milestones" guidance
+  - Added "When NOT to document" section
+  - Instructions feel collaborative, not coercive
+
+### Why This Change
+Previous blocking model created friction — interrupting coding flow, blocking the AI mid-work,
+and generating busywork documentation. The new model trusts the AI to self-assess while providing
+meaningful reminders at natural breakpoints.
+
+---
+
 ## [1.7.6] - 2026-01-25
 
 ### Fixed
