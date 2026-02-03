@@ -168,19 +168,55 @@ nav.scrolled { padding: 0.75rem 0; background: rgba(12, 10, 9, 0.95); }
   margin: 0 auto 3rem;
   line-height: 1.7;
 }
+/* --- Install box with OS tabs --- */
+.install-wrapper {
+  margin-bottom: 2.5rem;
+}
+.os-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.os-tab {
+  background: transparent;
+  border: 1px solid var(--stone-700);
+  color: var(--stone-500);
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  transition: all 0.3s;
+}
+.os-tab:hover {
+  border-color: var(--stone-500);
+  color: var(--stone-300);
+}
+.os-tab.active {
+  background: var(--gold-500);
+  border-color: var(--gold-500);
+  color: var(--stone-950);
+}
+.install-cmd {
+  display: none;
+  justify-content: center;
+}
+.install-cmd.active {
+  display: flex;
+}
 .hero-install {
   display: inline-flex; align-items: center; gap: 1rem;
   background: var(--stone-900);
   border: 1px solid var(--stone-700);
   border-radius: 10px;
   padding: 0.25rem 0.25rem 0.25rem 1.5rem;
-  margin-bottom: 2.5rem;
   position: relative;
   overflow: hidden;
   max-width: 100%;
 }
 .hero-install::before {
-  content: '$';
+  content: attr(data-prefix);
   font-family: var(--font-mono);
   color: var(--gold-500);
   font-weight: 600;
@@ -701,6 +737,8 @@ footer {
   .steps::before { display: none; }
   .hero-install { flex-direction: column; gap: 0.5rem; padding: 1rem; }
   .hero-install code { font-size: 0.65rem; }
+  .os-tabs { flex-wrap: wrap; }
+  .install-wrapper { padding: 0 1rem; }
   .cta-box { padding: 2.5rem 1.5rem; }
 }
 @media (max-width: 480px) {
@@ -730,9 +768,30 @@ footer {
     <div class="hero-badge reveal"><span class="dot"></span> v1.8.4 &mdash; Now with configurable enforcement</div>
     <h1 class="reveal reveal-delay-1">Your Knowledge,<br><em>Never Lost</em></h1>
     <p class="hero-sub reveal reveal-delay-2">External context management for Claude Code. A two-tier documentation system that persists your knowledge across every session.</p>
-    <div class="hero-install reveal reveal-delay-3">
-      <code id="install-cmd">curl -sL https://ctx-vault.com/install | bash</code>
-      <button class="copy-btn" onclick="copyInstall()">Copy</button>
+    <div class="install-wrapper reveal reveal-delay-3">
+      <div class="os-tabs">
+        <button class="os-tab" data-os="mac" onclick="switchOS('mac')">macOS</button>
+        <button class="os-tab" data-os="linux" onclick="switchOS('linux')">Linux</button>
+        <button class="os-tab" data-os="windows" onclick="switchOS('windows')">Windows</button>
+      </div>
+      <div class="install-cmd" data-os="mac">
+        <div class="hero-install" data-prefix="$">
+          <code>curl -sL https://ctx-vault.com/install | bash</code>
+          <button class="copy-btn" onclick="copyCmd('curl -sL https://ctx-vault.com/install | bash')">Copy</button>
+        </div>
+      </div>
+      <div class="install-cmd" data-os="linux">
+        <div class="hero-install" data-prefix="$">
+          <code>curl -sL https://ctx-vault.com/install | bash</code>
+          <button class="copy-btn" onclick="copyCmd('curl -sL https://ctx-vault.com/install | bash')">Copy</button>
+        </div>
+      </div>
+      <div class="install-cmd" data-os="windows">
+        <div class="hero-install" data-prefix="PS>">
+          <code>irm https://ctx-vault.com/install.ps1 | iex</code>
+          <button class="copy-btn" onclick="copyCmd('irm https://ctx-vault.com/install.ps1 | iex')">Copy</button>
+        </div>
+      </div>
     </div>
     <div class="hero-actions reveal reveal-delay-4">
       <a href="https://github.com/ahmadzein/ContextVault" class="btn btn-primary" target="_blank" rel="noopener">
@@ -917,9 +976,30 @@ footer {
     <div class="cta-box reveal">
       <h2>Start remembering.</h2>
       <p>Install ContextVault in 30 seconds. Your vault starts building from session one.</p>
-      <div class="hero-install" style="margin-left:auto;margin-right:auto;">
-        <code>curl -sL https://ctx-vault.com/install | bash</code>
-        <button class="copy-btn" onclick="copyInstall()">Copy</button>
+      <div class="install-wrapper" style="margin-bottom:2rem;">
+        <div class="os-tabs">
+          <button class="os-tab" data-os="mac" onclick="switchOS('mac')">macOS</button>
+          <button class="os-tab" data-os="linux" onclick="switchOS('linux')">Linux</button>
+          <button class="os-tab" data-os="windows" onclick="switchOS('windows')">Windows</button>
+        </div>
+        <div class="install-cmd" data-os="mac">
+          <div class="hero-install" data-prefix="$" style="margin:0 auto;">
+            <code>curl -sL https://ctx-vault.com/install | bash</code>
+            <button class="copy-btn" onclick="copyCmd('curl -sL https://ctx-vault.com/install | bash')">Copy</button>
+          </div>
+        </div>
+        <div class="install-cmd" data-os="linux">
+          <div class="hero-install" data-prefix="$" style="margin:0 auto;">
+            <code>curl -sL https://ctx-vault.com/install | bash</code>
+            <button class="copy-btn" onclick="copyCmd('curl -sL https://ctx-vault.com/install | bash')">Copy</button>
+          </div>
+        </div>
+        <div class="install-cmd" data-os="windows">
+          <div class="hero-install" data-prefix="PS>" style="margin:0 auto;">
+            <code>irm https://ctx-vault.com/install.ps1 | iex</code>
+            <button class="copy-btn" onclick="copyCmd('irm https://ctx-vault.com/install.ps1 | iex')">Copy</button>
+          </div>
+        </div>
       </div>
       <div class="hero-actions">
         <a href="https://github.com/ahmadzein/ContextVault" class="btn btn-primary" target="_blank" rel="noopener">
@@ -948,14 +1028,39 @@ footer {
 </footer>
 
 <script>
-// Copy install command
-function copyInstall() {
-  const cmd = 'curl -sL https://ctx-vault.com/install | bash';
-  navigator.clipboard.writeText(cmd).then(() => {
-    const btns = document.querySelectorAll('.copy-btn');
-    btns.forEach(b => { b.textContent = 'Copied!'; setTimeout(() => b.textContent = 'Copy', 2000); });
+// OS Detection
+function detectOS() {
+  const ua = navigator.userAgent.toLowerCase();
+  if (ua.includes('win')) return 'windows';
+  if (ua.includes('mac')) return 'mac';
+  if (ua.includes('linux')) return 'linux';
+  return 'mac'; // default
+}
+
+// Switch OS tabs
+function switchOS(os) {
+  // Update all tab buttons
+  document.querySelectorAll('.os-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.os === os);
+  });
+  // Update all install commands
+  document.querySelectorAll('.install-cmd').forEach(cmd => {
+    cmd.classList.toggle('active', cmd.dataset.os === os);
   });
 }
+
+// Copy command
+function copyCmd(cmd) {
+  navigator.clipboard.writeText(cmd).then(() => {
+    event.target.textContent = 'Copied!';
+    setTimeout(() => event.target.textContent = 'Copy', 2000);
+  });
+}
+
+// Initialize OS tabs on load
+document.addEventListener('DOMContentLoaded', () => {
+  switchOS(detectOS());
+});
 
 // Scroll reveal
 const observer = new IntersectionObserver((entries) => {
@@ -969,7 +1074,6 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
 // Nav scroll effect
-let lastScroll = 0;
 window.addEventListener('scroll', () => {
   const nav = document.getElementById('nav');
   nav.classList.toggle('scrolled', window.scrollY > 50);
