@@ -86,11 +86,19 @@ Ever wished Claude could **remember** what you taught it last session? That's Co
 
 ### ⚡ One command. That's it. ⚡
 
+**🍎 macOS / 🐧 Linux:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash
+curl -sL https://ctx-vault.com/install | bash
+```
+
+**🪟 Windows (PowerShell):**
+```powershell
+irm https://ctx-vault.com/install.ps1 | iex
 ```
 
 **Watch the magic happen!** 🎩✨
+
+🌐 **Website:** [ctx-vault.com](https://ctx-vault.com)
 
 </div>
 
@@ -99,6 +107,7 @@ curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install
 
 <br>
 
+**macOS / Linux:**
 ```bash
 # Download
 curl -O https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh
@@ -108,6 +117,13 @@ chmod +x install-contextvault.sh
 
 # Run it! 🎉
 ./install-contextvault.sh
+```
+
+**Windows (PowerShell as Admin):**
+```powershell
+# Download and run
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.ps1" -OutFile "install-contextvault.ps1"
+.\install-contextvault.ps1
 ```
 
 </details>
@@ -1018,7 +1034,7 @@ Maximum in context at any time:
 
 ```bash
 # 1. Install ContextVault
-curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash
+curl -sL https://ctx-vault.com/install | bash
 
 # 2. Start Claude Code in any project
 claude
@@ -1202,24 +1218,31 @@ cp -r ~/.contextvault_backup_XXXXXX/vault ~/.claude/vault
 | # | Requirement | Status |
 |---|-------------|--------|
 | 1 | Claude Code CLI installed | ✅ |
-| 2 | Bash shell | ✅ |
+| 2 | Bash shell (macOS/Linux) or PowerShell 5.1+ (Windows) | ✅ |
 | 3 | A desire for organized knowledge | ✅ |
 
 ### Platform Support
 
-| Platform | Support | Install Location |
-|----------|---------|------------------|
-| **macOS** | ✅ Native | `~/.claude` |
-| **Linux** | ✅ Native | `~/.claude` |
-| **Windows + WSL** | ✅ Full | `~/.claude` (in WSL) |
-| **Windows + Git Bash** | ✅ Full | `~/.claude` |
-| **Windows Native (CMD/PowerShell)** | ⚠️ See below | N/A |
+| Platform | Support | Install Command |
+|----------|---------|-----------------|
+| **macOS** | ✅ Full | `curl -sL https://ctx-vault.com/install \| bash` |
+| **Linux** | ✅ Full | `curl -sL https://ctx-vault.com/install \| bash` |
+| **Windows (PowerShell)** | ✅ Full | `irm https://ctx-vault.com/install.ps1 \| iex` |
+| **Windows + WSL** | ✅ Full | `curl -sL https://ctx-vault.com/install \| bash` |
+| **Windows + Git Bash** | ✅ Full | `curl -sL https://ctx-vault.com/install \| bash` |
 
 ### 🪟 Windows Users
 
-**Recommended: Use WSL (Windows Subsystem for Linux)**
+**Option 1: Native PowerShell (Recommended for simplicity)**
 
-Claude Code works best with WSL. Here's how to set up:
+```powershell
+# Run in PowerShell (Admin recommended):
+irm https://ctx-vault.com/install.ps1 | iex
+```
+
+> 💡 **Note:** Hooks require Git Bash to be installed. The installer will detect Git Bash and configure hooks automatically. Without Git Bash, everything works except hooks.
+
+**Option 2: WSL (Recommended for full Linux experience)**
 
 ```powershell
 # 1. Install WSL (run in PowerShell as Admin)
@@ -1228,19 +1251,17 @@ wsl --install
 # 2. Restart your computer
 
 # 3. Open WSL terminal and install ContextVault
-curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash
+curl -sL https://ctx-vault.com/install | bash
 ```
 
-**Alternative: Use Git Bash**
+**Option 3: Git Bash**
 
 If you have [Git for Windows](https://git-scm.com/download/win) installed:
 
 ```bash
 # Open Git Bash and run:
-curl -fsSL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash
+curl -sL https://ctx-vault.com/install | bash
 ```
-
-> 💡 **Note:** Native Windows (CMD/PowerShell without WSL or Git Bash) is not supported because the installer is a bash script. WSL is recommended for the best Claude Code experience on Windows anyway!
 
 ### Where Does It Install?
 
