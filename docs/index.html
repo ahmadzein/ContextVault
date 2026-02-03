@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContextVault — Your Knowledge, Never Lost</title>
+<meta name="description" content="External context management for Claude Code. Two-tier documentation that persists across sessions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --stone-950: #0c0a09;
+  --stone-900: #1c1917;
+  --stone-850: #231f1b;
+  --stone-800: #292524;
+  --stone-700: #44403c;
+  --stone-600: #57534e;
+  --stone-500: #78716c;
+  --stone-400: #a8a29e;
+  --stone-300: #d6d3d1;
+  --stone-200: #e7e5e4;
+  --stone-100: #f5f5f4;
+  --gold-500: #d4a853;
+  --gold-400: #e4be6a;
+  --gold-300: #f0d48a;
+  --gold-600: #b8922e;
+  --vault-glow: rgba(212, 168, 83, 0.08);
+  --vault-glow-strong: rgba(212, 168, 83, 0.15);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--stone-950);
+  color: var(--stone-300);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Grain overlay --- */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* --- Utility --- */
+.container { max-width: 1140px; margin: 0 auto; padding: 0 2rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
+/* --- Navigation --- */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 1.25rem 0;
+  background: rgba(12, 10, 9, 0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(212, 168, 83, 0.06);
+  transition: all 0.4s;
+}
+nav.scrolled { padding: 0.75rem 0; background: rgba(12, 10, 9, 0.95); }
+.nav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  max-width: 1140px; margin: 0 auto; padding: 0 2rem;
+}
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 1.5rem; font-weight: 700;
+  color: var(--stone-100);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+.nav-logo span { color: var(--gold-500); }
+.nav-links { display: flex; gap: 2rem; align-items: center; }
+.nav-links a {
+  font-size: 0.875rem; font-weight: 500;
+  color: var(--stone-400); text-decoration: none;
+  transition: color 0.3s;
+}
+.nav-links a:hover { color: var(--gold-400); }
+.nav-cta {
+  font-family: var(--font-mono) !important;
+  font-size: 0.8rem !important;
+  padding: 0.5rem 1.25rem;
+  background: var(--gold-500) !important;
+  color: var(--stone-950) !important;
+  border-radius: 6px;
+  transition: all 0.3s !important;
+}
+.nav-cta:hover { background: var(--gold-400) !important; transform: translateY(-1px); }
+
+/* --- Hero --- */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center;
+  padding: 8rem 0 6rem;
+  position: relative;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 800px; height: 800px;
+  background: radial-gradient(circle, rgba(212, 168, 83, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-content {
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  border: 1px solid rgba(212, 168, 83, 0.2);
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--gold-400);
+  margin-bottom: 2.5rem;
+  background: rgba(212, 168, 83, 0.04);
+}
+.hero-badge .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gold-500);
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--stone-100);
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--gold-500);
+  position: relative;
+}
+.hero h1 em::after {
+  content: '';
+  position: absolute;
+  bottom: 0.05em; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-500), transparent);
+  opacity: 0.4;
+}
+.hero-sub {
+  font-size: 1.25rem;
+  color: var(--stone-400);
+  max-width: 560px;
+  margin: 0 auto 3rem;
+  line-height: 1.7;
+}
+.hero-install {
+  display: inline-flex; align-items: center; gap: 1rem;
+  background: var(--stone-900);
+  border: 1px solid var(--stone-700);
+  border-radius: 10px;
+  padding: 0.25rem 0.25rem 0.25rem 1.5rem;
+  margin-bottom: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  max-width: 100%;
+}
+.hero-install::before {
+  content: '$';
+  font-family: var(--font-mono);
+  color: var(--gold-500);
+  font-weight: 600;
+}
+.hero-install code {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--stone-300);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hero-install .copy-btn {
+  background: var(--stone-800);
+  border: 1px solid var(--stone-700);
+  color: var(--stone-400);
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+.hero-install .copy-btn:hover {
+  background: var(--stone-700);
+  color: var(--stone-200);
+}
+.hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.85rem 2rem;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 0.9rem; font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s;
+  cursor: pointer; border: none;
+}
+.btn-primary {
+  background: var(--gold-500);
+  color: var(--stone-950);
+}
+.btn-primary:hover { background: var(--gold-400); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(212, 168, 83, 0.2); }
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--stone-700);
+  color: var(--stone-300);
+}
+.btn-ghost:hover { border-color: var(--stone-500); color: var(--stone-100); transform: translateY(-2px); }
+.btn-ghost svg { width: 18px; height: 18px; }
+
+/* --- Divider line --- */
+.divider {
+  width: 60px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-500), transparent);
+  margin: 0 auto;
+}
+
+/* --- Problem section --- */
+.problem {
+  padding: 8rem 0;
+  position: relative;
+}
+.problem::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--stone-800), transparent);
+}
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold-500);
+  margin-bottom: 1.5rem;
+}
+.problem h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 700;
+  color: var(--stone-100);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  max-width: 700px;
+  margin-bottom: 2rem;
+}
+.problem-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--stone-800);
+  border: 1px solid var(--stone-800);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 3rem;
+}
+.problem-card {
+  background: var(--stone-900);
+  padding: 2.5rem;
+}
+.problem-card .icon {
+  font-size: 1.75rem;
+  margin-bottom: 1.25rem;
+  display: block;
+}
+.problem-card h3 {
+  font-family: var(--font-body);
+  font-size: 1rem; font-weight: 600;
+  color: var(--stone-200);
+  margin-bottom: 0.75rem;
+}
+.problem-card p {
+  font-size: 0.9rem;
+  color: var(--stone-500);
+  line-height: 1.6;
+}
+
+/* --- Solution section --- */
+.solution {
+  padding: 8rem 0;
+  position: relative;
+}
+.solution::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--stone-800), transparent);
+}
+.solution h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 700;
+  color: var(--stone-100);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+.solution > .container > p {
+  color: var(--stone-400);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin-bottom: 4rem;
+}
+.tiers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+.tier {
+  background: var(--stone-900);
+  border: 1px solid var(--stone-800);
+  border-radius: 12px;
+  padding: 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.tier::before {
+  content: '';
+  position: absolute; top: 0; left: 2rem; right: 2rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-500), transparent);
+  opacity: 0.3;
+}
+.tier-icon {
+  width: 48px; height: 48px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.tier-global .tier-icon { background: rgba(212, 168, 83, 0.1); }
+.tier-project .tier-icon { background: rgba(100, 200, 150, 0.1); }
+.tier h3 {
+  font-family: var(--font-display);
+  font-size: 1.5rem; font-weight: 700;
+  color: var(--stone-100);
+  margin-bottom: 0.5rem;
+}
+.tier .tier-path {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--stone-500);
+  margin-bottom: 1.25rem;
+}
+.tier ul {
+  list-style: none;
+}
+.tier ul li {
+  padding: 0.4rem 0;
+  font-size: 0.9rem;
+  color: var(--stone-400);
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.tier ul li::before {
+  content: '';
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.tier-global ul li::before { background: var(--gold-500); }
+.tier-project ul li::before { background: #64c896; }
+
+/* --- Features --- */
+.features {
+  padding: 8rem 0;
+  position: relative;
+}
+.features::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--stone-800), transparent);
+}
+.features h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 700;
+  color: var(--stone-100);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 4rem;
+  text-align: center;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+.feature-card {
+  background: var(--stone-900);
+  border: 1px solid var(--stone-800);
+  border-radius: 12px;
+  padding: 2rem;
+  transition: all 0.4s;
+}
+.feature-card:hover {
+  border-color: rgba(212, 168, 83, 0.15);
+  background: var(--stone-850);
+  transform: translateY(-4px);
+}
+.feature-card .f-icon {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+.feature-card h3 {
+  font-size: 1rem; font-weight: 600;
+  color: var(--stone-200);
+  margin-bottom: 0.6rem;
+}
+.feature-card p {
+  font-size: 0.85rem;
+  color: var(--stone-500);
+  line-height: 1.6;
+}
+
+/* --- How it works --- */
+.how {
+  padding: 8rem 0;
+  position: relative;
+}
+.how::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--stone-800), transparent);
+}
+.how h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 700;
+  color: var(--stone-100);
+  text-align: center;
+  margin-bottom: 4rem;
+}
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  position: relative;
+}
+.steps::before {
+  content: '';
+  position: absolute;
+  top: 2.25rem; left: 16%; right: 16%;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--stone-700) 0, var(--stone-700) 8px, transparent 8px, transparent 16px);
+}
+.step {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.step-num {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem; font-weight: 700;
+  background: var(--stone-900);
+  border: 2px solid var(--gold-500);
+  color: var(--gold-500);
+}
+.step h3 {
+  font-size: 1.1rem; font-weight: 600;
+  color: var(--stone-200);
+  margin-bottom: 0.5rem;
+}
+.step p {
+  font-size: 0.9rem;
+  color: var(--stone-500);
+  max-width: 280px;
+  margin: 0 auto;
+}
+.step code {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  background: var(--stone-800);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  color: var(--gold-400);
+}
+
+/* --- Commands --- */
+.commands {
+  padding: 8rem 0;
+  position: relative;
+}
+.commands::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--stone-800), transparent);
+}
+.commands h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 700;
+  color: var(--stone-100);
+  margin-bottom: 1rem;
+}
+.commands > .container > p {
+  color: var(--stone-400);
+  margin-bottom: 3rem;
+  font-size: 1.05rem;
+}
+.cmd-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+.cmd {
+  display: flex; align-items: center; gap: 1rem;
+  background: var(--stone-900);
+  border: 1px solid var(--stone-800);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  transition: all 0.3s;
+}
+.cmd:hover {
+  border-color: rgba(212, 168, 83, 0.12);
+  background: var(--stone-850);
+}
+.cmd code {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--gold-400);
+  white-space: nowrap;
+  min-width: 130px;
+}
+.cmd span {
+  font-size: 0.85rem;
+  color: var(--stone-500);
+}
+
+/* --- Social proof --- */
+.social {
+  padding: 8rem 0;
+  text-align: center;
+  position: relative;
+}
+.social::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--stone-800), transparent);
+}
+.social h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 700;
+  color: var(--stone-100);
+  margin-bottom: 3rem;
+}
+.testimonials {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  text-align: left;
+}
+.testimonial {
+  background: var(--stone-900);
+  border: 1px solid var(--stone-800);
+  border-radius: 12px;
+  padding: 2rem;
+}
+.testimonial blockquote {
+  font-size: 0.95rem;
+  color: var(--stone-300);
+  line-height: 1.7;
+  font-style: italic;
+  margin-bottom: 1.25rem;
+}
+.testimonial cite {
+  font-style: normal;
+  font-size: 0.8rem;
+  color: var(--stone-500);
+}
+.testimonial cite strong {
+  color: var(--stone-300);
+  font-weight: 600;
+  display: block;
+}
+
+/* --- CTA --- */
+.cta {
+  padding: 8rem 0;
+  text-align: center;
+  position: relative;
+}
+.cta::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--stone-800), transparent);
+}
+.cta-box {
+  background: var(--stone-900);
+  border: 1px solid var(--stone-800);
+  border-radius: 16px;
+  padding: 4rem;
+  position: relative;
+  overflow: hidden;
+}
+.cta-box::before {
+  content: '';
+  position: absolute;
+  top: -200px; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(212, 168, 83, 0.06) 0%, transparent 70%);
+}
+.cta h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  color: var(--stone-100);
+  margin-bottom: 1rem;
+  position: relative;
+}
+.cta p {
+  color: var(--stone-400);
+  font-size: 1.05rem;
+  margin-bottom: 2.5rem;
+  position: relative;
+}
+.cta .hero-install { margin-bottom: 2rem; }
+.cta .hero-actions { position: relative; }
+
+/* --- Footer --- */
+footer {
+  padding: 3rem 0;
+  border-top: 1px solid var(--stone-800);
+}
+.footer-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+}
+.footer-left {
+  font-size: 0.85rem;
+  color: var(--stone-500);
+}
+.footer-left a { color: var(--gold-500); text-decoration: none; }
+.footer-left a:hover { color: var(--gold-400); }
+.footer-links { display: flex; gap: 2rem; }
+.footer-links a {
+  font-size: 0.8rem;
+  color: var(--stone-500);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.footer-links a:hover { color: var(--stone-300); }
+
+/* --- Animations --- */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .nav-links a:not(.nav-cta) { display: none; }
+  .problem-grid, .features-grid, .tiers, .steps, .cmd-grid, .testimonials {
+    grid-template-columns: 1fr;
+  }
+  .steps::before { display: none; }
+  .hero-install { flex-direction: column; gap: 0.5rem; padding: 1rem; }
+  .hero-install code { font-size: 0.65rem; }
+  .cta-box { padding: 2.5rem 1.5rem; }
+}
+@media (max-width: 480px) {
+  .hero h1 { font-size: 2.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo"><span>&#x1F3F0;</span> ContextVault</a>
+    <div class="nav-links">
+      <a href="#problem">Why</a>
+      <a href="#features">Features</a>
+      <a href="#how">How it Works</a>
+      <a href="#commands">Commands</a>
+      <a href="https://github.com/ahmadzein/ContextVault" class="nav-cta" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-badge reveal"><span class="dot"></span> v1.8.4 &mdash; Now with configurable enforcement</div>
+    <h1 class="reveal reveal-delay-1">Your Knowledge,<br><em>Never Lost</em></h1>
+    <p class="hero-sub reveal reveal-delay-2">External context management for Claude Code. A two-tier documentation system that persists your knowledge across every session.</p>
+    <div class="hero-install reveal reveal-delay-3">
+      <code id="install-cmd">curl -sL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash</code>
+      <button class="copy-btn" onclick="copyInstall()">Copy</button>
+    </div>
+    <div class="hero-actions reveal reveal-delay-4">
+      <a href="https://github.com/ahmadzein/ContextVault" class="btn btn-primary" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+        View on GitHub
+      </a>
+      <a href="#how" class="btn btn-ghost">How it Works &darr;</a>
+    </div>
+  </div>
+</section>
+
+<!-- Problem -->
+<section class="problem" id="problem">
+  <div class="container">
+    <div class="section-label reveal">The Problem</div>
+    <h2 class="reveal reveal-delay-1">AI assistants forget<br>everything between sessions.</h2>
+    <p class="reveal reveal-delay-2" style="color: var(--stone-400); font-size: 1.05rem; max-width: 600px;">Every new conversation starts from zero. Your architecture decisions, bug fixes, project patterns &mdash; all gone. You repeat yourself endlessly.</p>
+    <div class="problem-grid reveal reveal-delay-3">
+      <div class="problem-card">
+        <span class="icon">&#x1F504;</span>
+        <h3>Constant Repetition</h3>
+        <p>You explain the same project structure, patterns, and decisions in every session. Time wasted, context lost.</p>
+      </div>
+      <div class="problem-card">
+        <span class="icon">&#x1F9E0;</span>
+        <h3>Knowledge Vanishes</h3>
+        <p>Bug fixes, architectural decisions, gotchas discovered &mdash; none of it carries over. The next session is a blank slate.</p>
+      </div>
+      <div class="problem-card">
+        <span class="icon">&#x26A0;&#xFE0F;</span>
+        <h3>No Continuity</h3>
+        <p>Multi-session projects lose coherence. Each AI session makes different assumptions with no shared memory.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Solution -->
+<section class="solution" id="solution">
+  <div class="container">
+    <div class="section-label reveal">The Solution</div>
+    <h2 class="reveal reveal-delay-1">Two-tier vault.<br>Infinite memory.</h2>
+    <p class="reveal reveal-delay-2">ContextVault organizes knowledge into two layers &mdash; global patterns that follow you everywhere, and project-specific docs that stay where they belong.</p>
+    <div class="tiers">
+      <div class="tier tier-global reveal reveal-delay-3">
+        <div class="tier-icon">&#x1F310;</div>
+        <h3>Global Vault</h3>
+        <div class="tier-path">~/.claude/vault/</div>
+        <ul>
+          <li>Cross-project knowledge</li>
+          <li>Reusable patterns &amp; best practices</li>
+          <li>Tool configurations &amp; preferences</li>
+          <li>Available in ALL your projects</li>
+        </ul>
+      </div>
+      <div class="tier tier-project reveal reveal-delay-4">
+        <div class="tier-icon">&#x1F4C2;</div>
+        <h3>Project Vault</h3>
+        <div class="tier-path">./.claude/vault/</div>
+        <ul>
+          <li>Project-specific architecture</li>
+          <li>Local configs &amp; decisions</li>
+          <li>Codebase-specific patterns</li>
+          <li>Stays with THIS project only</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-label reveal" style="text-align:center;">Features</div>
+    <h2 class="reveal reveal-delay-1">Built for developers<br>who ship fast.</h2>
+    <div class="features-grid">
+      <div class="feature-card reveal reveal-delay-1">
+        <span class="f-icon">&#x1F514;</span>
+        <h3>Smart Hooks</h3>
+        <p>Automatic reminders when you've done significant work without documenting. Configurable: light, balanced, or strict.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <span class="f-icon">&#x26A1;</span>
+        <h3>Auto-Bootstrap</h3>
+        <p>Run <code>/ctx-bootstrap</code> on any new project. Scans your codebase and generates architecture + feature docs instantly.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <span class="f-icon">&#x1F91D;</span>
+        <h3>Session Handoffs</h3>
+        <p>End every session with <code>/ctx-handoff</code>. The next session picks up exactly where you left off.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-4">
+        <span class="f-icon">&#x1F50D;</span>
+        <h3>Smart Dedup</h3>
+        <p>Never create duplicate docs. ContextVault searches by exact terms, synonyms, and related concepts before creating.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-5">
+        <span class="f-icon">&#x1F3AF;</span>
+        <h3>25 Slash Commands</h3>
+        <p>Purpose-built commands for every workflow: documenting bugs, decisions, plans, code snippets, and explorations.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <span class="f-icon">&#x1F6E1;&#xFE0F;</span>
+        <h3>Size Guards</h3>
+        <p>Hard limits built in: 100 lines per doc, 50 entries per index, 15-word summaries. Lean context, always.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="how" id="how">
+  <div class="container">
+    <div class="section-label reveal" style="text-align:center;">How It Works</div>
+    <h2 class="reveal reveal-delay-1">Three steps to<br>permanent context.</h2>
+    <div class="steps">
+      <div class="step reveal reveal-delay-2">
+        <div class="step-num">1</div>
+        <h3>Install</h3>
+        <p>One command. Sets up global vault, hooks, and 25 slash commands. Works on macOS, Linux, WSL.</p>
+      </div>
+      <div class="step reveal reveal-delay-3">
+        <div class="step-num">2</div>
+        <h3>Work</h3>
+        <p>Use Claude Code normally. Smart hooks nudge you to document at natural milestones &mdash; not mid-thought.</p>
+      </div>
+      <div class="step reveal reveal-delay-4">
+        <div class="step-num">3</div>
+        <h3>Remember</h3>
+        <p>Next session loads your vault index automatically. Architecture, decisions, gotchas &mdash; all there. Zero repetition.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Commands -->
+<section class="commands" id="commands">
+  <div class="container">
+    <div class="section-label reveal">Commands</div>
+    <h2 class="reveal reveal-delay-1">A command for every moment.</h2>
+    <p class="reveal reveal-delay-2">25 purpose-built slash commands. Here are the ones you'll use most.</p>
+    <div class="cmd-grid">
+      <div class="cmd reveal reveal-delay-1"><code>/ctx-doc</code><span>Document a feature or learning</span></div>
+      <div class="cmd reveal reveal-delay-1"><code>/ctx-error</code><span>Document a bug fix with root cause</span></div>
+      <div class="cmd reveal reveal-delay-2"><code>/ctx-decision</code><span>Record an architecture decision</span></div>
+      <div class="cmd reveal reveal-delay-2"><code>/ctx-plan</code><span>Track a multi-step implementation</span></div>
+      <div class="cmd reveal reveal-delay-3"><code>/ctx-bootstrap</code><span>Auto-generate docs for entire codebase</span></div>
+      <div class="cmd reveal reveal-delay-3"><code>/ctx-handoff</code><span>Create session summary for next time</span></div>
+      <div class="cmd reveal reveal-delay-4"><code>/ctx-intel</code><span>Document codebase exploration findings</span></div>
+      <div class="cmd reveal reveal-delay-4"><code>/ctx-snippet</code><span>Save reusable code patterns</span></div>
+      <div class="cmd reveal reveal-delay-5"><code>/ctx-search</code><span>Search across all vault documents</span></div>
+      <div class="cmd reveal reveal-delay-5"><code>/ctx-mode</code><span>Switch enforcement level on the fly</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Social proof -->
+<section class="social" id="social">
+  <div class="container">
+    <div class="section-label reveal">Early Feedback</div>
+    <h2 class="reveal reveal-delay-1">What developers are saying.</h2>
+    <div class="testimonials">
+      <div class="testimonial reveal reveal-delay-2">
+        <blockquote>&ldquo;I stopped re-explaining my project architecture every session. ContextVault just knows. The handoff feature alone is worth it.&rdquo;</blockquote>
+        <cite><strong>Early Adopter</strong>Claude Code User</cite>
+      </div>
+      <div class="testimonial reveal reveal-delay-3">
+        <blockquote>&ldquo;The smart hooks are genius. They don't interrupt mid-work, but they catch me before I close a session without documenting.&rdquo;</blockquote>
+        <cite><strong>Early Adopter</strong>Open Source Developer</cite>
+      </div>
+      <div class="testimonial reveal reveal-delay-4">
+        <blockquote>&ldquo;Bootstrap scanned my 50k-line codebase and generated meaningful docs in seconds. That's hours of onboarding saved.&rdquo;</blockquote>
+        <cite><strong>Early Adopter</strong>Full-Stack Engineer</cite>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="container">
+    <div class="cta-box reveal">
+      <h2>Start remembering.</h2>
+      <p>Install ContextVault in 30 seconds. Your vault starts building from session one.</p>
+      <div class="hero-install" style="margin-left:auto;margin-right:auto;">
+        <code>curl -sL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash</code>
+        <button class="copy-btn" onclick="copyInstall()">Copy</button>
+      </div>
+      <div class="hero-actions">
+        <a href="https://github.com/ahmadzein/ContextVault" class="btn btn-primary" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          Star on GitHub
+        </a>
+        <a href="https://github.com/ahmadzein/ContextVault#-quick-start-2-minutes" class="btn btn-ghost" target="_blank" rel="noopener">Read the Docs</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container footer-inner">
+    <div class="footer-left">
+      &#x1F3F0; ContextVault v1.8.4 &mdash; MIT License &mdash; Built by <a href="https://github.com/ahmadzein" target="_blank" rel="noopener">Ahmad Zein</a>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/ahmadzein/ContextVault" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/ahmadzein/ContextVault/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changelog</a>
+      <a href="https://github.com/ahmadzein/ContextVault/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contributing</a>
+      <a href="https://github.com/ahmadzein/ContextVault/issues" target="_blank" rel="noopener">Issues</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Copy install command
+function copyInstall() {
+  const cmd = 'curl -sL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash';
+  navigator.clipboard.writeText(cmd).then(() => {
+    const btns = document.querySelectorAll('.copy-btn');
+    btns.forEach(b => { b.textContent = 'Copied!'; setTimeout(() => b.textContent = 'Copy', 2000); });
+  });
+}
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Nav scroll effect
+let lastScroll = 0;
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('nav');
+  nav.classList.toggle('scrolled', window.scrollY > 50);
+});
+</script>
+
+</body>
+</html>
