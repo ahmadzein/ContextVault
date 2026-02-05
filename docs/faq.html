@@ -42,10 +42,10 @@
     "@context": "https://schema.org",
     "@type": "FAQPage",
     "mainEntity": [
-      {"@type": "Question", "name": "What is ContextVault?", "acceptedAnswer": {"@type": "Answer", "text": "ContextVault is a context management system specifically for Claude Code (Anthropic's AI coding CLI). It solves the problem of Claude forgetting everything between sessions by creating markdown documents that Claude automatically reads at the start of each session."}},
-      {"@type": "Question", "name": "How does Claude Code use ContextVault?", "acceptedAnswer": {"@type": "Answer", "text": "Claude Code reads the CLAUDE.md file and vault indexes automatically at session start. This gives Claude full context of your project architecture, past decisions, bug fixes, and learnings without you having to explain everything again."}},
+      {"@type": "Question", "name": "What is ContextVault?", "acceptedAnswer": {"@type": "Answer", "text": "ContextVault is a context management system for AI coding assistants. It solves the problem of AI tools forgetting everything between sessions by creating markdown documents that are automatically read at session start. Works with Claude Code, Cursor, Windsurf, Cline, OpenCode, Continue, and any MCP-compatible tool."}},
+      {"@type": "Question", "name": "How does ContextVault work?", "acceptedAnswer": {"@type": "Answer", "text": "ContextVault stores knowledge in organized markdown files. AI tools read the vault indexes automatically at session start via MCP resources or CLAUDE.md integration, giving full context of your project architecture, past decisions, bug fixes, and learnings."}},
       {"@type": "Question", "name": "Is ContextVault free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, ContextVault is completely free and open source under the MIT license."}},
-      {"@type": "Question", "name": "Does ContextVault work with other AI assistants?", "acceptedAnswer": {"@type": "Answer", "text": "ContextVault is designed specifically for Claude Code. The CLAUDE.md instructions and slash commands are tailored to Claude's capabilities and how it processes context."}}
+      {"@type": "Question", "name": "Does ContextVault work with other AI assistants?", "acceptedAnswer": {"@type": "Answer", "text": "Yes! ContextVault works with any MCP-compatible AI tool via the MCP server (npx contextvault-mcp). Supported tools include Claude Code, Cursor, Windsurf, OpenCode, Cline, Continue, and Copilot CLI. The bash installer is optimized for Claude Code with hooks and slash commands."}}
     ]
   }
   </script>
@@ -127,7 +127,7 @@
     <div class="faq-item">
       <div class="faq-question">What is ContextVault?</div>
       <div class="faq-answer">
-        <p>ContextVault is an external context management system for Claude Code. It creates a two-tier documentation system (global + project-level) that helps AI assistants remember context across sessions. Instead of starting fresh every conversation, Claude reads your vault and has full project context.</p>
+        <p>ContextVault is an external context management system for AI coding assistants. It creates a two-tier documentation system (global + project-level) that helps AI tools remember context across sessions. Instead of starting fresh every conversation, your AI reads your vault and has full project context. Works with Claude Code, Cursor, Windsurf, Cline, and any MCP-compatible tool.</p>
       </div>
     </div>
 
@@ -141,7 +141,7 @@
     <div class="faq-item">
       <div class="faq-question">Does ContextVault work with other AI assistants?</div>
       <div class="faq-answer">
-        <p>ContextVault is designed specifically for Claude Code (Anthropic's CLI tool). The CLAUDE.md instructions and hooks system are tailored to Claude's capabilities. Other AI assistants may not understand the vault format or follow the documentation protocols.</p>
+        <p>Yes! ContextVault works with <strong>any MCP-compatible AI tool</strong> via the MCP server (<code>npx contextvault-mcp</code>). This includes Cursor, Windsurf, OpenCode, Cline, Continue, Copilot CLI, and Claude Code itself. The bash installer provides additional Claude Code-specific features like hooks and slash commands.</p>
       </div>
     </div>
 
