@@ -1,0 +1,62 @@
+{
+  "name": "contextvault-mcp",
+  "version": "1.0.2",
+  "description": "ContextVault MCP Server - External context management for any AI coding assistant. Works with Claude Code, Cursor, Windsurf, OpenCode, Cline, Continue, and more.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "bin": {
+    "contextvault-mcp": "./bin/contextvault-mcp.js"
+  },
+  "files": [
+    "dist/",
+    "bin/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "tsx test/run-tests.ts",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "context",
+    "vault",
+    "ai",
+    "claude",
+    "cursor",
+    "windsurf",
+    "opencode",
+    "cline",
+    "continue",
+    "documentation",
+    "memory",
+    "knowledge-management"
+  ],
+  "author": "Ahmad Zein <ahmadzein@users.noreply.github.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ahmadzein/ContextVault"
+  },
+  "homepage": "https://ctx-vault.com",
+  "bugs": {
+    "url": "https://github.com/ahmadzein/ContextVault/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "tsx": "^4.7.0",
+    "@types/node": "^20.11.0"
+  }
+}

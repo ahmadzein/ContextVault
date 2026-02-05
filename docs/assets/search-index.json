@@ -1,0 +1,317 @@
+[
+  {
+    "title": "Getting Started",
+    "url": "getting-started.html",
+    "page": "Getting Started",
+    "content": "Install ContextVault in seconds. Works on macOS, Linux, and Windows. Two-tier documentation system for Claude Code.",
+    "keywords": ["install", "setup", "quick start", "begin", "introduction"]
+  },
+  {
+    "title": "macOS/Linux Installation",
+    "url": "getting-started.html#unix-install",
+    "page": "Getting Started",
+    "content": "Install on macOS or Linux using curl. Run the bash installer script from ctx-vault.com.",
+    "keywords": ["mac", "linux", "bash", "curl", "unix", "terminal"]
+  },
+  {
+    "title": "Windows Installation",
+    "url": "getting-started.html#windows-install",
+    "page": "Getting Started",
+    "content": "Install on Windows using PowerShell. Native PowerShell installer with Git Bash support for hooks.",
+    "keywords": ["windows", "powershell", "wsl", "git bash"]
+  },
+  {
+    "title": "Upgrade Guide",
+    "url": "upgrade.html",
+    "page": "Upgrade",
+    "content": "Complete guide to upgrading ContextVault. Update global installation, restart Claude Code, then upgrade each project.",
+    "keywords": ["upgrade", "update", "version", "latest", "new version"]
+  },
+  {
+    "title": "Global Upgrade",
+    "url": "upgrade.html#step-2-upgrade-global-installation",
+    "page": "Upgrade",
+    "content": "Upgrade global ContextVault installation with curl installer. Updates CLAUDE.md, commands, and hooks.",
+    "keywords": ["global", "upgrade", "installer", "curl", "bash"]
+  },
+  {
+    "title": "Project Upgrade",
+    "url": "upgrade.html#step-4-upgrade-project-installation",
+    "page": "Upgrade",
+    "content": "Upgrade project-level ContextVault with /ctx-upgrade command. Updates project CLAUDE.md and settings.",
+    "keywords": ["project", "upgrade", "ctx-upgrade", "local"]
+  },
+  {
+    "title": "/ctx-init",
+    "url": "commands.html#ctx-init",
+    "page": "Commands",
+    "content": "Initialize ContextVault in the current project. Creates .claude/vault directory with index.md.",
+    "keywords": ["init", "initialize", "setup", "create vault", "new project"]
+  },
+  {
+    "title": "/ctx-doc",
+    "url": "commands.html#ctx-doc",
+    "page": "Commands",
+    "content": "Quick document a learning, feature, or finding. General purpose documentation command.",
+    "keywords": ["document", "save", "learn", "feature", "finding"]
+  },
+  {
+    "title": "/ctx-error",
+    "url": "commands.html#ctx-error",
+    "page": "Commands",
+    "content": "Document a bug fix or error resolution. Records error message, root cause, and solution.",
+    "keywords": ["bug", "error", "fix", "debug", "solution", "troubleshoot"]
+  },
+  {
+    "title": "/ctx-decision",
+    "url": "commands.html#ctx-decision",
+    "page": "Commands",
+    "content": "Document an architectural or technical decision. Records options considered, reasoning, and trade-offs.",
+    "keywords": ["decision", "architecture", "choice", "tradeoff", "reasoning"]
+  },
+  {
+    "title": "/ctx-plan",
+    "url": "commands.html#ctx-plan",
+    "page": "Commands",
+    "content": "Document implementation plan for multi-step tasks. Track progress and goals.",
+    "keywords": ["plan", "task", "steps", "progress", "implementation"]
+  },
+  {
+    "title": "/ctx-bootstrap",
+    "url": "commands.html#ctx-bootstrap",
+    "page": "Commands",
+    "content": "Auto-scan codebase and generate comprehensive documentation. Creates architecture doc and feature docs.",
+    "keywords": ["bootstrap", "auto", "scan", "generate", "automatic"]
+  },
+  {
+    "title": "/ctx-snippet",
+    "url": "commands.html#ctx-snippet",
+    "page": "Commands",
+    "content": "Save a useful code snippet for reuse. Store patterns and utilities.",
+    "keywords": ["snippet", "code", "pattern", "utility", "reuse"]
+  },
+  {
+    "title": "/ctx-intel",
+    "url": "commands.html#ctx-intel",
+    "page": "Commands",
+    "content": "Document codebase exploration findings. Record architecture and patterns discovered.",
+    "keywords": ["intel", "explore", "discover", "architecture", "patterns"]
+  },
+  {
+    "title": "/ctx-handoff",
+    "url": "commands.html#ctx-handoff",
+    "page": "Commands",
+    "content": "Create session handoff summary for continuity. Helps next session continue where you left off.",
+    "keywords": ["handoff", "session", "continue", "summary", "end"]
+  },
+  {
+    "title": "/ctx-search",
+    "url": "commands.html#ctx-search",
+    "page": "Commands",
+    "content": "Search across vault documents. Find existing documentation by topic.",
+    "keywords": ["search", "find", "lookup", "query"]
+  },
+  {
+    "title": "/ctx-read",
+    "url": "commands.html#ctx-read",
+    "page": "Commands",
+    "content": "Read a document by ID. View full content of a vault document.",
+    "keywords": ["read", "view", "show", "display"]
+  },
+  {
+    "title": "/ctx-update",
+    "url": "commands.html#ctx-update",
+    "page": "Commands",
+    "content": "Update an existing document by ID. Modify vault documentation.",
+    "keywords": ["update", "edit", "modify", "change"]
+  },
+  {
+    "title": "/ctx-new",
+    "url": "commands.html#ctx-new",
+    "page": "Commands",
+    "content": "Create a new document with guided routing. Choose global or project vault.",
+    "keywords": ["new", "create", "add", "document"]
+  },
+  {
+    "title": "/ctx-link",
+    "url": "commands.html#ctx-link",
+    "page": "Commands",
+    "content": "Link related documents together. Create connections between vault docs.",
+    "keywords": ["link", "connect", "relate", "reference"]
+  },
+  {
+    "title": "/ctx-note",
+    "url": "commands.html#ctx-note",
+    "page": "Commands",
+    "content": "Add a quick note to existing document. Append information without full edit.",
+    "keywords": ["note", "append", "add", "quick"]
+  },
+  {
+    "title": "/ctx-status",
+    "url": "commands.html#ctx-status",
+    "page": "Commands",
+    "content": "Show vault status and statistics. View document counts and health.",
+    "keywords": ["status", "stats", "info", "overview"]
+  },
+  {
+    "title": "/ctx-health",
+    "url": "commands.html#ctx-health",
+    "page": "Commands",
+    "content": "Check vault health and fix issues. Verify index consistency.",
+    "keywords": ["health", "check", "fix", "verify", "consistency"]
+  },
+  {
+    "title": "/ctx-mode",
+    "url": "commands.html#ctx-mode",
+    "page": "Commands",
+    "content": "Switch between local, global, or full mode. Change vault scope.",
+    "keywords": ["mode", "local", "global", "full", "scope"]
+  },
+  {
+    "title": "/ctx-explain",
+    "url": "commands.html#ctx-explain",
+    "page": "Commands",
+    "content": "Explain a concept and save to vault. Document understanding of topics.",
+    "keywords": ["explain", "concept", "understand", "learn"]
+  },
+  {
+    "title": "/ctx-quiz",
+    "url": "commands.html#ctx-quiz",
+    "page": "Commands",
+    "content": "Test knowledge retention from vault docs. Review documented learnings.",
+    "keywords": ["quiz", "test", "review", "retention"]
+  },
+  {
+    "title": "/ctx-share",
+    "url": "commands.html#ctx-share",
+    "page": "Commands",
+    "content": "Export vault docs for sharing. Create shareable documentation.",
+    "keywords": ["share", "export", "send", "distribute"]
+  },
+  {
+    "title": "/ctx-import",
+    "url": "commands.html#ctx-import",
+    "page": "Commands",
+    "content": "Import external documentation into vault. Add existing docs to vault.",
+    "keywords": ["import", "add", "external", "bring"]
+  },
+  {
+    "title": "/ctx-upgrade",
+    "url": "commands.html#ctx-upgrade",
+    "page": "Commands",
+    "content": "Upgrade ContextVault to latest version. Update installation.",
+    "keywords": ["upgrade", "update", "version", "latest"]
+  },
+  {
+    "title": "/ctx-changelog",
+    "url": "commands.html#ctx-changelog",
+    "page": "Commands",
+    "content": "View ContextVault changelog and version history. See what's new.",
+    "keywords": ["changelog", "history", "version", "updates", "release"]
+  },
+  {
+    "title": "/ctx-help",
+    "url": "commands.html#ctx-help",
+    "page": "Commands",
+    "content": "Show all ContextVault commands and usage. Display help information.",
+    "keywords": ["help", "commands", "usage", "guide"]
+  },
+  {
+    "title": "Two-Tier Architecture",
+    "url": "architecture.html#two-tier",
+    "page": "Architecture",
+    "content": "Global vault at ~/.claude/vault for cross-project knowledge. Project vault at ./.claude/vault for project-specific docs.",
+    "keywords": ["architecture", "tier", "global", "project", "structure"]
+  },
+  {
+    "title": "Document Prefixes",
+    "url": "architecture.html#prefixes",
+    "page": "Architecture",
+    "content": "G### prefix for global documents. P### prefix for project documents. Automatic ID assignment.",
+    "keywords": ["prefix", "id", "naming", "convention"]
+  },
+  {
+    "title": "Index System",
+    "url": "architecture.html#index",
+    "page": "Architecture",
+    "content": "Index.md files track all documents. Always read indexes first. Update index after every change.",
+    "keywords": ["index", "catalog", "track", "registry"]
+  },
+  {
+    "title": "Smart Hooks",
+    "url": "architecture.html#hooks",
+    "page": "Architecture",
+    "content": "Automatic reminders to document work. SessionStart, PreToolUse, and Stop hooks. Configurable enforcement.",
+    "keywords": ["hooks", "reminders", "automatic", "enforce"]
+  },
+  {
+    "title": "Enforcement Levels",
+    "url": "configuration.html#enforcement",
+    "page": "Configuration",
+    "content": "Light, balanced, and strict enforcement modes. Control how aggressively hooks remind you to document.",
+    "keywords": ["enforcement", "light", "balanced", "strict", "level"]
+  },
+  {
+    "title": "Vault Modes",
+    "url": "configuration.html#modes",
+    "page": "Configuration",
+    "content": "Local mode uses only project vault. Global mode uses only global vault. Full mode uses both.",
+    "keywords": ["mode", "local", "global", "full", "scope"]
+  },
+  {
+    "title": "Settings File",
+    "url": "configuration.html#settings",
+    "page": "Configuration",
+    "content": "settings.json configures vault behavior. Set mode, enforcement, and limits.",
+    "keywords": ["settings", "config", "json", "configure"]
+  },
+  {
+    "title": "Document Limits",
+    "url": "configuration.html#limits",
+    "page": "Configuration",
+    "content": "Max 50 global docs, 50 project docs. Max 100 lines per document. Max 15 words per summary.",
+    "keywords": ["limits", "max", "size", "constraints"]
+  },
+  {
+    "title": "First Project Setup",
+    "url": "tutorials.html#first-project",
+    "page": "Tutorials",
+    "content": "Tutorial for setting up ContextVault in your first project. Step by step initialization.",
+    "keywords": ["tutorial", "first", "setup", "beginner", "start"]
+  },
+  {
+    "title": "Documenting Bug Fixes",
+    "url": "tutorials.html#bug-fixes",
+    "page": "Tutorials",
+    "content": "Best practices for documenting bug fixes with ctx-error. Include error, cause, solution.",
+    "keywords": ["tutorial", "bug", "fix", "error", "document"]
+  },
+  {
+    "title": "Session Handoffs",
+    "url": "tutorials.html#handoffs",
+    "page": "Tutorials",
+    "content": "How to create effective session handoffs. Ensure continuity between sessions.",
+    "keywords": ["tutorial", "handoff", "session", "continue"]
+  },
+  {
+    "title": "Why documents not loading?",
+    "url": "faq.html#not-loading",
+    "page": "FAQ",
+    "content": "Check that index.md exists and is properly formatted. Run ctx-health to diagnose issues.",
+    "keywords": ["faq", "loading", "problem", "issue", "troubleshoot"]
+  },
+  {
+    "title": "How to migrate existing docs?",
+    "url": "faq.html#migrate",
+    "page": "FAQ",
+    "content": "Use ctx-import to bring external documentation into the vault. Follow naming conventions.",
+    "keywords": ["faq", "migrate", "import", "existing", "move"]
+  },
+  {
+    "title": "Hooks not working?",
+    "url": "faq.html#hooks-not-working",
+    "page": "FAQ",
+    "content": "Hooks require Claude Code settings. On Windows, Git Bash is needed for hook support.",
+    "keywords": ["faq", "hooks", "not working", "windows", "bash"]
+  }
+]

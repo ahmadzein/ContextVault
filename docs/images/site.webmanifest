@@ -1,0 +1,20 @@
+{
+  "name": "ContextVault",
+  "short_name": "ContextVault",
+  "description": "External context management for Claude Code",
+  "icons": [
+    {
+      "src": "/docs/images/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/docs/images/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#0c0a09",
+  "background_color": "#0c0a09",
+  "display": "standalone"
+}

@@ -1,0 +1,11 @@
+# ContextVault - robots.txt
+# https://ctx-vault.com
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://ctx-vault.com/sitemap.xml
+
+# Crawl-delay (optional, be nice to servers)
+Crawl-delay: 1

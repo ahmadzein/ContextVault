@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JGMRM19MBY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-JGMRM19MBY');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture - ContextVault Documentation</title>
+  <meta name="description" content="ContextVault architecture deep-dive. Two-tier vault system, document naming conventions, index system, and smart hooks explained.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://ctx-vault.com/docs/architecture.html">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <meta name="theme-color" content="#0c0a09">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ctx-vault.com/docs/architecture.html">
+  <meta property="og:site_name" content="ContextVault">
+  <meta property="og:title" content="Architecture - ContextVault Documentation">
+  <meta property="og:description" content="Understanding the two-tier vault system and how ContextVault works.">
+  <meta property="og:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Architecture - ContextVault">
+  <meta name="twitter:description" content="Two-tier vault system, document naming, and smart hooks explained.">
+  <meta name="twitter:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "ContextVault Architecture",
+    "description": "Two-tier vault system, document naming conventions, index system, and smart hooks explained.",
+    "author": {"@type": "Organization", "name": "ContextVault"},
+    "publisher": {"@type": "Organization", "name": "ContextVault"},
+    "datePublished": "2026-02-03",
+    "dateModified": "2026-02-03",
+    "mainEntityOfPage": "https://ctx-vault.com/docs/architecture.html"
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="docs-header">
+    <button class="mobile-menu-btn">&#9776;</button>
+    <a href="../index.html" class="header-logo">
+      <img src="images/favicon-32x32.png" alt="">Context<span>Vault</span>
+    </a>
+    <nav class="header-nav">
+      <a href="../index.html">Home</a>
+      <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
+      <div class="version-dropdown">
+        <button class="version-btn">v1.8.4 <span>&#9662;</span></button>
+        <div class="version-menu">
+          <a href="#" class="current">v1.8.4 (latest)</a>
+          <a href="#">v1.8.0</a>
+          <a href="#">v1.7.0</a>
+        </div>
+      </div>
+    </nav>
+    <div class="search-wrapper">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+      <input type="text" class="search-input" placeholder="Search docs...">
+      <div class="search-results"></div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="getting-started.html">Introduction</a></li>
+        <li><a href="getting-started.html#installation">Installation</a></li>
+        <li><a href="upgrade.html">Upgrade Guide</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Core Concepts</div>
+      <ul class="sidebar-links">
+        <li><a href="architecture.html" class="active">Architecture</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="commands.html">Commands (25)</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guides</div>
+      <ul class="sidebar-links">
+        <li><a href="tutorials.html">Tutorials</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-main">
+    <h1>Architecture</h1>
+    <p class="subtitle">Understanding the two-tier vault system and how ContextVault works under the hood.</p>
+
+    <h2 id="two-tier">Two-Tier Vault System</h2>
+    <p>ContextVault uses a two-tier architecture to separate reusable cross-project knowledge from project-specific documentation.</p>
+
+    <pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                   TWO-TIER CONTEXTVAULT SYSTEM                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   TIER 1: GLOBAL (~/.claude/vault/)                            │
+│   ├── Cross-project knowledge                                   │
+│   ├── Patterns, best practices, tools                          │
+│   ├── Reusable learnings                                        │
+│   └── Available in ALL projects                                 │
+│                                                                 │
+│   TIER 2: PROJECT (./.claude/vault/)                           │
+│   ├── Project-specific knowledge                                │
+│   ├── This codebase's architecture, configs                    │
+│   ├── Local decisions and implementations                       │
+│   └── Only relevant to THIS project                            │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+
+    <h3>Why Two Tiers?</h3>
+    <ul>
+      <li><strong>Separation of Concerns</strong> &mdash; Project docs don't pollute global knowledge</li>
+      <li><strong>Reusability</strong> &mdash; Patterns learned once apply everywhere</li>
+      <li><strong>Context Efficiency</strong> &mdash; Only load relevant docs per project</li>
+      <li><strong>Team Collaboration</strong> &mdash; Project vault can be committed to git</li>
+    </ul>
+
+    <h2 id="folder-structure">Folder Structure</h2>
+
+    <pre><code>~/.claude/                          # GLOBAL (all projects)
+├── CLAUDE.md                       # Global instructions for Claude
+├── commands/                       # 25 slash command definitions
+│   ├── ctx-init.md
+│   ├── ctx-doc.md
+│   ├── ctx-error.md
+│   └── ... (22 more)
+├── settings.json                   # Hooks and global settings
+└── vault/
+    ├── index.md                    # Global knowledge index
+    ├── settings.json               # Vault mode settings
+    ├── _template.md                # Template for new docs
+    ├── G001_topic.md               # Global docs (G prefix)
+    └── archive/                    # Deprecated global docs
+
+./.claude/                          # PROJECT-SPECIFIC (per project)
+└── vault/
+    ├── index.md                    # Project knowledge index
+    ├── P001_architecture.md        # Project docs (P prefix)
+    ├── P002_feature.md
+    └── archive/                    # Deprecated project docs</code></pre>
+
+    <h2 id="prefixes">Document Naming Convention</h2>
+    <p>Documents use prefixes to indicate their scope and ensure unique identification.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Prefix</th>
+          <th>Meaning</th>
+          <th>Location</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>G###</code></td>
+          <td>Global knowledge</td>
+          <td><code>~/.claude/vault/</code></td>
+          <td><code>G001_docker_patterns.md</code></td>
+        </tr>
+        <tr>
+          <td><code>P###</code></td>
+          <td>Project knowledge</td>
+          <td><code>./.claude/vault/</code></td>
+          <td><code>P001_auth_system.md</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-info">
+      <div class="callout-title">Auto-Incrementing IDs</div>
+      <p>When you create a document, ContextVault automatically assigns the next available ID. You never need to manage IDs manually.</p>
+    </div>
+
+    <h2 id="index">The Index System</h2>
+    <p>Each vault has an <code>index.md</code> file that catalogs all documents. This is the key to efficient context loading.</p>
+
+    <h3>How It Works</h3>
+    <ol>
+      <li>At session start, Claude reads the index files (not all docs)</li>
+      <li>The index contains: ID, title, summary, and related terms</li>
+      <li>Claude uses the index to find relevant docs when needed</li>
+      <li>Only then does it load the specific document</li>
+    </ol>
+
+    <h3>Index Structure</h3>
+    <pre><code># ContextVault Index
+
+| ID | Title | Summary | Updated |
+|----|-------|---------|---------|
+| P001 | Architecture | Tech stack and project structure | 2026-01-15 |
+| P002 | Auth System | JWT-based authentication flow | 2026-01-18 |
+| P003 | API Endpoints | REST API route documentation | 2026-01-20 |
+
+## Related Terms
+- authentication, login, signin → P002
+- routes, endpoints, api → P003</code></pre>
+
+    <h3>Core Rules for Indexes</h3>
+    <ul>
+      <li><strong>Always Read First</strong> &mdash; Read indexes at session start</li>
+      <li><strong>Always Update</strong> &mdash; Update index after any doc change</li>
+      <li><strong>Keep Summaries Short</strong> &mdash; Max 15 words per summary</li>
+      <li><strong>Max 50 Entries</strong> &mdash; Per vault to keep context manageable</li>
+    </ul>
+
+    <h2 id="hooks">Smart Hooks System</h2>
+    <p>ContextVault uses Claude Code hooks to provide automatic reminders and enforce documentation habits.</p>
+
+    <h3>Hook Types</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Hook</th>
+          <th>Trigger</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>SessionStart</code></td>
+          <td>New session begins</td>
+          <td>Shows vault status, reminds to read indexes</td>
+        </tr>
+        <tr>
+          <td><code>PreToolUse</code></td>
+          <td>Before file edits</td>
+          <td>Tracks edits, suggests documentation after significant work</td>
+        </tr>
+        <tr>
+          <td><code>Stop</code></td>
+          <td>Session ends</td>
+          <td>Blocks exit if significant undocumented work detected</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>How Enforcement Works</h3>
+    <p>The <code>PreToolUse</code> hook tracks file edits during a session. Based on your enforcement level:</p>
+    <ul>
+      <li><strong>Light</strong> &mdash; Only the Stop hook reminds at session end</li>
+      <li><strong>Balanced</strong> &mdash; Reminder after 8+ edits across 2+ files</li>
+      <li><strong>Strict</strong> &mdash; Reminder after 4+ edits across 2+ files</li>
+    </ul>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Non-Blocking Reminders</div>
+      <p>v1.8+ uses "remind, don't block" philosophy. Hooks suggest documentation but don't prevent your work (except at session end with significant changes).</p>
+    </div>
+
+    <h2 id="document-flow">Document Lifecycle</h2>
+
+    <pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    DOCUMENT LIFECYCLE                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   1. SEARCH                                                     │
+│      └─→ Check both indexes for existing docs                   │
+│                                                                 │
+│   2. DECIDE                                                     │
+│      ├─→ Doc exists? UPDATE it                                  │
+│      └─→ No doc? CREATE new one                                 │
+│                                                                 │
+│   3. ROUTE (if creating)                                        │
+│      ├─→ Reusable? → Global vault (G###)                        │
+│      └─→ Project-only? → Project vault (P###)                   │
+│                                                                 │
+│   4. WRITE                                                      │
+│      └─→ Follow template, max 100 lines                         │
+│                                                                 │
+│   5. INDEX                                                      │
+│      └─→ Update index.md immediately                            │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+
+    <h2 id="routing">Routing Decision Tree</h2>
+    <p>When creating a new document, ask: "Would this help in OTHER projects?"</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>If the knowledge is...</th>
+          <th>Route to...</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>General pattern, reusable</td>
+          <td>Global <code>G###</code></td>
+          <td>Docker best practices</td>
+        </tr>
+        <tr>
+          <td>Tool/tech best practice</td>
+          <td>Global <code>G###</code></td>
+          <td>Git workflow tips</td>
+        </tr>
+        <tr>
+          <td>Code snippet for reuse</td>
+          <td>Global <code>G###</code></td>
+          <td>Auth middleware pattern</td>
+        </tr>
+        <tr>
+          <td>Project architecture</td>
+          <td>Project <code>P###</code></td>
+          <td>This app's folder structure</td>
+        </tr>
+        <tr>
+          <td>Project-specific config</td>
+          <td>Project <code>P###</code></td>
+          <td>Environment variables</td>
+        </tr>
+        <tr>
+          <td>Local bug fix</td>
+          <td>Project <code>P###</code></td>
+          <td>Fix for this codebase</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Context Loading Strategy</h2>
+    <p>ContextVault minimizes token usage by loading only what's needed:</p>
+
+    <pre><code>Session Start:
+  1. Read ~/.claude/vault/index.md (global index)
+  2. Read ./.claude/vault/index.md (project index)
+  3. Done! (No documents loaded yet)
+
+When Working:
+  4. Need info on auth? → Load P002_auth.md
+  5. Done with auth → Context contains: 2 indexes + 1 doc
+
+Maximum Context:
+  - 2 index files
+  - 1 document at a time
+  - Never load "just in case"</code></pre>
+
+    <!-- Prev/Next Navigation -->
+    <nav class="docs-nav">
+      <a href="getting-started.html" class="docs-nav-prev">
+        <span class="docs-nav-label">Previous</span>
+        <span class="docs-nav-title">&larr; Getting Started</span>
+      </a>
+      <a href="configuration.html" class="docs-nav-next">
+        <span class="docs-nav-label">Next</span>
+        <span class="docs-nav-title">Configuration &rarr;</span>
+      </a>
+    </nav>
+  </main>
+
+  <script src="assets/docs.js"></script>
+</body>
+</html>

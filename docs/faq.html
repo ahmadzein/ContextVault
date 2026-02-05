@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JGMRM19MBY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-JGMRM19MBY');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ & Troubleshooting - ContextVault Documentation</title>
+  <meta name="description" content="ContextVault FAQ and troubleshooting guide. Common questions about installation, hooks, upgrades, usage, and solutions to frequent issues.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://ctx-vault.com/docs/faq.html">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <meta name="theme-color" content="#0c0a09">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ctx-vault.com/docs/faq.html">
+  <meta property="og:site_name" content="ContextVault">
+  <meta property="og:title" content="FAQ & Troubleshooting - ContextVault Documentation">
+  <meta property="og:description" content="Common questions and solutions for ContextVault issues.">
+  <meta property="og:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="FAQ & Troubleshooting - ContextVault">
+  <meta name="twitter:description" content="Common questions and solutions for ContextVault.">
+  <meta name="twitter:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {"@type": "Question", "name": "What is ContextVault?", "acceptedAnswer": {"@type": "Answer", "text": "ContextVault is a context management system specifically for Claude Code (Anthropic's AI coding CLI). It solves the problem of Claude forgetting everything between sessions by creating markdown documents that Claude automatically reads at the start of each session."}},
+      {"@type": "Question", "name": "How does Claude Code use ContextVault?", "acceptedAnswer": {"@type": "Answer", "text": "Claude Code reads the CLAUDE.md file and vault indexes automatically at session start. This gives Claude full context of your project architecture, past decisions, bug fixes, and learnings without you having to explain everything again."}},
+      {"@type": "Question", "name": "Is ContextVault free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, ContextVault is completely free and open source under the MIT license."}},
+      {"@type": "Question", "name": "Does ContextVault work with other AI assistants?", "acceptedAnswer": {"@type": "Answer", "text": "ContextVault is designed specifically for Claude Code. The CLAUDE.md instructions and slash commands are tailored to Claude's capabilities and how it processes context."}}
+    ]
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="docs-header">
+    <button class="mobile-menu-btn">&#9776;</button>
+    <a href="../index.html" class="header-logo">
+      <img src="images/favicon-32x32.png" alt="">Context<span>Vault</span>
+    </a>
+    <nav class="header-nav">
+      <a href="../index.html">Home</a>
+      <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
+      <div class="version-dropdown">
+        <button class="version-btn">v1.8.4 <span>&#9662;</span></button>
+        <div class="version-menu">
+          <a href="#" class="current">v1.8.4 (latest)</a>
+          <a href="#">v1.8.0</a>
+          <a href="#">v1.7.0</a>
+        </div>
+      </div>
+    </nav>
+    <div class="search-wrapper">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+      <input type="text" class="search-input" placeholder="Search docs...">
+      <div class="search-results"></div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="getting-started.html">Introduction</a></li>
+        <li><a href="getting-started.html#installation">Installation</a></li>
+        <li><a href="upgrade.html">Upgrade Guide</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Core Concepts</div>
+      <ul class="sidebar-links">
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="commands.html">Commands (25)</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guides</div>
+      <ul class="sidebar-links">
+        <li><a href="tutorials.html">Tutorials</a></li>
+        <li><a href="faq.html" class="active">FAQ</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-main">
+    <h1>FAQ & Troubleshooting</h1>
+    <p class="subtitle">Common questions and solutions to frequent issues.</p>
+
+    <h2>General Questions</h2>
+
+    <div class="faq-item">
+      <div class="faq-question">What is ContextVault?</div>
+      <div class="faq-answer">
+        <p>ContextVault is an external context management system for Claude Code. It creates a two-tier documentation system (global + project-level) that helps AI assistants remember context across sessions. Instead of starting fresh every conversation, Claude reads your vault and has full project context.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">Is ContextVault free?</div>
+      <div class="faq-answer">
+        <p>Yes, ContextVault is completely free and open source under the MIT license. You can use it for personal projects, commercial work, or modify it for your needs.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">Does ContextVault work with other AI assistants?</div>
+      <div class="faq-answer">
+        <p>ContextVault is designed specifically for Claude Code (Anthropic's CLI tool). The CLAUDE.md instructions and hooks system are tailored to Claude's capabilities. Other AI assistants may not understand the vault format or follow the documentation protocols.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">Where is my data stored?</div>
+      <div class="faq-answer">
+        <p>All data is stored locally on your machine:</p>
+        <ul>
+          <li><strong>Global vault:</strong> <code>~/.claude/vault/</code></li>
+          <li><strong>Project vault:</strong> <code>./.claude/vault/</code> (in each project)</li>
+        </ul>
+        <p>No data is sent to external servers. Your documentation stays on your computer (or your git repo if you commit it).</p>
+      </div>
+    </div>
+
+    <h2>Installation</h2>
+
+    <div class="faq-item">
+      <div class="faq-question">The installer says "permission denied"</div>
+      <div class="faq-answer">
+        <p>On macOS/Linux, you may need to make the installer executable:</p>
+        <pre><code>curl -sL https://ctx-vault.com/install -o install.sh
+chmod +x install.sh
+./install.sh</code></pre>
+        <p>On Windows PowerShell, ensure you're running as Administrator.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">Can I install on Windows without WSL?</div>
+      <div class="faq-answer">
+        <p>Yes! Use the native PowerShell installer:</p>
+        <pre><code>irm https://ctx-vault.com/install.ps1 | iex</code></pre>
+        <p>This creates all slash commands and the vault structure. For full hook support, install <a href="https://gitforwindows.org/">Git for Windows</a> (includes Git Bash).</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">How do I upgrade to the latest version?</div>
+      <div class="faq-answer">
+        <p>There are two types of upgrades:</p>
+        <p><strong>Global installation</strong> (CLAUDE.md, commands, hooks at <code>~/.claude/</code>):</p>
+        <pre><code># Re-run the installer
+curl -sL https://ctx-vault.com/install | bash</code></pre>
+        <p><strong>Project-level</strong> (instructions in current project):</p>
+        <pre><code>/ctx-upgrade</code></pre>
+        <p>Both preserve your vault documents &mdash; only instructions and commands are updated.</p>
+      </div>
+    </div>
+
+    <h2 id="not-loading">Troubleshooting</h2>
+
+    <div class="faq-item">
+      <div class="faq-question">Claude doesn't seem to read my vault</div>
+      <div class="faq-answer">
+        <p>Check these common causes:</p>
+        <ol>
+          <li><strong>Is <code>~/.claude/CLAUDE.md</code> present?</strong> This file contains the instructions Claude needs.</li>
+          <li><strong>Is the index valid?</strong> Run <code>/ctx-health</code> to check for issues.</li>
+          <li><strong>Check the mode:</strong> Run <code>/ctx-status</code> to see current mode. If set to <code>local</code>, global vault is ignored.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="faq-item" id="hooks-not-working">
+      <div class="faq-question">Hooks aren't working / No reminders appear</div>
+      <div class="faq-answer">
+        <p>Hooks require Claude Code's settings.json to be configured. The installer should set this up automatically, but you can verify:</p>
+        <ol>
+          <li>Check <code>~/.claude/settings.json</code> exists and contains hook definitions</li>
+          <li>On Windows, hooks require Git Bash to be installed</li>
+          <li>Ensure enforcement isn't set to <code>light</code> (which disables mid-session reminders)</li>
+        </ol>
+        <p>To reinstall hooks:</p>
+        <pre><code>/ctx-upgrade</code></pre>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">Index says documents exist but they're not found</div>
+      <div class="faq-answer">
+        <p>This usually means the index is out of sync with actual files. Run:</p>
+        <pre><code>/ctx-health</code></pre>
+        <p>This will identify orphan entries and offer to fix them.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">"Maximum documents reached" error</div>
+      <div class="faq-answer">
+        <p>You've hit the 50-document limit per vault. Options:</p>
+        <ul>
+          <li><strong>Archive old docs:</strong> Move less-used docs to <code>vault/archive/</code></li>
+          <li><strong>Merge related docs:</strong> Combine similar topics into one document</li>
+          <li><strong>Delete obsolete docs:</strong> Remove docs that are no longer relevant</li>
+        </ul>
+        <p>After cleanup, update your index to reflect changes.</p>
+      </div>
+    </div>
+
+    <h2 id="migrate">Usage Questions</h2>
+
+    <div class="faq-item">
+      <div class="faq-question">How do I migrate existing documentation?</div>
+      <div class="faq-answer">
+        <p>Use the import command:</p>
+        <pre><code>/ctx-import ./path/to/existing-doc.md</code></pre>
+        <p>This will convert the document to vault format, assign an ID, and update the index.</p>
+        <p>For bulk imports, run <code>/ctx-bootstrap</code> which scans your codebase and creates documentation.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">Can I share my vault with my team?</div>
+      <div class="faq-answer">
+        <p><strong>Project vault:</strong> Yes! Commit <code>.claude/vault/</code> to git. All team members will have the same project documentation.</p>
+        <p><strong>Global vault:</strong> Not recommended. This contains your personal patterns and preferences. Each team member should build their own global vault.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">What should I document vs. code comments?</div>
+      <div class="faq-answer">
+        <p>Use ContextVault for:</p>
+        <ul>
+          <li>High-level architecture and decisions</li>
+          <li>Bug fix stories (what went wrong, how it was fixed)</li>
+          <li>Patterns and best practices</li>
+          <li>Session handoffs and work-in-progress</li>
+        </ul>
+        <p>Use code comments for:</p>
+        <ul>
+          <li>Why specific code works the way it does</li>
+          <li>Non-obvious implementation details</li>
+          <li>API documentation (JSDoc, etc.)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">How often should I document?</div>
+      <div class="faq-answer">
+        <p>Document at meaningful milestones:</p>
+        <ul>
+          <li><strong>After fixing a bug</strong> &mdash; Use <code>/ctx-error</code></li>
+          <li><strong>After making a decision</strong> &mdash; Use <code>/ctx-decision</code></li>
+          <li><strong>After completing a feature</strong> &mdash; Use <code>/ctx-doc</code></li>
+          <li><strong>At session end</strong> &mdash; Use <code>/ctx-handoff</code></li>
+        </ul>
+        <p>Don't document trivial changes like typo fixes or version bumps.</p>
+      </div>
+    </div>
+
+    <h2>Advanced Questions</h2>
+
+    <div class="faq-item">
+      <div class="faq-question">Can I customize the document template?</div>
+      <div class="faq-answer">
+        <p>Yes! Edit <code>~/.claude/vault/_template.md</code> to change the default structure for new documents. The slash command files in <code>~/.claude/commands/</code> define templates for specific document types (error, decision, plan, etc.).</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">How do I completely reset ContextVault?</div>
+      <div class="faq-answer">
+        <p>To remove all ContextVault files:</p>
+        <pre><code># Remove global installation
+rm -rf ~/.claude/vault
+rm -rf ~/.claude/commands
+rm ~/.claude/CLAUDE.md
+
+# Remove from a project
+rm -rf ./.claude/vault</code></pre>
+        <p>Then reinstall if desired.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">Can I use ContextVault with multiple Claude accounts?</div>
+      <div class="faq-answer">
+        <p>Yes. ContextVault is stored locally and works with any Claude Code session. Different accounts will all read the same vault files on your machine.</p>
+      </div>
+    </div>
+
+    <h2>Getting Help</h2>
+    <p>If your question isn't answered here:</p>
+    <ul>
+      <li><strong>GitHub Issues:</strong> <a href="https://github.com/ahmadzein/ContextVault/issues">Report bugs or request features</a></li>
+      <li><strong>Discussions:</strong> <a href="https://github.com/ahmadzein/ContextVault/discussions">Ask questions and share tips</a></li>
+    </ul>
+
+    <!-- Prev/Next Navigation -->
+    <nav class="docs-nav">
+      <a href="tutorials.html" class="docs-nav-prev">
+        <span class="docs-nav-label">Previous</span>
+        <span class="docs-nav-title">&larr; Tutorials</span>
+      </a>
+      <div></div>
+    </nav>
+  </main>
+
+  <script src="assets/docs.js"></script>
+</body>
+</html>

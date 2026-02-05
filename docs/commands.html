@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JGMRM19MBY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-JGMRM19MBY');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>25 Slash Commands for Claude Code | ContextVault Commands Reference</title>
+  <meta name="description" content="All 25 ContextVault slash commands for Claude Code. Use /ctx-doc to document learnings, /ctx-error for bug fixes, /ctx-bootstrap to auto-document codebases, and more.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://ctx-vault.com/docs/commands.html">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <meta name="theme-color" content="#0c0a09">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ctx-vault.com/docs/commands.html">
+  <meta property="og:site_name" content="ContextVault">
+  <meta property="og:title" content="Commands Reference - ContextVault Documentation">
+  <meta property="og:description" content="All 25 ContextVault slash commands with usage examples.">
+  <meta property="og:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Commands Reference - ContextVault">
+  <meta name="twitter:description" content="All 25 ContextVault slash commands with usage examples.">
+  <meta name="twitter:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "ContextVault Commands Reference",
+    "description": "Complete reference for all 25 ContextVault slash commands with usage examples.",
+    "author": {"@type": "Organization", "name": "ContextVault"},
+    "publisher": {"@type": "Organization", "name": "ContextVault"},
+    "datePublished": "2026-02-03",
+    "dateModified": "2026-02-03",
+    "mainEntityOfPage": "https://ctx-vault.com/docs/commands.html"
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="docs-header">
+    <button class="mobile-menu-btn">&#9776;</button>
+    <a href="../index.html" class="header-logo">
+      <img src="images/favicon-32x32.png" alt="">Context<span>Vault</span>
+    </a>
+    <nav class="header-nav">
+      <a href="../index.html">Home</a>
+      <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
+      <div class="version-dropdown">
+        <button class="version-btn">v1.8.4 <span>&#9662;</span></button>
+        <div class="version-menu">
+          <a href="#" class="current">v1.8.4 (latest)</a>
+          <a href="#">v1.8.0</a>
+          <a href="#">v1.7.0</a>
+        </div>
+      </div>
+    </nav>
+    <div class="search-wrapper">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+      <input type="text" class="search-input" placeholder="Search docs...">
+      <div class="search-results"></div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="getting-started.html">Introduction</a></li>
+        <li><a href="getting-started.html#installation">Installation</a></li>
+        <li><a href="upgrade.html">Upgrade Guide</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Core Concepts</div>
+      <ul class="sidebar-links">
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="commands.html" class="active">Commands (25)</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guides</div>
+      <ul class="sidebar-links">
+        <li><a href="tutorials.html">Tutorials</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-main">
+    <h1>Commands Reference</h1>
+    <p class="subtitle">All 25 ContextVault slash commands with usage examples.</p>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Quick Reference</div>
+      <p>Type any command in Claude Code to execute it. Commands that create documents will auto-route to the correct vault (global or project).</p>
+    </div>
+
+    <h2>Setup & Status</h2>
+
+    <div class="command-card" id="ctx-init">
+      <div class="command-name">/ctx-init</div>
+      <div class="command-desc">Initialize ContextVault in the current project. Creates the <code>.claude/vault/</code> directory with an index file.</div>
+      <div class="command-example">
+        /ctx-init<br>
+        # Creates: ./.claude/vault/index.md
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-status">
+      <div class="command-name">/ctx-status</div>
+      <div class="command-desc">Show vault status and statistics. Displays document counts, current mode, and health overview.</div>
+      <div class="command-example">
+        /ctx-status<br>
+        # Shows: Global docs: 5, Project docs: 12, Mode: full
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-health">
+      <div class="command-name">/ctx-health</div>
+      <div class="command-desc">Check vault health and fix issues. Verifies index consistency, finds orphan docs, and repairs problems.</div>
+      <div class="command-example">
+        /ctx-health<br>
+        # Scans both vaults and reports any issues
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-help">
+      <div class="command-name">/ctx-help</div>
+      <div class="command-desc">Show all ContextVault commands and their descriptions. Quick reference for available commands.</div>
+      <div class="command-example">
+        /ctx-help<br>
+        # Lists all 25 commands with brief descriptions
+      </div>
+    </div>
+
+    <h2>Documentation Commands</h2>
+
+    <div class="command-card" id="ctx-doc">
+      <div class="command-name">/ctx-doc</div>
+      <div class="command-desc">Quick document a learning, feature, or finding. General-purpose command for capturing knowledge.</div>
+      <div class="command-example">
+        /ctx-doc<br>
+        # Prompts for: topic, details, global/project routing
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-error">
+      <div class="command-name">/ctx-error</div>
+      <div class="command-desc">Document a bug fix or error resolution. Captures error message, root cause, and solution.</div>
+      <div class="command-example">
+        /ctx-error<br>
+        # Creates: P00X_error_description.md<br>
+        # Includes: Error, Cause, Solution, Prevention
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-decision">
+      <div class="command-name">/ctx-decision</div>
+      <div class="command-desc">Document an architectural or technical decision. Records options considered, reasoning, and trade-offs.</div>
+      <div class="command-example">
+        /ctx-decision<br>
+        # Creates: P00X_decision_topic.md<br>
+        # Includes: Context, Options, Decision, Trade-offs
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-plan">
+      <div class="command-name">/ctx-plan</div>
+      <div class="command-desc">Document implementation plan for multi-step tasks. Track goals, steps, and progress.</div>
+      <div class="command-example">
+        /ctx-plan<br>
+        # Creates: P00X_plan_taskname.md<br>
+        # Includes: Goals, Steps checklist, Progress tracking
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-snippet">
+      <div class="command-name">/ctx-snippet</div>
+      <div class="command-desc">Save a useful code snippet for reuse. Store patterns, utilities, and reusable code.</div>
+      <div class="command-example">
+        /ctx-snippet<br>
+        # Creates: G00X_snippet_name.md (usually global for reuse)
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-intel">
+      <div class="command-name">/ctx-intel</div>
+      <div class="command-desc">Document codebase exploration findings. Record architecture patterns, code structure, and discoveries.</div>
+      <div class="command-example">
+        /ctx-intel<br>
+        # Creates: P00X_intel_topic.md<br>
+        # Includes: Structure, Patterns, Key files
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-explain">
+      <div class="command-name">/ctx-explain</div>
+      <div class="command-desc">Explain a concept and save to vault. Document your understanding of topics for future reference.</div>
+      <div class="command-example">
+        /ctx-explain<br>
+        # Creates: G00X_explain_concept.md or P00X_explain_concept.md
+      </div>
+    </div>
+
+    <h2>Auto-Documentation</h2>
+
+    <div class="command-card" id="ctx-bootstrap">
+      <div class="command-name">/ctx-bootstrap</div>
+      <div class="command-desc">Auto-scan codebase and generate comprehensive documentation. Creates architecture doc and feature docs for the entire project.</div>
+      <div class="command-example">
+        /ctx-bootstrap<br>
+        /ctx-bootstrap --interactive  # Ask before each doc<br>
+        # Creates: P001_architecture.md + P00X_feature_*.md
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-handoff">
+      <div class="command-name">/ctx-handoff</div>
+      <div class="command-desc">Create session handoff summary for continuity. Summarizes what was done and what's next for the following session.</div>
+      <div class="command-example">
+        /ctx-handoff<br>
+        # Creates: P00X_handoff_YYYY-MM-DD.md<br>
+        # Includes: Completed, In Progress, Next Steps
+      </div>
+    </div>
+
+    <h2>Reading & Searching</h2>
+
+    <div class="command-card" id="ctx-search">
+      <div class="command-name">/ctx-search</div>
+      <div class="command-desc">Search across vault documents. Find existing documentation by topic, keyword, or related terms.</div>
+      <div class="command-example">
+        /ctx-search auth<br>
+        /ctx-search "database migration"<br>
+        # Searches both global and project indexes
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-read">
+      <div class="command-name">/ctx-read</div>
+      <div class="command-desc">Read a document by ID. View the full content of a vault document.</div>
+      <div class="command-example">
+        /ctx-read P001<br>
+        /ctx-read G005<br>
+        # Displays full document content
+      </div>
+    </div>
+
+    <h2>Editing & Updates</h2>
+
+    <div class="command-card" id="ctx-update">
+      <div class="command-name">/ctx-update</div>
+      <div class="command-desc">Update an existing document by ID. Modify content while preserving history.</div>
+      <div class="command-example">
+        /ctx-update P003<br>
+        # Opens document for editing, appends to history
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-new">
+      <div class="command-name">/ctx-new</div>
+      <div class="command-desc">Create a new document with guided routing. Interactive prompts help choose the right vault and format.</div>
+      <div class="command-example">
+        /ctx-new<br>
+        # Guides you through: Topic, Vault, Template selection
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-note">
+      <div class="command-name">/ctx-note</div>
+      <div class="command-desc">Add a quick note to existing document. Append information without a full edit.</div>
+      <div class="command-example">
+        /ctx-note P005 "Remember to handle edge case X"<br>
+        # Appends note with timestamp
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-link">
+      <div class="command-name">/ctx-link</div>
+      <div class="command-desc">Link related documents together. Create bidirectional references between docs.</div>
+      <div class="command-example">
+        /ctx-link P003 P007<br>
+        # Adds "Related: P007" to P003 and vice versa
+      </div>
+    </div>
+
+    <h2>Import & Export</h2>
+
+    <div class="command-card" id="ctx-import">
+      <div class="command-name">/ctx-import</div>
+      <div class="command-desc">Import external documentation into vault. Bring existing markdown files into the vault system.</div>
+      <div class="command-example">
+        /ctx-import ./docs/api-guide.md<br>
+        # Converts and adds to vault with proper ID
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-share">
+      <div class="command-name">/ctx-share</div>
+      <div class="command-desc">Export vault docs for sharing. Create shareable documentation bundles.</div>
+      <div class="command-example">
+        /ctx-share project<br>
+        # Exports project vault as shareable archive
+      </div>
+    </div>
+
+    <h2>Configuration</h2>
+
+    <div class="command-card" id="ctx-mode">
+      <div class="command-name">/ctx-mode</div>
+      <div class="command-desc">Switch between local, global, or full mode. Also set enforcement level.</div>
+      <div class="command-example">
+        /ctx-mode local           # Project vault only<br>
+        /ctx-mode full            # Both vaults<br>
+        /ctx-mode global          # Global vault only<br>
+        /ctx-mode enforcement strict  # Set enforcement
+      </div>
+    </div>
+
+    <h2>Maintenance</h2>
+
+    <div class="command-card" id="ctx-upgrade">
+      <div class="command-name">/ctx-upgrade</div>
+      <div class="command-desc">Upgrade project-level ContextVault files. Updates <code>./CLAUDE.md</code> and <code>.claude/settings.json</code> with latest instructions. For global upgrade, re-run the installer.</div>
+      <div class="command-example">
+        /ctx-upgrade<br>
+        # Updates project instructions (not global installation)
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-changelog">
+      <div class="command-name">/ctx-changelog</div>
+      <div class="command-desc">View ContextVault changelog and version history. See what's new in each release.</div>
+      <div class="command-example">
+        /ctx-changelog<br>
+        # Displays version history with changes
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-quiz">
+      <div class="command-name">/ctx-quiz</div>
+      <div class="command-desc">Test knowledge retention from vault docs. Quiz yourself on documented learnings.</div>
+      <div class="command-example">
+        /ctx-quiz<br>
+        # Generates questions from your vault docs
+      </div>
+    </div>
+
+    <h2>Quick Reference Table</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Purpose</th>
+          <th>Creates</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>/ctx-init</code></td><td>Initialize vault</td><td>index.md</td></tr>
+        <tr><td><code>/ctx-doc</code></td><td>General documentation</td><td>P/G00X_topic.md</td></tr>
+        <tr><td><code>/ctx-error</code></td><td>Bug fix docs</td><td>P00X_error_*.md</td></tr>
+        <tr><td><code>/ctx-decision</code></td><td>Architecture decisions</td><td>P00X_decision_*.md</td></tr>
+        <tr><td><code>/ctx-plan</code></td><td>Task planning</td><td>P00X_plan_*.md</td></tr>
+        <tr><td><code>/ctx-snippet</code></td><td>Code snippets</td><td>G00X_snippet_*.md</td></tr>
+        <tr><td><code>/ctx-intel</code></td><td>Codebase exploration</td><td>P00X_intel_*.md</td></tr>
+        <tr><td><code>/ctx-bootstrap</code></td><td>Auto-document project</td><td>Multiple docs</td></tr>
+        <tr><td><code>/ctx-handoff</code></td><td>Session summary</td><td>P00X_handoff_*.md</td></tr>
+        <tr><td><code>/ctx-search</code></td><td>Find docs</td><td>&mdash;</td></tr>
+        <tr><td><code>/ctx-read</code></td><td>View doc</td><td>&mdash;</td></tr>
+        <tr><td><code>/ctx-update</code></td><td>Edit doc</td><td>&mdash;</td></tr>
+        <tr><td><code>/ctx-status</code></td><td>View stats</td><td>&mdash;</td></tr>
+        <tr><td><code>/ctx-mode</code></td><td>Change mode</td><td>&mdash;</td></tr>
+        <tr><td><code>/ctx-help</code></td><td>Show help</td><td>&mdash;</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Prev/Next Navigation -->
+    <nav class="docs-nav">
+      <a href="configuration.html" class="docs-nav-prev">
+        <span class="docs-nav-label">Previous</span>
+        <span class="docs-nav-title">&larr; Configuration</span>
+      </a>
+      <a href="changelog.html" class="docs-nav-next">
+        <span class="docs-nav-label">Next</span>
+        <span class="docs-nav-title">Changelog &rarr;</span>
+      </a>
+    </nav>
+  </main>
+
+  <script src="assets/docs.js"></script>
+</body>
+</html>

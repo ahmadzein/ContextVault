@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JGMRM19MBY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-JGMRM19MBY');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuration - ContextVault Documentation</title>
+  <meta name="description" content="Configure ContextVault. Vault modes (local, global, full), enforcement levels (light, balanced, strict), settings, and hooks customization.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://ctx-vault.com/docs/configuration.html">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <meta name="theme-color" content="#0c0a09">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ctx-vault.com/docs/configuration.html">
+  <meta property="og:site_name" content="ContextVault">
+  <meta property="og:title" content="Configuration - ContextVault Documentation">
+  <meta property="og:description" content="Customize ContextVault with modes, enforcement levels, and limits.">
+  <meta property="og:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Configuration - ContextVault">
+  <meta name="twitter:description" content="Vault modes, enforcement levels, and settings customization.">
+  <meta name="twitter:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "ContextVault Configuration",
+    "description": "Configure vault modes, enforcement levels, settings, and hooks customization.",
+    "author": {"@type": "Organization", "name": "ContextVault"},
+    "publisher": {"@type": "Organization", "name": "ContextVault"},
+    "datePublished": "2026-02-03",
+    "dateModified": "2026-02-03",
+    "mainEntityOfPage": "https://ctx-vault.com/docs/configuration.html"
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="docs-header">
+    <button class="mobile-menu-btn">&#9776;</button>
+    <a href="../index.html" class="header-logo">
+      <img src="images/favicon-32x32.png" alt="">Context<span>Vault</span>
+    </a>
+    <nav class="header-nav">
+      <a href="../index.html">Home</a>
+      <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
+      <div class="version-dropdown">
+        <button class="version-btn">v1.8.4 <span>&#9662;</span></button>
+        <div class="version-menu">
+          <a href="#" class="current">v1.8.4 (latest)</a>
+          <a href="#">v1.8.0</a>
+          <a href="#">v1.7.0</a>
+        </div>
+      </div>
+    </nav>
+    <div class="search-wrapper">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+      <input type="text" class="search-input" placeholder="Search docs...">
+      <div class="search-results"></div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="getting-started.html">Introduction</a></li>
+        <li><a href="getting-started.html#installation">Installation</a></li>
+        <li><a href="upgrade.html">Upgrade Guide</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Core Concepts</div>
+      <ul class="sidebar-links">
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="configuration.html" class="active">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="commands.html">Commands (25)</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guides</div>
+      <ul class="sidebar-links">
+        <li><a href="tutorials.html">Tutorials</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-main">
+    <h1>Configuration</h1>
+    <p class="subtitle">Customize ContextVault's behavior with modes, enforcement levels, and limits.</p>
+
+    <h2 id="settings">Settings File</h2>
+    <p>ContextVault settings are stored in <code>~/.claude/vault/settings.json</code>:</p>
+
+    <pre><code>{
+  "mode": "local",
+  "enforcement": "balanced",
+  "limits": {
+    "max_global_docs": 50,
+    "max_project_docs": 50,
+    "max_doc_lines": 100,
+    "max_summary_words": 15
+  }
+}</code></pre>
+
+    <h2 id="modes">Vault Modes</h2>
+    <p>The mode setting determines which vaults Claude reads and writes to.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Mode</th>
+          <th>Reads</th>
+          <th>Writes</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>local</code></td>
+          <td>Project vault only</td>
+          <td>Project vault</td>
+          <td>Focus on this project, ignore global</td>
+        </tr>
+        <tr>
+          <td><code>global</code></td>
+          <td>Global vault only</td>
+          <td>Global vault</td>
+          <td>General learning, no specific project</td>
+        </tr>
+        <tr>
+          <td><code>full</code></td>
+          <td>Both vaults</td>
+          <td>Auto-routed</td>
+          <td>Full power, best for most users</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Changing Modes</h3>
+    <pre><code># Switch to local mode (project only)
+/ctx-mode local
+
+# Switch to full mode (both vaults)
+/ctx-mode full
+
+# Switch to global mode (global only)
+/ctx-mode global</code></pre>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Recommended Mode</div>
+      <p><code>full</code> mode is recommended for most users. It gives you access to both global patterns and project-specific docs, with automatic routing to the right vault.</p>
+    </div>
+
+    <h2 id="enforcement">Enforcement Levels</h2>
+    <p>Enforcement controls how aggressively ContextVault reminds you to document your work.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Level</th>
+          <th>Mid-Session</th>
+          <th>Session End</th>
+          <th>Best For</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>light</code></td>
+          <td>No reminders</td>
+          <td>Reminder only</td>
+          <td>Experienced users, minimal interruption</td>
+        </tr>
+        <tr>
+          <td><code>balanced</code></td>
+          <td>After 8+ edits / 2+ files</td>
+          <td>Blocks if significant work</td>
+          <td>Most users (default)</td>
+        </tr>
+        <tr>
+          <td><code>strict</code></td>
+          <td>After 4+ edits / 2+ files</td>
+          <td>Blocks if significant work</td>
+          <td>Building documentation habit</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Changing Enforcement</h3>
+    <pre><code># Set to light enforcement
+/ctx-mode enforcement light
+
+# Set to balanced (default)
+/ctx-mode enforcement balanced
+
+# Set to strict enforcement
+/ctx-mode enforcement strict</code></pre>
+
+    <h3>How Enforcement Works</h3>
+    <p>The enforcement system uses a "remind, don't block" philosophy:</p>
+
+    <ol>
+      <li><strong>Edit Tracking</strong> &mdash; The PreToolUse hook counts file edits</li>
+      <li><strong>Threshold Check</strong> &mdash; When edits exceed threshold, a reminder appears</li>
+      <li><strong>Non-Blocking</strong> &mdash; Reminders suggest documentation but don't stop work</li>
+      <li><strong>Session End</strong> &mdash; Stop hook blocks exit only if significant undocumented work</li>
+    </ol>
+
+    <div class="callout callout-info">
+      <div class="callout-title">What Counts as "Significant Work"?</div>
+      <p>Modifications to 2+ files with 4+ total edits. Version bumps, config changes, and single-file tweaks don't trigger enforcement.</p>
+    </div>
+
+    <h2 id="limits">Document Limits</h2>
+    <p>Limits keep your vault efficient and context-friendly.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Limit</th>
+          <th>Default</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>max_global_docs</code></td>
+          <td>50</td>
+          <td>Maximum documents in global vault</td>
+        </tr>
+        <tr>
+          <td><code>max_project_docs</code></td>
+          <td>50</td>
+          <td>Maximum documents in project vault</td>
+        </tr>
+        <tr>
+          <td><code>max_doc_lines</code></td>
+          <td>100</td>
+          <td>Maximum lines per document</td>
+        </tr>
+        <tr>
+          <td><code>max_summary_words</code></td>
+          <td>15</td>
+          <td>Maximum words in index summary</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Why Limits Matter</h3>
+    <ul>
+      <li><strong>Context Efficiency</strong> &mdash; Smaller docs = faster loading, less token usage</li>
+      <li><strong>Focus</strong> &mdash; Forces concise, actionable documentation</li>
+      <li><strong>Maintainability</strong> &mdash; Easier to update and keep current</li>
+    </ul>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">Approaching Limits?</div>
+      <p>If you're near the 50-doc limit, consider: archiving old docs, merging related topics, or moving less-used docs to <code>archive/</code> folder.</p>
+    </div>
+
+    <h2 id="hooks-config">Hooks Configuration</h2>
+    <p>Hooks are defined in <code>~/.claude/settings.json</code> (not the vault settings):</p>
+
+    <pre><code>{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "bash ~/.claude/hooks/session-start.sh"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": { "tool_name": "Edit" },
+        "type": "command",
+        "command": "bash ~/.claude/hooks/pre-edit.sh \"$TOOL_INPUT\""
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "bash ~/.claude/hooks/stop.sh"
+      }
+    ]
+  }
+}</code></pre>
+
+    <h3>Hook Types</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Hook</th>
+          <th>Purpose</th>
+          <th>Can Block?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>SessionStart</code></td>
+          <td>Show vault status at session start</td>
+          <td>No</td>
+        </tr>
+        <tr>
+          <td><code>PreToolUse</code></td>
+          <td>Track edits, suggest documentation</td>
+          <td>Yes (enforcement-based)</td>
+        </tr>
+        <tr>
+          <td><code>Stop</code></td>
+          <td>Check for undocumented work</td>
+          <td>Yes (if significant work)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 id="project-config">Per-Project Configuration</h2>
+    <p>Each project can have its own <code>CLAUDE.md</code> file with project-specific instructions.</p>
+
+    <h3>Location</h3>
+    <pre><code>your-project/
+├── CLAUDE.md              # Project-specific instructions
+└── .claude/
+    └── vault/
+        └── index.md       # Project vault</code></pre>
+
+    <h3>Example Project CLAUDE.md</h3>
+    <pre><code># Project Instructions
+
+## Documentation Requirements
+After any task:
+- Fixed bug? → /ctx-error
+- Made decision? → /ctx-decision
+- Learned something? → /ctx-doc
+
+## Project Vault
+Location: ./.claude/vault/
+Prefix: P### (P001, P002, etc.)</code></pre>
+
+    <h2>Common Configurations</h2>
+
+    <h3>Minimal Interruption</h3>
+    <pre><code># Light enforcement, local mode
+/ctx-mode local
+/ctx-mode enforcement light</code></pre>
+
+    <h3>Full Power (Recommended)</h3>
+    <pre><code># Full mode, balanced enforcement
+/ctx-mode full
+/ctx-mode enforcement balanced</code></pre>
+
+    <h3>Building Documentation Habit</h3>
+    <pre><code># Full mode, strict enforcement
+/ctx-mode full
+/ctx-mode enforcement strict</code></pre>
+
+    <!-- Prev/Next Navigation -->
+    <nav class="docs-nav">
+      <a href="architecture.html" class="docs-nav-prev">
+        <span class="docs-nav-label">Previous</span>
+        <span class="docs-nav-title">&larr; Architecture</span>
+      </a>
+      <a href="commands.html" class="docs-nav-next">
+        <span class="docs-nav-label">Next</span>
+        <span class="docs-nav-title">Commands &rarr;</span>
+      </a>
+    </nav>
+  </main>
+
+  <script src="assets/docs.js"></script>
+</body>
+</html>

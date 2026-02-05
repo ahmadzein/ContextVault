@@ -18,11 +18,14 @@
 
 <br>
 
-**Give Claude Code a persistent memory across ALL your projects** 🧠
+**Give AI coding assistants a persistent memory across ALL your projects** 🧠
 
 [![Version](https://img.shields.io/badge/version-1.8.4-blue.svg)](https://github.com/ahmadzein/ContextVault)
+[![MCP Server](https://img.shields.io/npm/v/contextvault-mcp?label=MCP%20Server&color=blue)](https://www.npmjs.com/package/contextvault-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude-Code-blueviolet)](https://claude.ai)
+[![Cursor](https://img.shields.io/badge/Cursor-supported-green)](https://cursor.com)
+[![Windsurf](https://img.shields.io/badge/Windsurf-supported-green)](https://windsurf.com)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ahmadzein/ContextVault/pulls)
 
 <br>
@@ -101,6 +104,42 @@ irm https://ctx-vault.com/install.ps1 | iex
 🌐 **Website:** [ctx-vault.com](https://ctx-vault.com)
 
 </div>
+
+<details>
+<summary>🔌 <b>MCP Server (Cursor, Windsurf, OpenCode, Cline, etc.)</b></summary>
+
+<br>
+
+Use ContextVault with **any** MCP-compatible AI tool via Model Context Protocol:
+
+```bash
+npx contextvault-mcp
+```
+
+Add to your AI tool's MCP config:
+```json
+{
+  "mcpServers": {
+    "contextvault": {
+      "command": "npx",
+      "args": ["contextvault-mcp"]
+    }
+  }
+}
+```
+
+**For Claude Code** (via CLI):
+```bash
+claude mcp add contextvault -- npx -y contextvault-mcp
+```
+
+**Works with:** Claude Code, Cursor, Windsurf, OpenCode, Cline, Continue, Copilot CLI, and any MCP client.
+
+**Auto-detect:** If you already have the bash installer, the MCP server automatically detects and uses your existing `.claude/vault/` — zero migration needed. Both systems share the same vault.
+
+📦 **npm:** [contextvault-mcp](https://www.npmjs.com/package/contextvault-mcp) • **25 tools** • **4 resources** • **41 KB**
+
+</details>
 
 <details>
 <summary>📦 <b>Manual Install</b> (click to expand)</summary>

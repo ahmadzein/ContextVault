@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JGMRM19MBY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-JGMRM19MBY');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upgrade Guide - ContextVault Documentation</title>
+  <meta name="description" content="Complete guide to upgrading ContextVault. Step-by-step instructions for updating global installation, project files, and troubleshooting upgrades.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://ctx-vault.com/docs/upgrade.html">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <meta name="theme-color" content="#0c0a09">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ctx-vault.com/docs/upgrade.html">
+  <meta property="og:site_name" content="ContextVault">
+  <meta property="og:title" content="Upgrade Guide - ContextVault Documentation">
+  <meta property="og:description" content="Complete guide to upgrading ContextVault to the latest version.">
+  <meta property="og:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Upgrade Guide - ContextVault">
+  <meta name="twitter:description" content="Step-by-step guide to upgrading ContextVault.">
+  <meta name="twitter:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to Upgrade ContextVault",
+    "description": "Complete guide to upgrading ContextVault to the latest version.",
+    "step": [
+      {"@type": "HowToStep", "name": "Check current version", "text": "Run /ctx-status to see your current version"},
+      {"@type": "HowToStep", "name": "Upgrade global installation", "text": "Re-run the installer script"},
+      {"@type": "HowToStep", "name": "Restart Claude Code", "text": "Close and reopen Claude Code"},
+      {"@type": "HowToStep", "name": "Upgrade project", "text": "Run /ctx-upgrade in each project"},
+      {"@type": "HowToStep", "name": "Verify", "text": "Run /ctx-status and /ctx-changelog"}
+    ]
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="docs-header">
+    <button class="mobile-menu-btn">&#9776;</button>
+    <a href="../index.html" class="header-logo">
+      <img src="images/favicon-32x32.png" alt="">Context<span>Vault</span>
+    </a>
+    <nav class="header-nav">
+      <a href="../index.html">Home</a>
+      <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
+      <div class="version-dropdown">
+        <button class="version-btn">v1.8.4 <span>&#9662;</span></button>
+        <div class="version-menu">
+          <a href="#" class="current">v1.8.4 (latest)</a>
+          <a href="#">v1.8.0</a>
+          <a href="#">v1.7.0</a>
+        </div>
+      </div>
+    </nav>
+    <div class="search-wrapper">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+      <input type="text" class="search-input" placeholder="Search docs...">
+      <div class="search-results"></div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="getting-started.html">Introduction</a></li>
+        <li><a href="getting-started.html#installation">Installation</a></li>
+        <li><a href="upgrade.html" class="active">Upgrade Guide</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Core Concepts</div>
+      <ul class="sidebar-links">
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="commands.html">Commands (25)</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guides</div>
+      <ul class="sidebar-links">
+        <li><a href="tutorials.html">Tutorials</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-main">
+    <h1>Upgrade Guide</h1>
+    <p class="subtitle">Keep ContextVault up to date with the latest features and improvements.</p>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Your Documents Are Safe</div>
+      <p>Upgrades <strong>never</strong> delete or modify your vault documents. Only the instructions, commands, and hooks are updated.</p>
+    </div>
+
+    <h2>Understanding ContextVault Components</h2>
+    <p>ContextVault has two layers that can be upgraded independently:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Location</th>
+          <th>What It Contains</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Global Installation</strong></td>
+          <td><code>~/.claude/</code></td>
+          <td>CLAUDE.md, 25 slash commands, hooks, global vault</td>
+        </tr>
+        <tr>
+          <td><strong>Project Installation</strong></td>
+          <td><code>./.claude/</code> + <code>./CLAUDE.md</code></td>
+          <td>Project instructions, project vault</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Complete Upgrade Process</h2>
+    <p>Follow these steps to fully upgrade ContextVault:</p>
+
+    <h3>Step 1: Check Your Current Version</h3>
+    <p>In Claude Code, run:</p>
+    <pre><code>/ctx-status</code></pre>
+    <p>Note your current version number.</p>
+
+    <h3>Step 2: Upgrade Global Installation</h3>
+    <p>This updates the core ContextVault system on your machine.</p>
+
+    <h4>macOS / Linux</h4>
+    <pre><code>curl -sL https://ctx-vault.com/install | bash</code></pre>
+
+    <h4>Windows PowerShell (Run as Administrator)</h4>
+    <pre><code>irm https://ctx-vault.com/install.ps1 | iex</code></pre>
+
+    <div class="callout callout-info">
+      <div class="callout-title">What Gets Updated</div>
+      <ul>
+        <li><code>~/.claude/CLAUDE.md</code> &mdash; Global instructions for Claude</li>
+        <li><code>~/.claude/commands/</code> &mdash; All 25 slash commands</li>
+        <li><code>~/.claude/settings.json</code> &mdash; Hook configurations</li>
+        <li><code>~/.claude/vault/settings.json</code> &mdash; Vault settings</li>
+      </ul>
+      <p><strong>NOT touched:</strong> Your global vault documents (<code>~/.claude/vault/G*.md</code>)</p>
+    </div>
+
+    <h3>Step 3: Restart Claude Code</h3>
+    <p>After upgrading the global installation, you must restart Claude Code to load the new instructions.</p>
+    <pre><code># Close Claude Code completely, then reopen it
+# Or if using CLI:
+claude</code></pre>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">Important</div>
+      <p>Don't skip this step! Claude Code caches instructions at session start. A restart ensures the new CLAUDE.md and commands are loaded.</p>
+    </div>
+
+    <h3>Step 4: Upgrade Project Installation</h3>
+    <p>Navigate to each project that uses ContextVault and upgrade its local files:</p>
+    <pre><code>cd /path/to/your/project
+
+# In Claude Code, run:
+/ctx-upgrade</code></pre>
+
+    <p>This updates:</p>
+    <ul>
+      <li><code>./CLAUDE.md</code> &mdash; Project-specific instructions</li>
+      <li><code>./.claude/settings.json</code> &mdash; Project hook settings</li>
+    </ul>
+
+    <div class="callout callout-info">
+      <div class="callout-title">Project Vault Untouched</div>
+      <p>Your project documents (<code>./.claude/vault/P*.md</code>) are never modified during upgrade.</p>
+    </div>
+
+    <h3>Step 5: Verify the Upgrade</h3>
+    <pre><code>/ctx-status</code></pre>
+    <p>Confirm the new version is displayed and all components are healthy.</p>
+
+    <pre><code>/ctx-changelog</code></pre>
+    <p>Review what's new in the version you just installed.</p>
+
+    <h2>Quick Reference</h2>
+
+    <pre><code># COMPLETE UPGRADE CHECKLIST
+# ─────────────────────────────────────────
+
+# 1. Check current version
+/ctx-status
+
+# 2. Upgrade global (run in terminal, not Claude Code)
+curl -sL https://ctx-vault.com/install | bash   # macOS/Linux
+# or
+irm https://ctx-vault.com/install.ps1 | iex     # Windows
+
+# 3. Restart Claude Code
+#    Close and reopen the application
+
+# 4. Upgrade each project (in Claude Code)
+cd /path/to/project
+/ctx-upgrade
+
+# 5. Verify
+/ctx-status
+/ctx-changelog</code></pre>
+
+    <h2>Upgrading Multiple Projects</h2>
+    <p>If you have several projects using ContextVault:</p>
+    <ol>
+      <li>Upgrade global installation <strong>once</strong></li>
+      <li>Restart Claude Code <strong>once</strong></li>
+      <li>Run <code>/ctx-upgrade</code> in <strong>each project</strong> individually</li>
+    </ol>
+
+    <pre><code># After global upgrade and restart:
+
+cd ~/projects/project-a
+/ctx-upgrade
+
+cd ~/projects/project-b
+/ctx-upgrade
+
+cd ~/projects/project-c
+/ctx-upgrade</code></pre>
+
+    <h2>Troubleshooting Upgrades</h2>
+
+    <h3>Commands not recognized after upgrade</h3>
+    <p><strong>Cause:</strong> Claude Code hasn't reloaded the commands.</p>
+    <p><strong>Fix:</strong> Restart Claude Code completely (close all windows/terminals).</p>
+
+    <h3>Hooks not triggering</h3>
+    <p><strong>Cause:</strong> settings.json may have old hook format.</p>
+    <p><strong>Fix:</strong> Re-run the installer which regenerates hook configs.</p>
+
+    <h3>Version still shows old number</h3>
+    <p><strong>Cause:</strong> Reading cached CLAUDE.md.</p>
+    <p><strong>Fix:</strong> Ensure you restarted Claude Code after the global upgrade.</p>
+
+    <h3>/ctx-upgrade fails</h3>
+    <p><strong>Cause:</strong> Missing or corrupted project files.</p>
+    <p><strong>Fix:</strong> Re-initialize the project:</p>
+    <pre><code>/ctx-init</code></pre>
+    <p>This recreates project structure while preserving existing vault documents.</p>
+
+    <h2>Downgrading (If Needed)</h2>
+    <p>To install a specific older version, download from GitHub releases:</p>
+    <pre><code># View available releases
+https://github.com/ahmadzein/ContextVault/releases
+
+# Install specific version (replace TAG with version)
+curl -sL https://raw.githubusercontent.com/ahmadzein/ContextVault/TAG/install-contextvault.sh | bash</code></pre>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">Downgrade Warning</div>
+      <p>Older versions may not support features used in newer vault documents. Only downgrade if you encounter critical issues with the latest version.</p>
+    </div>
+
+    <h2>Staying Updated</h2>
+    <p>Check for updates periodically:</p>
+    <ul>
+      <li><a href="https://github.com/ahmadzein/ContextVault/releases">GitHub Releases</a> &mdash; See all versions</li>
+      <li><a href="changelog.html">Changelog</a> &mdash; What's new in each version</li>
+      <li>Star the repo on GitHub to get notified of new releases</li>
+    </ul>
+
+    <!-- Prev/Next Navigation -->
+    <nav class="docs-nav">
+      <a href="getting-started.html" class="docs-nav-prev">
+        <span class="docs-nav-label">Previous</span>
+        <span class="docs-nav-title">&larr; Getting Started</span>
+      </a>
+      <a href="architecture.html" class="docs-nav-next">
+        <span class="docs-nav-label">Next</span>
+        <span class="docs-nav-title">Architecture &rarr;</span>
+      </a>
+    </nav>
+  </main>
+
+  <script src="assets/docs.js"></script>
+</body>
+</html>

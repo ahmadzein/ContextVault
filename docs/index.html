@@ -1,13 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JGMRM19MBY"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-JGMRM19MBY');
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ContextVault — Your Knowledge, Never Lost</title>
-<meta name="description" content="External context management for Claude Code. Two-tier documentation that persists across sessions.">
+<title>ContextVault — External Memory for Claude Code | Survive Context Loss, Compaction & Token Limits</title>
+<meta name="description" content="Stop losing Claude Code context to new sessions, context compaction, and token limits. ContextVault stores knowledge externally in markdown files Claude reads automatically. Free, open source, 100% local.">
+
+<!-- Preload critical assets -->
+<link rel="preload" href="docs/images/logo-64x64.png" as="image" fetchpriority="high">
+
+<!-- Favicons -->
+<link rel="icon" type="image/png" sizes="32x32" href="docs/images/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="docs/images/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="docs/images/apple-touch-icon.png">
+<link rel="manifest" href="docs/images/site.webmanifest">
+<meta name="theme-color" content="#0c0a09">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ctx-vault.com/">
+<meta property="og:site_name" content="ContextVault">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="ContextVault — External Memory for Claude Code">
+<meta property="og:description" content="Claude forgets context in new sessions, during compaction, and at token limits. ContextVault stores knowledge externally — markdown files Claude reads automatically. Free & open source.">
+<meta property="og:image" content="https://ctx-vault.com/docs/images/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ContextVault - Make Claude Code remember your project context">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@contextVault">
+<meta name="twitter:creator" content="@ahmadzein">
+<meta name="twitter:title" content="ContextVault — External Memory for Claude Code">
+<meta name="twitter:description" content="Context compaction, token limits, new sessions — Claude forgets. ContextVault stores knowledge externally. Free, open source, 100% local.">
+<meta name="twitter:image" content="https://ctx-vault.com/docs/images/og-image.png">
+<meta name="twitter:image:alt" content="ContextVault logo">
+
+<!-- Additional SEO -->
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="author" content="Ahmad Zein">
+<meta name="publisher" content="ContextVault">
+<meta name="keywords" content="Claude Code, Claude context loss, Claude memory, context compaction, token limits, Claude Code CLI, Anthropic Claude, AI coding assistant, Claude session, CLAUDE.md, Claude slash commands, external memory, AI pair programming, Claude Code tools, free open source">
+<meta name="application-name" content="ContextVault">
+<meta name="apple-mobile-web-app-title" content="ContextVault">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<link rel="canonical" href="https://ctx-vault.com/index.html">
+<link rel="sitemap" type="application/xml" href="/sitemap.xml">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -75,13 +131,21 @@ nav.scrolled { padding: 0.75rem 0; background: rgba(12, 10, 9, 0.95); }
   max-width: 1140px; margin: 0 auto; padding: 0 2rem;
 }
 .nav-logo {
-  font-family: var(--font-display);
-  font-size: 1.5rem; font-weight: 700;
+  font-family: var(--font-body);
+  font-size: 1.35rem; font-weight: 600;
   color: var(--stone-100);
   text-decoration: none;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
-.nav-logo span { color: var(--gold-500); }
+.nav-logo img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+.nav-logo span { color: var(--gold-400); margin-left: -0.15em; }
 .nav-links { display: flex; gap: 2rem; align-items: center; }
 .nav-links a {
   font-size: 0.875rem; font-weight: 500;
@@ -699,18 +763,19 @@ footer {
 }
 .footer-left {
   font-size: 0.85rem;
-  color: var(--stone-500);
+  color: var(--stone-400);
 }
-.footer-left a { color: var(--gold-500); text-decoration: none; }
-.footer-left a:hover { color: var(--gold-400); }
+.footer-left a { color: var(--gold-400); text-decoration: underline; text-underline-offset: 2px; }
+.footer-left a:hover { color: var(--gold-300); }
 .footer-links { display: flex; gap: 2rem; }
 .footer-links a {
   font-size: 0.8rem;
-  color: var(--stone-500);
-  text-decoration: none;
+  color: var(--stone-400);
+  text-decoration: underline;
+  text-underline-offset: 2px;
   transition: color 0.3s;
 }
-.footer-links a:hover { color: var(--stone-300); }
+.footer-links a:hover { color: var(--stone-200); }
 
 /* --- Animations --- */
 .reveal {
@@ -745,34 +810,118 @@ footer {
   .hero h1 { font-size: 2.5rem; }
 }
 </style>
+
+<!-- Structured Data (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://ctx-vault.com/#organization",
+      "name": "ContextVault",
+      "url": "https://ctx-vault.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://ctx-vault.com/docs/images/logo.png",
+        "width": 512,
+        "height": 512
+      },
+      "sameAs": [
+        "https://github.com/ahmadzein/ContextVault"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://ctx-vault.com/#website",
+      "url": "https://ctx-vault.com",
+      "name": "ContextVault",
+      "description": "External context management for Claude Code",
+      "publisher": {"@id": "https://ctx-vault.com/#organization"}
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://ctx-vault.com/#software",
+      "name": "ContextVault",
+      "description": "Context management system for Claude Code (Anthropic's AI coding CLI). Solves the problem of Claude forgetting everything between sessions by creating a persistent knowledge base that Claude reads automatically at session start.",
+      "applicationCategory": "DeveloperApplication",
+      "applicationSubCategory": "AI Development Tools",
+      "operatingSystem": ["macOS", "Linux", "Windows"],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "softwareVersion": "1.8.4",
+      "author": {
+        "@type": "Person",
+        "name": "Ahmad Zein",
+        "url": "https://github.com/ahmadzein"
+      },
+      "license": "https://opensource.org/licenses/MIT",
+      "downloadUrl": "https://ctx-vault.com/install",
+      "screenshot": "https://ctx-vault.com/docs/images/og-image.png",
+      "softwareRequirements": "Claude Code CLI by Anthropic",
+      "featureList": [
+        "Claude Code reads vault automatically at session start",
+        "Two-tier system: global knowledge + project-specific docs",
+        "25 slash commands (/ctx-doc, /ctx-error, /ctx-decision, etc.)",
+        "Smart hooks remind you to document important work",
+        "Auto-bootstrap scans codebases and generates docs",
+        "Session handoffs ensure continuity between conversations",
+        "CLAUDE.md integration for seamless Claude Code usage"
+      ],
+      "keywords": ["Claude Code", "Anthropic", "AI coding assistant", "context persistence", "session memory", "CLAUDE.md", "slash commands"]
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://ctx-vault.com/#webpage",
+      "url": "https://ctx-vault.com",
+      "name": "ContextVault — Your Knowledge, Never Lost",
+      "description": "External context management for Claude Code. Two-tier documentation system that persists your knowledge across every session.",
+      "isPartOf": {"@id": "https://ctx-vault.com/#website"},
+      "about": {"@id": "https://ctx-vault.com/#software"},
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": "https://ctx-vault.com/docs/images/og-image.png"
+      }
+    }
+  ]
+}
+</script>
 </head>
 <body>
 
 <!-- Navigation -->
 <nav id="nav">
   <div class="nav-inner">
-    <a href="#" class="nav-logo"><span>&#x1F3F0;</span> ContextVault</a>
+    <a href="#" class="nav-logo"><img src="docs/images/logo-64x64.png" alt="ContextVault" fetchpriority="high">Context<span>Vault</span></a>
     <div class="nav-links">
       <a href="#problem">Why</a>
       <a href="#features">Features</a>
       <a href="#how">How it Works</a>
       <a href="#commands">Commands</a>
+      <a href="docs/getting-started.html">Docs</a>
       <a href="https://github.com/ahmadzein/ContextVault" class="nav-cta" target="_blank" rel="noopener">GitHub</a>
     </div>
   </div>
 </nav>
 
+<!-- Main Content -->
+<main>
+
 <!-- Hero -->
 <section class="hero">
   <div class="container hero-content">
-    <div class="hero-badge reveal"><span class="dot"></span> v1.8.4 &mdash; Now with configurable enforcement</div>
+    <div class="hero-badge reveal"><span class="dot"></span> NEW &mdash; MCP Server: works with Cursor, Windsurf, OpenCode &amp; more</div>
     <h1 class="reveal reveal-delay-1">Your Knowledge,<br><em>Never Lost</em></h1>
-    <p class="hero-sub reveal reveal-delay-2">External context management for Claude Code. A two-tier documentation system that persists your knowledge across every session.</p>
+    <p class="hero-sub reveal reveal-delay-2">External context management for AI coding assistants. A two-tier documentation system that persists your knowledge across every session.</p>
     <div class="install-wrapper reveal reveal-delay-3">
       <div class="os-tabs">
         <button class="os-tab" data-os="mac" onclick="switchOS('mac')">macOS</button>
         <button class="os-tab" data-os="linux" onclick="switchOS('linux')">Linux</button>
         <button class="os-tab" data-os="windows" onclick="switchOS('windows')">Windows</button>
+        <button class="os-tab" data-os="mcp" onclick="switchOS('mcp')">MCP (Any AI Tool)</button>
       </div>
       <div class="install-cmd" data-os="mac">
         <div class="hero-install" data-prefix="$">
@@ -791,6 +940,13 @@ footer {
           <code>irm https://ctx-vault.com/install.ps1 | iex</code>
           <button class="copy-btn" onclick="copyCmd('irm https://ctx-vault.com/install.ps1 | iex')">Copy</button>
         </div>
+      </div>
+      <div class="install-cmd" data-os="mcp">
+        <div class="hero-install" data-prefix="$">
+          <code>npx contextvault-mcp</code>
+          <button class="copy-btn" onclick="copyCmd('npx contextvault-mcp')">Copy</button>
+        </div>
+        <p style="color:var(--stone-400);font-size:.85rem;margin-top:.5rem">Works with Cursor, Windsurf, OpenCode, Cline, Continue, Copilot CLI &amp; more</p>
       </div>
     </div>
     <div class="hero-actions reveal reveal-delay-4">
@@ -981,6 +1137,7 @@ footer {
           <button class="os-tab" data-os="mac" onclick="switchOS('mac')">macOS</button>
           <button class="os-tab" data-os="linux" onclick="switchOS('linux')">Linux</button>
           <button class="os-tab" data-os="windows" onclick="switchOS('windows')">Windows</button>
+          <button class="os-tab" data-os="mcp" onclick="switchOS('mcp')">MCP (Any AI Tool)</button>
         </div>
         <div class="install-cmd" data-os="mac">
           <div class="hero-install" data-prefix="$" style="margin:0 auto;">
@@ -1000,6 +1157,13 @@ footer {
             <button class="copy-btn" onclick="copyCmd('irm https://ctx-vault.com/install.ps1 | iex')">Copy</button>
           </div>
         </div>
+        <div class="install-cmd" data-os="mcp">
+          <div class="hero-install" data-prefix="$" style="margin:0 auto;">
+            <code>npx contextvault-mcp</code>
+            <button class="copy-btn" onclick="copyCmd('npx contextvault-mcp')">Copy</button>
+          </div>
+          <p style="color:var(--stone-400);font-size:.85rem;margin-top:.5rem;text-align:center">Works with Cursor, Windsurf, OpenCode, Cline, Continue &amp; more</p>
+        </div>
       </div>
       <div class="hero-actions">
         <a href="https://github.com/ahmadzein/ContextVault" class="btn btn-primary" target="_blank" rel="noopener">
@@ -1012,11 +1176,13 @@ footer {
   </div>
 </section>
 
+</main>
+
 <!-- Footer -->
 <footer>
   <div class="container footer-inner">
     <div class="footer-left">
-      &#x1F3F0; ContextVault v1.8.4 &mdash; MIT License &mdash; Built by <a href="https://github.com/ahmadzein" target="_blank" rel="noopener">Ahmad Zein</a>
+      <img src="docs/images/logo-64x64.png" alt="" style="width:20px;height:20px;vertical-align:middle;margin-right:6px;border-radius:4px;">ContextVault v1.8.4 &mdash; MIT License &mdash; Built by <a href="https://github.com/ahmadzein" target="_blank" rel="noopener">Ahmad Zein</a>
     </div>
     <div class="footer-links">
       <a href="https://github.com/ahmadzein/ContextVault" target="_blank" rel="noopener">GitHub</a>

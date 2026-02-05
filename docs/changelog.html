@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JGMRM19MBY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-JGMRM19MBY');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Changelog - ContextVault Documentation</title>
+  <meta name="description" content="ContextVault version history and release notes. Complete changelog from v1.0 to v1.8.4 with all features and improvements.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://ctx-vault.com/docs/changelog.html">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <meta name="theme-color" content="#0c0a09">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ctx-vault.com/docs/changelog.html">
+  <meta property="og:site_name" content="ContextVault">
+  <meta property="og:title" content="Changelog - ContextVault Documentation">
+  <meta property="og:description" content="ContextVault version history and release notes.">
+  <meta property="og:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Changelog - ContextVault">
+  <meta name="twitter:description" content="Version history and release notes.">
+  <meta name="twitter:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "ContextVault Changelog",
+    "description": "Version history and release notes for ContextVault.",
+    "author": {"@type": "Organization", "name": "ContextVault"},
+    "publisher": {"@type": "Organization", "name": "ContextVault"},
+    "datePublished": "2026-02-03",
+    "dateModified": "2026-02-03",
+    "mainEntityOfPage": "https://ctx-vault.com/docs/changelog.html"
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="docs-header">
+    <button class="mobile-menu-btn">&#9776;</button>
+    <a href="../index.html" class="header-logo">
+      <img src="images/favicon-32x32.png" alt="">Context<span>Vault</span>
+    </a>
+    <nav class="header-nav">
+      <a href="../index.html">Home</a>
+      <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
+      <div class="version-dropdown">
+        <button class="version-btn">MCP v1.0.2 <span>&#9662;</span></button>
+        <div class="version-menu">
+          <a href="#" class="current">MCP v1.0.2 (latest)</a>
+          <a href="#">v1.8.0</a>
+          <a href="#">v1.7.0</a>
+        </div>
+      </div>
+    </nav>
+    <div class="search-wrapper">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+      <input type="text" class="search-input" placeholder="Search docs...">
+      <div class="search-results"></div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="getting-started.html">Introduction</a></li>
+        <li><a href="getting-started.html#installation">Installation</a></li>
+        <li><a href="upgrade.html">Upgrade Guide</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Core Concepts</div>
+      <ul class="sidebar-links">
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="commands.html">Commands (25)</a></li>
+        <li><a href="changelog.html" class="active">Changelog</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guides</div>
+      <ul class="sidebar-links">
+        <li><a href="tutorials.html">Tutorials</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-main">
+    <h1>Changelog</h1>
+    <p class="subtitle">Version history and release notes for ContextVault.</p>
+
+    <h2>MCP Server v1.0.2 <span style="color: var(--gold-500); font-size: 0.8em;">(Latest)</span></h2>
+    <p><strong>Released:</strong> February 2026</p>
+    <h4>New: MCP Server</h4>
+    <ul>
+      <li>ContextVault now works with <strong>any</strong> MCP-compatible AI tool via <code>npx contextvault-mcp</code></li>
+      <li>Supported: Claude Code, Cursor, Windsurf, OpenCode, Cline, Continue, Copilot CLI</li>
+      <li>25 MCP tools mirroring all <code>/ctx-*</code> commands</li>
+      <li>4 MCP resources for auto-context (indexes, settings, instructions)</li>
+      <li>Server-side enforcement engine (no hooks needed)</li>
+      <li>Auto-detects existing <code>.claude/vault/</code> — zero migration for bash installer users</li>
+      <li>Legacy import: <code>ctx_import</code> copies from <code>.claude/vault/</code> to <code>.contextvault/</code></li>
+    </ul>
+    <h4>npm</h4>
+    <ul>
+      <li>Package: <a href="https://www.npmjs.com/package/contextvault-mcp">contextvault-mcp</a></li>
+      <li>v1.0.0 — Initial release (25 tools, 4 resources)</li>
+      <li>v1.0.1 — Fixed legacy import overwriting index</li>
+      <li>v1.0.2 — Auto-detect <code>.claude/vault/</code> paths, zero-conflict with bash installer</li>
+    </ul>
+
+    <h2>v1.8.4</h2>
+    <p><strong>Released:</strong> February 2026</p>
+    <h4>New Features</h4>
+    <ul>
+      <li>Native Windows PowerShell installer (<code>install-contextvault.ps1</code>)</li>
+      <li>Cross-platform installation support (macOS, Linux, Windows)</li>
+      <li>Marketing website at <a href="https://ctx-vault.com">ctx-vault.com</a></li>
+      <li>Full documentation site</li>
+    </ul>
+    <h4>Improvements</h4>
+    <ul>
+      <li>Optimized CLAUDE.md from 775 to 221 lines</li>
+      <li>Better OS detection for install instructions</li>
+    </ul>
+
+    <h2>v1.8.3</h2>
+    <p><strong>Released:</strong> February 2026</p>
+    <h4>New Features</h4>
+    <ul>
+      <li>Configurable enforcement levels: <code>light</code>, <code>balanced</code>, <code>strict</code></li>
+      <li>New command: <code>/ctx-mode enforcement [level]</code></li>
+    </ul>
+    <h4>Changes</h4>
+    <ul>
+      <li>Default enforcement changed to <code>balanced</code></li>
+      <li>Settings stored in <code>~/.claude/vault/settings.json</code></li>
+    </ul>
+
+    <h2>v1.8.2</h2>
+    <p><strong>Released:</strong> February 2026</p>
+    <h4>Improvements</h4>
+    <ul>
+      <li>Smart blocking at session end only for significant undocumented work</li>
+      <li>Improved detection of meaningful vs. trivial edits</li>
+    </ul>
+
+    <h2>v1.8.1</h2>
+    <p><strong>Released:</strong> February 2026</p>
+    <h4>Changes</h4>
+    <ul>
+      <li>Completion-triggered reminders (TodoWrite + git commit only)</li>
+      <li>Reduced hook noise during normal work</li>
+    </ul>
+
+    <h2>v1.8.0</h2>
+    <p><strong>Released:</strong> February 2026</p>
+    <h4>Major Release: "Remind, Don't Block"</h4>
+    <ul>
+      <li>Non-blocking milestone-based enforcement</li>
+      <li>Hooks suggest documentation but don't prevent work</li>
+      <li>Only session-end Stop hook can block (if significant work)</li>
+    </ul>
+
+    <h2>v1.7.6</h2>
+    <p><strong>Released:</strong> February 2026</p>
+    <h4>Improvements</h4>
+    <ul>
+      <li>Hook deduplication prevents duplicate reminders</li>
+      <li>Smarter <code>/ctx-bootstrap</code> detection</li>
+    </ul>
+
+    <h2>v1.7.5</h2>
+    <p><strong>Released:</strong> February 2026</p>
+    <h4>New Features</h4>
+    <ul>
+      <li>New command: <code>/ctx-bootstrap</code> &mdash; Auto-scan and document entire codebase</li>
+      <li>Creates architecture doc + feature docs automatically</li>
+      <li>Optional <code>--interactive</code> flag to review each doc</li>
+    </ul>
+
+    <h2>v1.7.4</h2>
+    <p><strong>Released:</strong> January 2026</p>
+    <h4>Bug Fixes</h4>
+    <ul>
+      <li>Fixed Stop enforcer session fallback issue</li>
+    </ul>
+
+    <h2>v1.7.3</h2>
+    <p><strong>Released:</strong> January 2026</p>
+    <h4>Documentation</h4>
+    <ul>
+      <li>Added APPEND vs ARCHIVE decision tree</li>
+      <li>Clear examples for when to preserve vs. archive content</li>
+    </ul>
+
+    <h2>v1.7.2</h2>
+    <p><strong>Released:</strong> January 2026</p>
+    <h4>Core Rule Added</h4>
+    <ul>
+      <li>APPEND, NEVER REPLACE rule prevents information loss</li>
+      <li>History sections now properly preserved</li>
+    </ul>
+
+    <h2>v1.7.1</h2>
+    <p><strong>Released:</strong> January 2026</p>
+    <h4>New Features</h4>
+    <ul>
+      <li>New command: <code>/ctx-plan</code> for multi-step task tracking</li>
+      <li>Archive mechanism for deprecated content</li>
+    </ul>
+
+    <h2>v1.7.0</h2>
+    <p><strong>Released:</strong> January 2026</p>
+    <h4>Major Release: Smart Detection</h4>
+    <ul>
+      <li>Automatic suggestion of the right command based on work type</li>
+      <li>Bug fix? Suggests <code>/ctx-error</code></li>
+      <li>Decision made? Suggests <code>/ctx-decision</code></li>
+    </ul>
+
+    <h2>v1.6.x</h2>
+    <p><strong>Released:</strong> January 2026</p>
+    <h4>Highlights</h4>
+    <ul>
+      <li><strong>v1.6.9:</strong> BLOCKING PreToolUse mid-session enforcement</li>
+      <li><strong>v1.6.8:</strong> More aggressive Stop hook enforcement</li>
+      <li><strong>v1.6.7:</strong> BLOCKING Stop hook forces documentation</li>
+      <li><strong>v1.6.0:</strong> Added 6 new commands (health, note, changelog, link, quiz, explain)</li>
+    </ul>
+
+    <h2>Earlier Versions</h2>
+    <table>
+      <thead>
+        <tr><th>Version</th><th>Highlights</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>v1.5.x</td><td>Added <code>/ctx-upgrade</code> command</td></tr>
+        <tr><td>v1.4.x</td><td>Enhanced instructions with clear checklists</td></tr>
+        <tr><td>v1.3.x</td><td>Two-tier vault system (global + project)</td></tr>
+        <tr><td>v1.2.x</td><td>Hooks system introduction</td></tr>
+        <tr><td>v1.1.x</td><td>Basic slash commands</td></tr>
+        <tr><td>v1.0.0</td><td>Initial release</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Upgrade Instructions</h2>
+    <p>To upgrade to the latest version, re-run the installer:</p>
+    <pre><code># macOS/Linux
+curl -sL https://ctx-vault.com/install | bash
+
+# Windows PowerShell
+irm https://ctx-vault.com/install.ps1 | iex</code></pre>
+
+    <div class="callout callout-info">
+      <div class="callout-title">What Gets Updated</div>
+      <p>The installer updates: <code>CLAUDE.md</code>, slash commands, and hooks. Your vault documents are never deleted or modified.</p>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">After Upgrading</div>
+      <p>Use <code>/ctx-changelog</code> in Claude Code to see what's new in the version you just installed.</p>
+    </div>
+
+    <!-- Prev/Next Navigation -->
+    <nav class="docs-nav">
+      <a href="commands.html" class="docs-nav-prev">
+        <span class="docs-nav-label">Previous</span>
+        <span class="docs-nav-title">&larr; Commands</span>
+      </a>
+      <a href="tutorials.html" class="docs-nav-next">
+        <span class="docs-nav-label">Next</span>
+        <span class="docs-nav-title">Tutorials &rarr;</span>
+      </a>
+    </nav>
+  </main>
+
+  <script src="assets/docs.js"></script>
+</body>
+</html>

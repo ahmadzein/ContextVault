@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JGMRM19MBY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-JGMRM19MBY');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started with ContextVault for Claude Code | Installation Guide</title>
+  <meta name="description" content="Install ContextVault to make Claude Code remember your project context. Step-by-step setup for macOS, Linux, and Windows. Start using /ctx-doc, /ctx-error and 23 more slash commands.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://ctx-vault.com/docs/getting-started.html">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <meta name="theme-color" content="#0c0a09">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ctx-vault.com/docs/getting-started.html">
+  <meta property="og:site_name" content="ContextVault">
+  <meta property="og:title" content="Getting Started - ContextVault Documentation">
+  <meta property="og:description" content="Get started with ContextVault. Installation guide for macOS, Linux, and Windows.">
+  <meta property="og:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Getting Started - ContextVault">
+  <meta name="twitter:description" content="Installation guide and quick start tutorial for ContextVault.">
+  <meta name="twitter:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Getting Started with ContextVault",
+    "description": "Installation guide for macOS, Linux, and Windows. Quick start tutorial for external context management in Claude Code.",
+    "author": {"@type": "Organization", "name": "ContextVault"},
+    "publisher": {"@type": "Organization", "name": "ContextVault", "logo": {"@type": "ImageObject", "url": "https://ctx-vault.com/docs/images/logo.png"}},
+    "datePublished": "2026-02-03",
+    "dateModified": "2026-02-03",
+    "mainEntityOfPage": "https://ctx-vault.com/docs/getting-started.html",
+    "image": "https://ctx-vault.com/docs/images/og-image.png"
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="docs-header">
+    <button class="mobile-menu-btn">&#9776;</button>
+    <a href="../index.html" class="header-logo">
+      <img src="images/favicon-32x32.png" alt="">Context<span>Vault</span>
+    </a>
+    <nav class="header-nav">
+      <a href="../index.html">Home</a>
+      <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
+      <div class="version-dropdown">
+        <button class="version-btn">v1.8.4 <span>&#9662;</span></button>
+        <div class="version-menu">
+          <a href="#" class="current">v1.8.4 (latest)</a>
+          <a href="#">v1.8.0</a>
+          <a href="#">v1.7.0</a>
+        </div>
+      </div>
+    </nav>
+    <div class="search-wrapper">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+      <input type="text" class="search-input" placeholder="Search docs...">
+      <div class="search-results"></div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="getting-started.html" class="active">Introduction</a></li>
+        <li><a href="getting-started.html#installation">Installation</a></li>
+        <li><a href="upgrade.html">Upgrade Guide</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Core Concepts</div>
+      <ul class="sidebar-links">
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="commands.html">Commands (25)</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guides</div>
+      <ul class="sidebar-links">
+        <li><a href="tutorials.html">Tutorials</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-main">
+    <h1>Getting Started</h1>
+    <p class="subtitle">External context management for Claude Code. Never lose knowledge between sessions.</p>
+
+    <h2 id="introduction">What is ContextVault?</h2>
+    <p>ContextVault is a two-tier documentation system that helps AI coding assistants (like Claude Code) remember context across sessions. Instead of losing everything when a conversation ends, ContextVault persists your knowledge in organized markdown files.</p>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Why ContextVault?</div>
+      <p>AI assistants start fresh every session. ContextVault solves this by creating a persistent knowledge base that Claude reads at session start, giving it full context of your project.</p>
+    </div>
+
+    <h3>Key Features</h3>
+    <ul>
+      <li><strong>Two-Tier System</strong> &mdash; Global vault for reusable knowledge, project vault for specific docs</li>
+      <li><strong>25 Slash Commands</strong> &mdash; Quick commands for every documentation need</li>
+      <li><strong>Smart Hooks</strong> &mdash; Automatic reminders to document your work</li>
+      <li><strong>Configurable Enforcement</strong> &mdash; Light, balanced, or strict reminder modes</li>
+      <li><strong>Auto-Bootstrap</strong> &mdash; Scan and document entire codebases automatically</li>
+    </ul>
+
+    <h2 id="installation">Installation</h2>
+
+    <h3 id="unix-install">macOS & Linux</h3>
+    <p>Install with a single command:</p>
+    <pre><code>curl -sL https://ctx-vault.com/install | bash</code></pre>
+
+    <p>Or install directly from GitHub:</p>
+    <pre><code>curl -sL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash</code></pre>
+
+    <h3 id="windows-install">Windows</h3>
+    <p>Native PowerShell installation (run as Administrator):</p>
+    <pre><code>irm https://ctx-vault.com/install.ps1 | iex</code></pre>
+
+    <div class="callout callout-info">
+      <div class="callout-title">Windows Note</div>
+      <p>For full hook support on Windows, install <a href="https://gitforwindows.org/">Git for Windows</a> which includes Git Bash. The installer will auto-detect it.</p>
+    </div>
+
+    <h3>Alternative: WSL</h3>
+    <p>Windows users can also use WSL (Windows Subsystem for Linux):</p>
+    <pre><code># In WSL terminal
+curl -sL https://ctx-vault.com/install | bash</code></pre>
+
+    <h3 id="mcp-install">MCP Server (Any AI Tool)</h3>
+    <p>Use ContextVault with <strong>any</strong> MCP-compatible AI tool — Cursor, Windsurf, OpenCode, Cline, Continue, Copilot CLI, or Claude Code itself:</p>
+    <pre><code>npx contextvault-mcp</code></pre>
+    <p>Then add to your AI tool's MCP config:</p>
+    <pre><code>{
+  "mcpServers": {
+    "contextvault": {
+      "command": "npx",
+      "args": ["contextvault-mcp"]
+    }
+  }
+}</code></pre>
+    <p>For Claude Code, you can also add via CLI:</p>
+    <pre><code>claude mcp add contextvault -- npx -y contextvault-mcp</code></pre>
+
+    <div class="callout callout-info">
+      <div class="callout-title">MCP vs Bash Installer</div>
+      <p>The <strong>bash installer</strong> is optimized for Claude Code with hooks and slash commands. The <strong>MCP server</strong> works with any AI tool via Model Context Protocol. Both use the same vault format — the MCP server auto-detects your existing <code>.claude/vault/</code> if present, so you can use both side by side with zero conflicts.</p>
+    </div>
+
+    <div class="callout callout-info">
+      <div class="callout-title">What the MCP Server Provides</div>
+      <p><strong>25 tools</strong> (ctx_doc, ctx_error, ctx_decision, ctx_search, ctx_read, and 20 more) plus <strong>4 auto-loaded resources</strong> (global index, project index, settings, documentation rules). Works as a stdio MCP server — no API keys, no cloud, 100% local.</p>
+    </div>
+
+    <h3>What Gets Installed</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Location</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>CLAUDE.md</code></td>
+          <td><code>~/.claude/</code></td>
+          <td>Global instructions for Claude</td>
+        </tr>
+        <tr>
+          <td>25 Commands</td>
+          <td><code>~/.claude/commands/</code></td>
+          <td>Slash command definitions</td>
+        </tr>
+        <tr>
+          <td>Global Vault</td>
+          <td><code>~/.claude/vault/</code></td>
+          <td>Cross-project knowledge</td>
+        </tr>
+        <tr>
+          <td>Hooks</td>
+          <td><code>~/.claude/settings.json</code></td>
+          <td>Smart reminder system</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 id="quick-start">Quick Start</h2>
+
+    <h3>1. Initialize a Project</h3>
+    <p>Navigate to your project and initialize ContextVault:</p>
+    <pre><code>cd your-project
+# In Claude Code, type:
+/ctx-init</code></pre>
+    <p>This creates <code>.claude/vault/</code> in your project with an <code>index.md</code> file.</p>
+
+    <h3>2. Start Documenting</h3>
+    <p>As you work, use commands to capture knowledge:</p>
+    <pre><code># Fixed a bug?
+/ctx-error
+
+# Made an architecture decision?
+/ctx-decision
+
+# Learned something useful?
+/ctx-doc
+
+# Ending your session?
+/ctx-handoff</code></pre>
+
+    <h3>3. Auto-Document a Codebase</h3>
+    <p>For new projects, let ContextVault scan and document automatically:</p>
+    <pre><code>/ctx-bootstrap</code></pre>
+    <p>This creates architecture docs and feature docs based on your codebase structure.</p>
+
+    <h3>4. Continue in Future Sessions</h3>
+    <p>When you start a new Claude Code session, it automatically reads your vault indexes and has full context of your project.</p>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Pro Tip</div>
+      <p>Use <code>/ctx-status</code> anytime to see your vault's current state &mdash; how many docs, which mode, etc.</p>
+    </div>
+
+    <h2>Next Steps</h2>
+    <ul>
+      <li><a href="architecture.html">Understand the Architecture</a> &mdash; How the two-tier system works</li>
+      <li><a href="commands.html">Browse All 25 Commands</a> &mdash; Complete reference with examples</li>
+      <li><a href="configuration.html">Configure Your Setup</a> &mdash; Modes, enforcement levels, limits</li>
+      <li><a href="tutorials.html">Follow Tutorials</a> &mdash; Step-by-step guides for common workflows</li>
+    </ul>
+
+    <!-- Prev/Next Navigation -->
+    <nav class="docs-nav">
+      <div></div>
+      <a href="architecture.html" class="docs-nav-next">
+        <span class="docs-nav-label">Next</span>
+        <span class="docs-nav-title">Architecture &rarr;</span>
+      </a>
+    </nav>
+  </main>
+
+  <script src="assets/docs.js"></script>
+</body>
+</html>

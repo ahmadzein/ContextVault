@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JGMRM19MBY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-JGMRM19MBY');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tutorials - ContextVault Documentation</title>
+  <meta name="description" content="Step-by-step ContextVault tutorials. Project setup, documenting bugs, session handoffs, team workflows, and building a pattern library.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://ctx-vault.com/docs/tutorials.html">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <meta name="theme-color" content="#0c0a09">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ctx-vault.com/docs/tutorials.html">
+  <meta property="og:site_name" content="ContextVault">
+  <meta property="og:title" content="Tutorials - ContextVault Documentation">
+  <meta property="og:description" content="Step-by-step guides for common ContextVault workflows.">
+  <meta property="og:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Tutorials - ContextVault">
+  <meta name="twitter:description" content="Step-by-step guides for ContextVault workflows.">
+  <meta name="twitter:image" content="https://ctx-vault.com/docs/images/og-image.png">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "ContextVault Tutorials",
+    "description": "Step-by-step tutorials for common ContextVault workflows",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Setting Up Your First Project"},
+      {"@type": "ListItem", "position": 2, "name": "Documenting Bug Fixes"},
+      {"@type": "ListItem", "position": 3, "name": "Creating Session Handoffs"},
+      {"@type": "ListItem", "position": 4, "name": "Building a Global Pattern Library"},
+      {"@type": "ListItem", "position": 5, "name": "Team Workflow with Git"}
+    ]
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="docs-header">
+    <button class="mobile-menu-btn">&#9776;</button>
+    <a href="../index.html" class="header-logo">
+      <img src="images/favicon-32x32.png" alt="">Context<span>Vault</span>
+    </a>
+    <nav class="header-nav">
+      <a href="../index.html">Home</a>
+      <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
+      <div class="version-dropdown">
+        <button class="version-btn">v1.8.4 <span>&#9662;</span></button>
+        <div class="version-menu">
+          <a href="#" class="current">v1.8.4 (latest)</a>
+          <a href="#">v1.8.0</a>
+          <a href="#">v1.7.0</a>
+        </div>
+      </div>
+    </nav>
+    <div class="search-wrapper">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+      <input type="text" class="search-input" placeholder="Search docs...">
+      <div class="search-results"></div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="getting-started.html">Introduction</a></li>
+        <li><a href="getting-started.html#installation">Installation</a></li>
+        <li><a href="upgrade.html">Upgrade Guide</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Core Concepts</div>
+      <ul class="sidebar-links">
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="commands.html">Commands (25)</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guides</div>
+      <ul class="sidebar-links">
+        <li><a href="tutorials.html" class="active">Tutorials</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-main">
+    <h1>Tutorials</h1>
+    <p class="subtitle">Step-by-step guides for common ContextVault workflows.</p>
+
+    <h2 id="first-project">Tutorial 1: Setting Up Your First Project</h2>
+    <p>Learn how to initialize ContextVault in a new project and create your first documents.</p>
+
+    <h3>Step 1: Install ContextVault</h3>
+    <p>If you haven't already, install ContextVault:</p>
+    <pre><code># macOS/Linux
+curl -sL https://ctx-vault.com/install | bash
+
+# Windows PowerShell
+irm https://ctx-vault.com/install.ps1 | iex</code></pre>
+
+    <h3>Step 2: Navigate to Your Project</h3>
+    <pre><code>cd /path/to/your/project</code></pre>
+
+    <h3>Step 3: Initialize the Vault</h3>
+    <p>In Claude Code, type:</p>
+    <pre><code>/ctx-init</code></pre>
+    <p>This creates:</p>
+    <ul>
+      <li><code>.claude/vault/index.md</code> &mdash; Your project's documentation index</li>
+      <li>The directory structure for project-specific docs</li>
+    </ul>
+
+    <h3>Step 4: Bootstrap Documentation (Optional)</h3>
+    <p>For existing codebases, auto-generate documentation:</p>
+    <pre><code>/ctx-bootstrap</code></pre>
+    <p>This scans your codebase and creates:</p>
+    <ul>
+      <li><code>P001_architecture.md</code> &mdash; Tech stack and structure</li>
+      <li><code>P00X_feature_*.md</code> &mdash; One doc per major feature</li>
+    </ul>
+
+    <h3>Step 5: Check Your Status</h3>
+    <pre><code>/ctx-status</code></pre>
+    <p>You should see your newly created documents listed.</p>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Success!</div>
+      <p>Your project is now set up with ContextVault. Every new Claude Code session will automatically read your vault and have full context.</p>
+    </div>
+
+    <h2 id="bug-fixes">Tutorial 2: Documenting Bug Fixes</h2>
+    <p>Learn the best practice for documenting bugs and their solutions.</p>
+
+    <h3>When to Document</h3>
+    <ul>
+      <li>After fixing a non-trivial bug</li>
+      <li>When the bug had a surprising root cause</li>
+      <li>When the solution might help others (or future you)</li>
+    </ul>
+
+    <h3>Step 1: Fix the Bug</h3>
+    <p>Work through your debugging process as normal.</p>
+
+    <h3>Step 2: Document with /ctx-error</h3>
+    <p>Once fixed, immediately document:</p>
+    <pre><code>/ctx-error</code></pre>
+
+    <h3>Step 3: Provide Details</h3>
+    <p>Claude will ask for:</p>
+    <ul>
+      <li><strong>Error Message</strong> &mdash; The exact error or symptom</li>
+      <li><strong>Root Cause</strong> &mdash; What was actually wrong</li>
+      <li><strong>Solution</strong> &mdash; How you fixed it</li>
+      <li><strong>Prevention</strong> &mdash; How to avoid it in the future</li>
+    </ul>
+
+    <h3>Example Document Created</h3>
+    <pre><code># P005 - TypeError in User Authentication
+
+> **Status:** Active
+> **Created:** 2026-01-20
+
+## Error
+TypeError: Cannot read property 'id' of undefined
+at AuthService.validateToken (auth.ts:45)
+
+## Root Cause
+The JWT payload structure changed after upgrading jsonwebtoken.
+Old: { userId: '123' }
+New: { sub: '123' }
+
+## Solution
+Updated AuthService to use `payload.sub` instead of `payload.userId`.
+
+## Prevention
+- Pin jsonwebtoken version in package.json
+- Add unit test for token payload structure</code></pre>
+
+    <div class="callout callout-info">
+      <div class="callout-title">Why Document Bugs?</div>
+      <p>Next time a similar error occurs, Claude can search your vault and instantly recall the solution. No more re-debugging the same issues!</p>
+    </div>
+
+    <h2 id="handoffs">Tutorial 3: Creating Effective Session Handoffs</h2>
+    <p>Learn how to end sessions so the next one can seamlessly continue.</p>
+
+    <h3>When to Create Handoffs</h3>
+    <ul>
+      <li>At the end of a work session</li>
+      <li>Before switching to a different task/project</li>
+      <li>When you want to preserve work-in-progress context</li>
+    </ul>
+
+    <h3>Step 1: Before Ending Your Session</h3>
+    <pre><code>/ctx-handoff</code></pre>
+
+    <h3>Step 2: Claude Generates the Summary</h3>
+    <p>The handoff document includes:</p>
+    <ul>
+      <li><strong>Completed</strong> &mdash; What was finished this session</li>
+      <li><strong>In Progress</strong> &mdash; What's partially done</li>
+      <li><strong>Blocked</strong> &mdash; Any blockers or issues</li>
+      <li><strong>Next Steps</strong> &mdash; What to do next session</li>
+      <li><strong>Context</strong> &mdash; Important things to remember</li>
+    </ul>
+
+    <h3>Example Handoff Document</h3>
+    <pre><code># P008 - Session Handoff 2026-01-20
+
+## Completed
+- Implemented user registration API endpoint
+- Added input validation with Zod
+- Created database migration for users table
+
+## In Progress
+- Email verification flow (50% done)
+  - Created email template
+  - Still need: verification endpoint, token storage
+
+## Blocked
+- Waiting for SMTP credentials from DevOps
+
+## Next Steps
+1. Finish email verification endpoint
+2. Add password reset flow
+3. Write integration tests
+
+## Context
+- Using Resend for email (not SendGrid)
+- Token expiry set to 24 hours per product decision</code></pre>
+
+    <h3>Step 3: Next Session Automatically Loads Context</h3>
+    <p>When you start a new session, Claude reads the index and knows exactly where you left off.</p>
+
+    <h2 id="global-patterns">Tutorial 4: Building a Global Pattern Library</h2>
+    <p>Learn how to capture reusable patterns that help across all projects.</p>
+
+    <h3>What Makes a Good Global Pattern?</h3>
+    <ul>
+      <li>Useful in multiple projects</li>
+      <li>Not specific to one codebase</li>
+      <li>Solves a common problem</li>
+    </ul>
+
+    <h3>Examples of Global Patterns</h3>
+    <table>
+      <thead>
+        <tr><th>Pattern</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Docker multi-stage builds</td><td>Optimized Dockerfile pattern</td></tr>
+        <tr><td>Git branch strategy</td><td>Your preferred workflow</td></tr>
+        <tr><td>Error handling middleware</td><td>Express/Fastify error pattern</td></tr>
+        <tr><td>Database connection pooling</td><td>PostgreSQL pool config</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Step 1: Identify a Reusable Pattern</h3>
+    <p>When you solve a problem that could help in other projects.</p>
+
+    <h3>Step 2: Document with /ctx-snippet</h3>
+    <pre><code>/ctx-snippet</code></pre>
+    <p>Snippets default to global vault for reuse.</p>
+
+    <h3>Step 3: Provide Pattern Details</h3>
+    <ul>
+      <li><strong>Name</strong> &mdash; Clear, searchable name</li>
+      <li><strong>Use Case</strong> &mdash; When to use this pattern</li>
+      <li><strong>Code</strong> &mdash; The actual snippet/pattern</li>
+      <li><strong>Notes</strong> &mdash; Gotchas, alternatives</li>
+    </ul>
+
+    <h3>Example Global Pattern</h3>
+    <pre><code># G003 - Express Error Handler Pattern
+
+## Use Case
+Centralized error handling for Express APIs.
+
+## Pattern
+```javascript
+const errorHandler = (err, req, res, next) => {
+  const status = err.status || 500;
+  const message = err.message || 'Internal Server Error';
+
+  // Log for debugging
+  console.error(`[${status}] ${message}`, err.stack);
+
+  // Send response
+  res.status(status).json({
+    error: { message, code: err.code }
+  });
+};
+
+// Use after all routes
+app.use(errorHandler);
+```
+
+## Notes
+- Always define after routes
+- Extend for specific error types (ValidationError, etc.)
+- Consider adding request ID for tracing</code></pre>
+
+    <h2 id="team-workflow">Tutorial 5: Team Workflow with Git</h2>
+    <p>Share project documentation across your team by committing the vault.</p>
+
+    <h3>Step 1: Add Vault to Git</h3>
+    <pre><code># The .claude/vault directory is already git-friendly
+git add .claude/vault/
+git commit -m "Add project documentation vault"</code></pre>
+
+    <h3>Step 2: Team Members Pull the Vault</h3>
+    <p>When team members clone or pull, they get all project docs:</p>
+    <pre><code>git pull origin main
+# Now everyone has .claude/vault/</code></pre>
+
+    <h3>Step 3: Individual Contributions</h3>
+    <p>Each team member's Claude sessions can read and update the shared vault:</p>
+    <ul>
+      <li>Alice fixes a bug, documents with <code>/ctx-error</code></li>
+      <li>Bob implements a feature, documents with <code>/ctx-doc</code></li>
+      <li>Both commit their doc changes with their code</li>
+    </ul>
+
+    <h3>What to Keep Private</h3>
+    <p>The global vault (<code>~/.claude/vault/</code>) is personal and never shared. It contains your individual patterns and preferences.</p>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Git Best Practice</div>
+      <p>Treat vault commits like code commits. Include doc updates in the same PR as related code changes.</p>
+    </div>
+
+    <!-- Prev/Next Navigation -->
+    <nav class="docs-nav">
+      <a href="changelog.html" class="docs-nav-prev">
+        <span class="docs-nav-label">Previous</span>
+        <span class="docs-nav-title">&larr; Changelog</span>
+      </a>
+      <a href="faq.html" class="docs-nav-next">
+        <span class="docs-nav-label">Next</span>
+        <span class="docs-nav-title">FAQ &rarr;</span>
+      </a>
+    </nav>
+  </main>
+
+  <script src="assets/docs.js"></script>
+</body>
+</html>
