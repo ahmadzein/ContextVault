@@ -11,8 +11,8 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ContextVault — External Memory for Claude Code | Survive Context Loss, Compaction & Token Limits</title>
-<meta name="description" content="Stop losing Claude Code context to new sessions, context compaction, and token limits. ContextVault stores knowledge externally in markdown files Claude reads automatically. Free, open source, 100% local.">
+<title>ContextVault — External Memory for AI Coding Assistants | Claude Code, Cursor, Windsurf & More</title>
+<meta name="description" content="Stop losing context to new sessions, compaction, and token limits. ContextVault stores knowledge externally in markdown files your AI assistant reads automatically. Works with Claude Code, Cursor, Windsurf, Cline & more. Free, open source, 100% local.">
 
 <!-- Preload critical assets -->
 <link rel="preload" href="docs/images/logo-64x64.png" as="image" fetchpriority="high">
@@ -29,19 +29,19 @@
 <meta property="og:url" content="https://ctx-vault.com/">
 <meta property="og:site_name" content="ContextVault">
 <meta property="og:locale" content="en_US">
-<meta property="og:title" content="ContextVault — External Memory for Claude Code">
-<meta property="og:description" content="Claude forgets context in new sessions, during compaction, and at token limits. ContextVault stores knowledge externally — markdown files Claude reads automatically. Free & open source.">
+<meta property="og:title" content="ContextVault — External Memory for AI Coding Assistants">
+<meta property="og:description" content="AI assistants forget context between sessions, during compaction, and at token limits. ContextVault stores knowledge externally — markdown files your AI reads automatically. Works with Claude Code, Cursor, Windsurf & more. Free & open source.">
 <meta property="og:image" content="https://ctx-vault.com/docs/images/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="ContextVault - Make Claude Code remember your project context">
+<meta property="og:image:alt" content="ContextVault - Make AI coding assistants remember your project context">
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@contextVault">
 <meta name="twitter:creator" content="@ahmadzein">
-<meta name="twitter:title" content="ContextVault — External Memory for Claude Code">
-<meta name="twitter:description" content="Context compaction, token limits, new sessions — Claude forgets. ContextVault stores knowledge externally. Free, open source, 100% local.">
+<meta name="twitter:title" content="ContextVault — External Memory for AI Coding Assistants">
+<meta name="twitter:description" content="Context compaction, token limits, new sessions — AI assistants forget. ContextVault stores knowledge externally. Works with Claude Code, Cursor, Windsurf & more. Free, open source, 100% local.">
 <meta name="twitter:image" content="https://ctx-vault.com/docs/images/og-image.png">
 <meta name="twitter:image:alt" content="ContextVault logo">
 
@@ -49,7 +49,7 @@
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <meta name="author" content="Ahmad Zein">
 <meta name="publisher" content="ContextVault">
-<meta name="keywords" content="Claude Code, Claude context loss, Claude memory, context compaction, token limits, Claude Code CLI, Anthropic Claude, AI coding assistant, Claude session, CLAUDE.md, Claude slash commands, external memory, AI pair programming, Claude Code tools, free open source">
+<meta name="keywords" content="Claude Code, Cursor, Windsurf, Cline, OpenCode, Continue, MCP, Model Context Protocol, AI coding assistant, context loss, AI memory, context compaction, token limits, Anthropic Claude, external memory, AI pair programming, slash commands, free open source, context management">
 <meta name="application-name" content="ContextVault">
 <meta name="apple-mobile-web-app-title" content="ContextVault">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -836,14 +836,14 @@ footer {
       "@id": "https://ctx-vault.com/#website",
       "url": "https://ctx-vault.com",
       "name": "ContextVault",
-      "description": "External context management for Claude Code",
+      "description": "External context management for AI coding assistants",
       "publisher": {"@id": "https://ctx-vault.com/#organization"}
     },
     {
       "@type": "SoftwareApplication",
       "@id": "https://ctx-vault.com/#software",
       "name": "ContextVault",
-      "description": "Context management system for Claude Code (Anthropic's AI coding CLI). Solves the problem of Claude forgetting everything between sessions by creating a persistent knowledge base that Claude reads automatically at session start.",
+      "description": "Context management system for AI coding assistants (Claude Code, Cursor, Windsurf, Cline, OpenCode & more). Solves the problem of AI assistants forgetting everything between sessions by creating a persistent knowledge base read automatically at session start.",
       "applicationCategory": "DeveloperApplication",
       "applicationSubCategory": "AI Development Tools",
       "operatingSystem": ["macOS", "Linux", "Windows"],
@@ -861,24 +861,24 @@ footer {
       "license": "https://opensource.org/licenses/MIT",
       "downloadUrl": "https://ctx-vault.com/install",
       "screenshot": "https://ctx-vault.com/docs/images/og-image.png",
-      "softwareRequirements": "Claude Code CLI by Anthropic",
+      "softwareRequirements": "Any MCP-compatible AI coding tool (Claude Code, Cursor, Windsurf, Cline, OpenCode, Continue)",
       "featureList": [
-        "Claude Code reads vault automatically at session start",
+        "Works with any MCP-compatible AI tool via Model Context Protocol",
         "Two-tier system: global knowledge + project-specific docs",
-        "25 slash commands (/ctx-doc, /ctx-error, /ctx-decision, etc.)",
+        "25 commands for documenting bugs, decisions, plans, and more",
         "Smart hooks remind you to document important work",
         "Auto-bootstrap scans codebases and generates docs",
         "Session handoffs ensure continuity between conversations",
-        "CLAUDE.md integration for seamless Claude Code usage"
+        "MCP server (npx contextvault-mcp) for universal AI tool support"
       ],
-      "keywords": ["Claude Code", "Anthropic", "AI coding assistant", "context persistence", "session memory", "CLAUDE.md", "slash commands"]
+      "keywords": ["Claude Code", "Cursor", "Windsurf", "Cline", "MCP", "AI coding assistant", "context persistence", "session memory", "Model Context Protocol"]
     },
     {
       "@type": "WebPage",
       "@id": "https://ctx-vault.com/#webpage",
       "url": "https://ctx-vault.com",
       "name": "ContextVault — Your Knowledge, Never Lost",
-      "description": "External context management for Claude Code. Two-tier documentation system that persists your knowledge across every session.",
+      "description": "External context management for AI coding assistants. Two-tier documentation system that persists your knowledge across every session. Works with Claude Code, Cursor, Windsurf & more via MCP.",
       "isPartOf": {"@id": "https://ctx-vault.com/#website"},
       "about": {"@id": "https://ctx-vault.com/#software"},
       "primaryImageOfPage": {
@@ -995,7 +995,7 @@ footer {
       <div class="tier tier-global reveal reveal-delay-3">
         <div class="tier-icon">&#x1F310;</div>
         <h3>Global Vault</h3>
-        <div class="tier-path">~/.claude/vault/</div>
+        <div class="tier-path">~/.contextvault/ <span style="font-size:.75em;color:var(--stone-500)">(or ~/.claude/vault/)</span></div>
         <ul>
           <li>Cross-project knowledge</li>
           <li>Reusable patterns &amp; best practices</li>
@@ -1006,7 +1006,7 @@ footer {
       <div class="tier tier-project reveal reveal-delay-4">
         <div class="tier-icon">&#x1F4C2;</div>
         <h3>Project Vault</h3>
-        <div class="tier-path">./.claude/vault/</div>
+        <div class="tier-path">./.contextvault/ <span style="font-size:.75em;color:var(--stone-500)">(or ./.claude/vault/)</span></div>
         <ul>
           <li>Project-specific architecture</li>
           <li>Local configs &amp; decisions</li>
@@ -1046,10 +1046,15 @@ footer {
       </div>
       <div class="feature-card reveal reveal-delay-5">
         <span class="f-icon">&#x1F3AF;</span>
-        <h3>25 Slash Commands</h3>
-        <p>Purpose-built commands for every workflow: documenting bugs, decisions, plans, code snippets, and explorations.</p>
+        <h3>25 Commands</h3>
+        <p>Purpose-built commands for every workflow: documenting bugs, decisions, plans, code snippets, and explorations. Slash commands or MCP tools.</p>
       </div>
       <div class="feature-card reveal reveal-delay-1">
+        <span class="f-icon">&#x1F517;</span>
+        <h3>MCP Protocol</h3>
+        <p>Works with <strong>any</strong> MCP-compatible AI tool: Cursor, Windsurf, OpenCode, Cline, Continue, Copilot CLI &amp; more.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
         <span class="f-icon">&#x1F6E1;&#xFE0F;</span>
         <h3>Size Guards</h3>
         <p>Hard limits built in: 100 lines per doc, 50 entries per index, 15-word summaries. Lean context, always.</p>
@@ -1067,12 +1072,12 @@ footer {
       <div class="step reveal reveal-delay-2">
         <div class="step-num">1</div>
         <h3>Install</h3>
-        <p>One command. Sets up global vault, hooks, and 25 slash commands. Works on macOS, Linux, WSL.</p>
+        <p>One command. Bash installer for Claude Code, or <code>npx contextvault-mcp</code> for any AI tool. macOS, Linux, Windows.</p>
       </div>
       <div class="step reveal reveal-delay-3">
         <div class="step-num">2</div>
         <h3>Work</h3>
-        <p>Use Claude Code normally. Smart hooks nudge you to document at natural milestones &mdash; not mid-thought.</p>
+        <p>Use your AI coding tool normally. Smart reminders nudge you to document at natural milestones &mdash; not mid-thought.</p>
       </div>
       <div class="step reveal reveal-delay-4">
         <div class="step-num">3</div>
@@ -1112,7 +1117,7 @@ footer {
     <div class="testimonials">
       <div class="testimonial reveal reveal-delay-2">
         <blockquote>&ldquo;I stopped re-explaining my project architecture every session. ContextVault just knows. The handoff feature alone is worth it.&rdquo;</blockquote>
-        <cite><strong>Early Adopter</strong>Claude Code User</cite>
+        <cite><strong>Early Adopter</strong>AI-Assisted Developer</cite>
       </div>
       <div class="testimonial reveal reveal-delay-3">
         <blockquote>&ldquo;The smart hooks are genius. They don't interrupt mid-work, but they catch me before I close a session without documenting.&rdquo;</blockquote>
