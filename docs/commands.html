@@ -66,13 +66,10 @@
     <nav class="header-nav">
       <a href="../index.html">Home</a>
       <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
-      <div class="version-dropdown">
-        <button class="version-btn">v1.8.4 <span>&#9662;</span></button>
-        <div class="version-menu">
-          <a href="#" class="current">v1.8.4 (latest)</a>
-          <a href="#">v1.8.0</a>
-          <a href="#">v1.7.0</a>
-        </div>
+      <div class="version-badge">
+        <span class="version-mcp">MCP v1.0.2</span>
+        <span class="version-sep">|</span>
+        <span class="version-native">Native v1.8.4</span>
       </div>
     </nav>
     <div class="search-wrapper">
@@ -91,7 +88,8 @@
       <div class="sidebar-title">Getting Started</div>
       <ul class="sidebar-links">
         <li><a href="getting-started.html">Introduction</a></li>
-        <li><a href="getting-started.html#installation">Installation</a></li>
+        <li><a href="getting-started.html#mcp-install">MCP Setup</a></li>
+        <li><a href="getting-started.html#native-install">Native Setup</a></li>
         <li><a href="upgrade.html">Upgrade Guide</a></li>
       </ul>
     </div>
@@ -128,10 +126,39 @@
       <p>Use these as <code>/ctx-*</code> slash commands in Claude Code, or as <code>ctx_*</code> MCP tools in Cursor, Windsurf, Cline, and other MCP-compatible AI tools. Commands that create documents auto-route to the correct vault (global or project).</p>
     </div>
 
+    <h2 id="usage-methods">How to Use Commands</h2>
+    <p>ContextVault commands work three ways:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Format</th>
+          <th>Works In</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Slash Commands</strong></td>
+          <td><code>/ctx-doc</code>, <code>/ctx-error</code>, etc.</td>
+          <td>Claude Code (native installer)</td>
+        </tr>
+        <tr>
+          <td><strong>MCP Tools</strong></td>
+          <td><code>ctx_doc</code>, <code>ctx_error</code>, etc.</td>
+          <td>Cursor, Windsurf, Cline, Claude Code, any MCP tool</td>
+        </tr>
+        <tr>
+          <td><strong>Natural Language</strong></td>
+          <td>"document this bug fix", "create a handoff"</td>
+          <td>Any AI tool with MCP server</td>
+        </tr>
+      </tbody>
+    </table>
+
     <h2>Setup & Status</h2>
 
     <div class="command-card" id="ctx-init">
-      <div class="command-name">/ctx-init</div>
+      <div class="command-name">/ctx-init <span class="command-mcp">ctx_init</span></div>
       <div class="command-desc">Initialize ContextVault in the current project. Creates the <code>.claude/vault/</code> directory with an index file.</div>
       <div class="command-example">
         /ctx-init<br>
@@ -140,7 +167,7 @@
     </div>
 
     <div class="command-card" id="ctx-status">
-      <div class="command-name">/ctx-status</div>
+      <div class="command-name">/ctx-status <span class="command-mcp">ctx_status</span></div>
       <div class="command-desc">Show vault status and statistics. Displays document counts, current mode, and health overview.</div>
       <div class="command-example">
         /ctx-status<br>
@@ -149,7 +176,7 @@
     </div>
 
     <div class="command-card" id="ctx-health">
-      <div class="command-name">/ctx-health</div>
+      <div class="command-name">/ctx-health <span class="command-mcp">ctx_health</span></div>
       <div class="command-desc">Check vault health and fix issues. Verifies index consistency, finds orphan docs, and repairs problems.</div>
       <div class="command-example">
         /ctx-health<br>
@@ -158,7 +185,7 @@
     </div>
 
     <div class="command-card" id="ctx-help">
-      <div class="command-name">/ctx-help</div>
+      <div class="command-name">/ctx-help <span class="command-mcp">ctx_help</span></div>
       <div class="command-desc">Show all ContextVault commands and their descriptions. Quick reference for available commands.</div>
       <div class="command-example">
         /ctx-help<br>
@@ -169,7 +196,7 @@
     <h2>Documentation Commands</h2>
 
     <div class="command-card" id="ctx-doc">
-      <div class="command-name">/ctx-doc</div>
+      <div class="command-name">/ctx-doc <span class="command-mcp">ctx_doc</span></div>
       <div class="command-desc">Quick document a learning, feature, or finding. General-purpose command for capturing knowledge.</div>
       <div class="command-example">
         /ctx-doc<br>
@@ -178,7 +205,7 @@
     </div>
 
     <div class="command-card" id="ctx-error">
-      <div class="command-name">/ctx-error</div>
+      <div class="command-name">/ctx-error <span class="command-mcp">ctx_error</span></div>
       <div class="command-desc">Document a bug fix or error resolution. Captures error message, root cause, and solution.</div>
       <div class="command-example">
         /ctx-error<br>
@@ -188,7 +215,7 @@
     </div>
 
     <div class="command-card" id="ctx-decision">
-      <div class="command-name">/ctx-decision</div>
+      <div class="command-name">/ctx-decision <span class="command-mcp">ctx_decision</span></div>
       <div class="command-desc">Document an architectural or technical decision. Records options considered, reasoning, and trade-offs.</div>
       <div class="command-example">
         /ctx-decision<br>
@@ -198,7 +225,7 @@
     </div>
 
     <div class="command-card" id="ctx-plan">
-      <div class="command-name">/ctx-plan</div>
+      <div class="command-name">/ctx-plan <span class="command-mcp">ctx_plan</span></div>
       <div class="command-desc">Document implementation plan for multi-step tasks. Track goals, steps, and progress.</div>
       <div class="command-example">
         /ctx-plan<br>
@@ -208,7 +235,7 @@
     </div>
 
     <div class="command-card" id="ctx-snippet">
-      <div class="command-name">/ctx-snippet</div>
+      <div class="command-name">/ctx-snippet <span class="command-mcp">ctx_snippet</span></div>
       <div class="command-desc">Save a useful code snippet for reuse. Store patterns, utilities, and reusable code.</div>
       <div class="command-example">
         /ctx-snippet<br>
@@ -217,7 +244,7 @@
     </div>
 
     <div class="command-card" id="ctx-intel">
-      <div class="command-name">/ctx-intel</div>
+      <div class="command-name">/ctx-intel <span class="command-mcp">ctx_intel</span></div>
       <div class="command-desc">Document codebase exploration findings. Record architecture patterns, code structure, and discoveries.</div>
       <div class="command-example">
         /ctx-intel<br>
@@ -227,7 +254,7 @@
     </div>
 
     <div class="command-card" id="ctx-explain">
-      <div class="command-name">/ctx-explain</div>
+      <div class="command-name">/ctx-explain <span class="command-mcp">ctx_explain</span></div>
       <div class="command-desc">Explain a concept and save to vault. Document your understanding of topics for future reference.</div>
       <div class="command-example">
         /ctx-explain<br>
@@ -238,7 +265,7 @@
     <h2>Auto-Documentation</h2>
 
     <div class="command-card" id="ctx-bootstrap">
-      <div class="command-name">/ctx-bootstrap</div>
+      <div class="command-name">/ctx-bootstrap <span class="command-mcp">ctx_bootstrap</span></div>
       <div class="command-desc">Auto-scan codebase and generate comprehensive documentation. Creates architecture doc and feature docs for the entire project.</div>
       <div class="command-example">
         /ctx-bootstrap<br>
@@ -248,7 +275,7 @@
     </div>
 
     <div class="command-card" id="ctx-handoff">
-      <div class="command-name">/ctx-handoff</div>
+      <div class="command-name">/ctx-handoff <span class="command-mcp">ctx_handoff</span></div>
       <div class="command-desc">Create session handoff summary for continuity. Summarizes what was done and what's next for the following session.</div>
       <div class="command-example">
         /ctx-handoff<br>
@@ -260,7 +287,7 @@
     <h2>Reading & Searching</h2>
 
     <div class="command-card" id="ctx-search">
-      <div class="command-name">/ctx-search</div>
+      <div class="command-name">/ctx-search <span class="command-mcp">ctx_search</span></div>
       <div class="command-desc">Search across vault documents. Find existing documentation by topic, keyword, or related terms.</div>
       <div class="command-example">
         /ctx-search auth<br>
@@ -270,7 +297,7 @@
     </div>
 
     <div class="command-card" id="ctx-read">
-      <div class="command-name">/ctx-read</div>
+      <div class="command-name">/ctx-read <span class="command-mcp">ctx_read</span></div>
       <div class="command-desc">Read a document by ID. View the full content of a vault document.</div>
       <div class="command-example">
         /ctx-read P001<br>
@@ -282,7 +309,7 @@
     <h2>Editing & Updates</h2>
 
     <div class="command-card" id="ctx-update">
-      <div class="command-name">/ctx-update</div>
+      <div class="command-name">/ctx-update <span class="command-mcp">ctx_update</span></div>
       <div class="command-desc">Update an existing document by ID. Modify content while preserving history.</div>
       <div class="command-example">
         /ctx-update P003<br>
@@ -291,7 +318,7 @@
     </div>
 
     <div class="command-card" id="ctx-new">
-      <div class="command-name">/ctx-new</div>
+      <div class="command-name">/ctx-new <span class="command-mcp">ctx_new</span></div>
       <div class="command-desc">Create a new document with guided routing. Interactive prompts help choose the right vault and format.</div>
       <div class="command-example">
         /ctx-new<br>
@@ -300,7 +327,7 @@
     </div>
 
     <div class="command-card" id="ctx-note">
-      <div class="command-name">/ctx-note</div>
+      <div class="command-name">/ctx-note <span class="command-mcp">ctx_note</span></div>
       <div class="command-desc">Add a quick note to existing document. Append information without a full edit.</div>
       <div class="command-example">
         /ctx-note P005 "Remember to handle edge case X"<br>
@@ -309,7 +336,7 @@
     </div>
 
     <div class="command-card" id="ctx-link">
-      <div class="command-name">/ctx-link</div>
+      <div class="command-name">/ctx-link <span class="command-mcp">ctx_link</span></div>
       <div class="command-desc">Link related documents together. Create bidirectional references between docs.</div>
       <div class="command-example">
         /ctx-link P003 P007<br>
@@ -320,7 +347,7 @@
     <h2>Import & Export</h2>
 
     <div class="command-card" id="ctx-import">
-      <div class="command-name">/ctx-import</div>
+      <div class="command-name">/ctx-import <span class="command-mcp">ctx_import</span></div>
       <div class="command-desc">Import external documentation into vault. Bring existing markdown files into the vault system.</div>
       <div class="command-example">
         /ctx-import ./docs/api-guide.md<br>
@@ -329,7 +356,7 @@
     </div>
 
     <div class="command-card" id="ctx-share">
-      <div class="command-name">/ctx-share</div>
+      <div class="command-name">/ctx-share <span class="command-mcp">ctx_share</span></div>
       <div class="command-desc">Export vault docs for sharing. Create shareable documentation bundles.</div>
       <div class="command-example">
         /ctx-share project<br>
@@ -340,7 +367,7 @@
     <h2>Configuration</h2>
 
     <div class="command-card" id="ctx-mode">
-      <div class="command-name">/ctx-mode</div>
+      <div class="command-name">/ctx-mode <span class="command-mcp">ctx_mode</span></div>
       <div class="command-desc">Switch between local, global, or full mode. Also set enforcement level.</div>
       <div class="command-example">
         /ctx-mode local           # Project vault only<br>
@@ -353,7 +380,7 @@
     <h2>Maintenance</h2>
 
     <div class="command-card" id="ctx-upgrade">
-      <div class="command-name">/ctx-upgrade</div>
+      <div class="command-name">/ctx-upgrade <span class="command-mcp">ctx_upgrade</span></div>
       <div class="command-desc">Upgrade project-level ContextVault files. Updates <code>./CLAUDE.md</code> and <code>.claude/settings.json</code> with latest instructions. For global upgrade, re-run the installer.</div>
       <div class="command-example">
         /ctx-upgrade<br>
@@ -362,7 +389,7 @@
     </div>
 
     <div class="command-card" id="ctx-changelog">
-      <div class="command-name">/ctx-changelog</div>
+      <div class="command-name">/ctx-changelog <span class="command-mcp">ctx_changelog</span></div>
       <div class="command-desc">View ContextVault changelog and version history. See what's new in each release.</div>
       <div class="command-example">
         /ctx-changelog<br>
@@ -371,7 +398,7 @@
     </div>
 
     <div class="command-card" id="ctx-quiz">
-      <div class="command-name">/ctx-quiz</div>
+      <div class="command-name">/ctx-quiz <span class="command-mcp">ctx_quiz</span></div>
       <div class="command-desc">Test knowledge retention from vault docs. Quiz yourself on documented learnings.</div>
       <div class="command-example">
         /ctx-quiz<br>

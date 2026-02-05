@@ -68,13 +68,10 @@
     <nav class="header-nav">
       <a href="../index.html">Home</a>
       <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
-      <div class="version-dropdown">
-        <button class="version-btn">v1.8.4 <span>&#9662;</span></button>
-        <div class="version-menu">
-          <a href="#" class="current">v1.8.4 (latest)</a>
-          <a href="#">v1.8.0</a>
-          <a href="#">v1.7.0</a>
-        </div>
+      <div class="version-badge">
+        <span class="version-mcp">MCP v1.0.2</span>
+        <span class="version-sep">|</span>
+        <span class="version-native">Native v1.8.4</span>
       </div>
     </nav>
     <div class="search-wrapper">
@@ -93,7 +90,8 @@
       <div class="sidebar-title">Getting Started</div>
       <ul class="sidebar-links">
         <li><a href="getting-started.html">Introduction</a></li>
-        <li><a href="getting-started.html#installation">Installation</a></li>
+        <li><a href="getting-started.html#mcp-install">MCP Setup</a></li>
+        <li><a href="getting-started.html#native-install">Native Setup</a></li>
         <li><a href="upgrade.html">Upgrade Guide</a></li>
       </ul>
     </div>
@@ -129,10 +127,14 @@
     <p>Learn how to initialize ContextVault in a new project and create your first documents.</p>
 
     <h3>Step 1: Install ContextVault</h3>
-    <p>If you haven't already, install ContextVault:</p>
-    <pre><code># macOS/Linux
-curl -sL https://ctx-vault.com/install | bash
+    <p>If you haven't already, install ContextVault using either method:</p>
+    <pre><code># MCP Server (any AI tool — Cursor, Windsurf, Cline, Claude Code):
+npx contextvault-mcp
+# Then add to your tool's MCP config (see Getting Started)
 
+# Native Installer (Claude Code with hooks & slash commands):
+# macOS/Linux
+curl -sL https://ctx-vault.com/install | bash
 # Windows PowerShell
 irm https://ctx-vault.com/install.ps1 | iex</code></pre>
 
@@ -181,7 +183,8 @@ irm https://ctx-vault.com/install.ps1 | iex</code></pre>
 
     <h3>Step 2: Document with /ctx-error</h3>
     <p>Once fixed, immediately document:</p>
-    <pre><code>/ctx-error</code></pre>
+    <pre><code>/ctx-error          # Claude Code slash command
+# or MCP tool:     ctx_error (Cursor, Windsurf, etc.)</code></pre>
 
     <h3>Step 3: Provide Details</h3>
     <p>Claude will ask for:</p>
@@ -230,7 +233,7 @@ Updated AuthService to use `payload.sub` instead of `payload.userId`.
     </ul>
 
     <h3>Step 1: Before Ending Your Session</h3>
-    <pre><code>/ctx-handoff</code></pre>
+    <pre><code>/ctx-handoff        # or MCP: ctx_handoff</code></pre>
 
     <h3>Step 2: Claude Generates the Summary</h3>
     <p>The handoff document includes:</p>

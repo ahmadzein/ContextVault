@@ -66,13 +66,10 @@
     <nav class="header-nav">
       <a href="../index.html">Home</a>
       <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
-      <div class="version-dropdown">
-        <button class="version-btn">v1.8.4 <span>&#9662;</span></button>
-        <div class="version-menu">
-          <a href="#" class="current">v1.8.4 (latest)</a>
-          <a href="#">v1.8.0</a>
-          <a href="#">v1.7.0</a>
-        </div>
+      <div class="version-badge">
+        <span class="version-mcp">MCP v1.0.2</span>
+        <span class="version-sep">|</span>
+        <span class="version-native">Native v1.8.4</span>
       </div>
     </nav>
     <div class="search-wrapper">
@@ -91,7 +88,8 @@
       <div class="sidebar-title">Getting Started</div>
       <ul class="sidebar-links">
         <li><a href="getting-started.html">Introduction</a></li>
-        <li><a href="getting-started.html#installation">Installation</a></li>
+        <li><a href="getting-started.html#mcp-install">MCP Setup</a></li>
+        <li><a href="getting-started.html#native-install">Native Setup</a></li>
         <li><a href="upgrade.html">Upgrade Guide</a></li>
       </ul>
     </div>
@@ -354,6 +352,75 @@
         </tr>
       </tbody>
     </table>
+
+    <h2 id="mcp-architecture">MCP Server Architecture</h2>
+    <p>The MCP server (<code>npx contextvault-mcp</code>) provides ContextVault functionality to any MCP-compatible AI tool.</p>
+
+    <pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    MCP SERVER ARCHITECTURE                      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   AI Tool (Cursor, Windsurf, Cline, Claude Code, etc.)         │
+│     │                                                           │
+│     ▼ stdio (JSON-RPC)                                          │
+│   ┌─────────────────────────────┐                               │
+│   │  contextvault-mcp server    │                               │
+│   │  ├── 25 tools (ctx_*)       │                               │
+│   │  ├── 4 resources (auto)     │                               │
+│   │  └── enforcement engine     │                               │
+│   └─────────────┬───────────────┘                               │
+│                 │                                                │
+│     ┌───────────┴───────────┐                                   │
+│     ▼                       ▼                                   │
+│  ~/.contextvault/     ./.contextvault/                          │
+│  (global vault)       (project vault)                          │
+│                                                                 │
+│  Auto-detects legacy paths:                                     │
+│  ~/.claude/vault/ ↔ ./.claude/vault/                           │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+
+    <h3>MCP Resources (Auto-Loaded)</h3>
+    <p>The MCP server exposes 4 resources that AI tools read automatically at session start:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Resource</th>
+          <th>Content</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>vault://global/index</code></td>
+          <td>Global vault index (cross-project knowledge catalog)</td>
+        </tr>
+        <tr>
+          <td><code>vault://project/index</code></td>
+          <td>Project vault index (this project's documentation catalog)</td>
+        </tr>
+        <tr>
+          <td><code>vault://settings</code></td>
+          <td>Current vault settings (mode, enforcement, limits)</td>
+        </tr>
+        <tr>
+          <td><code>vault://instructions</code></td>
+          <td>Documentation rules and guidelines</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Vault Path Detection</h3>
+    <p>The MCP server auto-detects vault locations in this order:</p>
+    <ol>
+      <li><code>.contextvault/</code> (MCP standard path)</li>
+      <li><code>.claude/vault/</code> (legacy native installer path)</li>
+    </ol>
+    <p>This means existing bash installer users can add the MCP server with zero migration &mdash; it reads the same vault files.</p>
+
+    <div class="callout callout-info">
+      <div class="callout-title">Native vs MCP Paths</div>
+      <p>Native installer uses <code>~/.claude/vault/</code> and <code>./.claude/vault/</code>. MCP server uses <code>~/.contextvault/</code> and <code>./.contextvault/</code> by default but auto-detects the native paths too. Both formats are fully compatible.</p>
+    </div>
 
     <h2>Context Loading Strategy</h2>
     <p>ContextVault minimizes token usage by loading only what's needed:</p>

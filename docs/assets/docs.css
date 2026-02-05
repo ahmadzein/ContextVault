@@ -552,6 +552,99 @@ a:hover { color: var(--gold-300); text-decoration: underline; }
   .search-wrapper { display: none; }
 }
 
+/* MCP tool badge */
+.command-mcp {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #64b5f6;
+  background: rgba(100, 181, 246, 0.1);
+  border: 1px solid rgba(100, 181, 246, 0.2);
+  border-radius: 4px;
+  padding: 0.15rem 0.5rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Dual-version badge (replaces broken version dropdown) */
+.version-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  background: var(--stone-800);
+  border: 1px solid var(--stone-700);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.version-mcp {
+  padding: 0.35rem 0.6rem;
+  color: #64b5f6;
+  background: rgba(100, 181, 246, 0.08);
+}
+.version-native {
+  padding: 0.35rem 0.6rem;
+  color: var(--gold-400);
+}
+.version-sep {
+  color: var(--stone-600);
+  padding: 0 0.15rem;
+}
+
+/* Install method cards */
+.install-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.install-card {
+  background: var(--stone-900);
+  border: 1px solid var(--stone-800);
+  border-radius: 10px;
+  padding: 1.5rem;
+  transition: border-color 0.3s;
+}
+.install-card:hover {
+  border-color: rgba(212, 168, 83, 0.2);
+}
+.install-card.recommended {
+  border-color: rgba(100, 181, 246, 0.3);
+  position: relative;
+}
+.install-card.recommended::before {
+  content: 'RECOMMENDED';
+  position: absolute;
+  top: -0.6rem;
+  left: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #64b5f6;
+  background: var(--stone-950);
+  padding: 0 0.5rem;
+}
+.install-card h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--stone-100);
+  margin-bottom: 0.5rem;
+}
+.install-card p {
+  font-size: 0.85rem;
+  color: var(--stone-400);
+  margin-bottom: 1rem;
+}
+.install-card pre {
+  margin: 0;
+}
+@media (max-width: 768px) {
+  .install-cards { grid-template-columns: 1fr; }
+}
+
 /* Mobile menu toggle */
 .mobile-menu-btn {
   display: none;

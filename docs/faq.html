@@ -65,13 +65,10 @@
     <nav class="header-nav">
       <a href="../index.html">Home</a>
       <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
-      <div class="version-dropdown">
-        <button class="version-btn">v1.8.4 <span>&#9662;</span></button>
-        <div class="version-menu">
-          <a href="#" class="current">v1.8.4 (latest)</a>
-          <a href="#">v1.8.0</a>
-          <a href="#">v1.7.0</a>
-        </div>
+      <div class="version-badge">
+        <span class="version-mcp">MCP v1.0.2</span>
+        <span class="version-sep">|</span>
+        <span class="version-native">Native v1.8.4</span>
       </div>
     </nav>
     <div class="search-wrapper">
@@ -90,7 +87,8 @@
       <div class="sidebar-title">Getting Started</div>
       <ul class="sidebar-links">
         <li><a href="getting-started.html">Introduction</a></li>
-        <li><a href="getting-started.html#installation">Installation</a></li>
+        <li><a href="getting-started.html#mcp-install">MCP Setup</a></li>
+        <li><a href="getting-started.html#native-install">Native Setup</a></li>
         <li><a href="upgrade.html">Upgrade Guide</a></li>
       </ul>
     </div>
@@ -154,6 +152,58 @@
           <li><strong>Project vault:</strong> <code>./.claude/vault/</code> (in each project)</li>
         </ul>
         <p>No data is sent to external servers. Your documentation stays on your computer (or your git repo if you commit it).</p>
+      </div>
+    </div>
+
+    <h2 id="mcp-questions">MCP & Multi-Tool Support</h2>
+
+    <div class="faq-item" id="mcp-vs-native">
+      <div class="faq-question">MCP or Native: which should I choose?</div>
+      <div class="faq-answer">
+        <p><strong style="color:#64b5f6">Choose MCP</strong> if you:</p>
+        <ul>
+          <li>Use Cursor, Windsurf, Cline, OpenCode, Continue, or Copilot CLI</li>
+          <li>Switch between multiple AI tools</li>
+          <li>Want universal compatibility with any MCP-supported tool</li>
+        </ul>
+        <p><strong style="color:var(--gold-400)">Choose Native</strong> if you:</p>
+        <ul>
+          <li>Use Claude Code exclusively</li>
+          <li>Want hooks (automatic documentation reminders)</li>
+          <li>Prefer slash commands (<code>/ctx-doc</code>) over MCP tools</li>
+        </ul>
+        <p><strong>You can use both</strong> &mdash; the MCP server auto-detects native vault paths, so both installations read/write the same vault with zero conflicts.</p>
+      </div>
+    </div>
+
+    <div class="faq-item" id="supported-tools">
+      <div class="faq-question">Which AI tools does ContextVault support?</div>
+      <div class="faq-answer">
+        <p>ContextVault works with <strong>any MCP-compatible AI tool</strong> via the MCP server. Tested tools include:</p>
+        <ul>
+          <li><strong>Claude Code</strong> &mdash; MCP server + native installer (hooks & slash commands)</li>
+          <li><strong>Cursor</strong> &mdash; via MCP server</li>
+          <li><strong>Windsurf</strong> &mdash; via MCP server</li>
+          <li><strong>Cline</strong> &mdash; via MCP server</li>
+          <li><strong>OpenCode</strong> &mdash; via MCP server</li>
+          <li><strong>Continue</strong> &mdash; via MCP server</li>
+          <li><strong>Copilot CLI</strong> &mdash; via MCP server</li>
+        </ul>
+        <p>Any tool that supports the <a href="https://modelcontextprotocol.io">Model Context Protocol</a> can use ContextVault.</p>
+      </div>
+    </div>
+
+    <div class="faq-item" id="mcp-troubleshooting">
+      <div class="faq-question">MCP server not connecting / tools not appearing</div>
+      <div class="faq-answer">
+        <p>Common fixes:</p>
+        <ol>
+          <li><strong>Check Node.js:</strong> Run <code>node --version</code> &mdash; you need Node.js 18+</li>
+          <li><strong>Check npx:</strong> Run <code>npx contextvault-mcp --version</code> to verify the package works</li>
+          <li><strong>Check MCP config:</strong> Ensure your <code>mcpServers</code> JSON is valid and the command/args are correct</li>
+          <li><strong>Restart your AI tool:</strong> MCP servers are loaded at startup &mdash; restart after config changes</li>
+          <li><strong>Check logs:</strong> Most AI tools show MCP server logs in their output panel</li>
+        </ol>
       </div>
     </div>
 

@@ -67,13 +67,10 @@
     <nav class="header-nav">
       <a href="../index.html">Home</a>
       <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
-      <div class="version-dropdown">
-        <button class="version-btn">v1.8.4 <span>&#9662;</span></button>
-        <div class="version-menu">
-          <a href="#" class="current">v1.8.4 (latest)</a>
-          <a href="#">v1.8.0</a>
-          <a href="#">v1.7.0</a>
-        </div>
+      <div class="version-badge">
+        <span class="version-mcp">MCP v1.0.2</span>
+        <span class="version-sep">|</span>
+        <span class="version-native">Native v1.8.4</span>
       </div>
     </nav>
     <div class="search-wrapper">
@@ -92,7 +89,8 @@
       <div class="sidebar-title">Getting Started</div>
       <ul class="sidebar-links">
         <li><a href="getting-started.html" class="active">Introduction</a></li>
-        <li><a href="getting-started.html#installation">Installation</a></li>
+        <li><a href="getting-started.html#mcp-install">MCP Setup</a></li>
+        <li><a href="getting-started.html#native-install">Native Setup</a></li>
         <li><a href="upgrade.html">Upgrade Guide</a></li>
       </ul>
     </div>
@@ -143,14 +141,55 @@
 
     <h2 id="installation">Installation</h2>
 
-    <h3 id="unix-install">macOS & Linux</h3>
-    <p>Install with a single command:</p>
+    <div id="choose-method" class="callout callout-tip">
+      <div class="callout-title">Choose Your Installation Method</div>
+      <p><strong style="color:#64b5f6">MCP Server</strong> (recommended) &mdash; works with <strong>any</strong> AI tool: Cursor, Windsurf, Cline, OpenCode, Continue, Copilot CLI, Claude Code.<br>
+      <strong style="color:var(--gold-400)">Native Installer</strong> &mdash; optimized for Claude Code with hooks and slash commands.<br>
+      Both use the same vault format and can run side by side with zero conflicts.</p>
+    </div>
+
+    <h3 id="mcp-install">MCP Server (Any AI Tool)</h3>
+    <p>Use ContextVault with <strong>any</strong> MCP-compatible AI tool:</p>
+    <pre><code>npx contextvault-mcp</code></pre>
+
+    <p>Then add to your AI tool's MCP configuration:</p>
+
+    <h4 id="mcp-config">Cursor / Windsurf / Cline</h4>
+    <p>Add to your <code>.cursor/mcp.json</code>, <code>.windsurf/mcp.json</code>, or Cline MCP settings:</p>
+    <pre><code>{
+  "mcpServers": {
+    "contextvault": {
+      "command": "npx",
+      "args": ["-y", "contextvault-mcp"]
+    }
+  }
+}</code></pre>
+
+    <h4>Claude Code</h4>
+    <p>Add via CLI:</p>
+    <pre><code>claude mcp add contextvault -- npx -y contextvault-mcp</code></pre>
+    <p>Or add to <code>~/.claude.json</code>:</p>
+    <pre><code>{
+  "mcpServers": {
+    "contextvault": {
+      "command": "npx",
+      "args": ["-y", "contextvault-mcp"]
+    }
+  }
+}</code></pre>
+
+    <div class="callout callout-info">
+      <div class="callout-title">What the MCP Server Provides</div>
+      <p><strong>25 tools</strong> (ctx_doc, ctx_error, ctx_decision, ctx_search, ctx_read, and 20 more) plus <strong>4 auto-loaded resources</strong> (global index, project index, settings, documentation rules). Works as a stdio MCP server &mdash; no API keys, no cloud, 100% local.</p>
+    </div>
+
+    <h3 id="native-install">Native Installer (Claude Code)</h3>
+    <p>For Claude Code with hooks, slash commands, and deep integration:</p>
+
+    <h4 id="unix-install">macOS & Linux</h4>
     <pre><code>curl -sL https://ctx-vault.com/install | bash</code></pre>
 
-    <p>Or install directly from GitHub:</p>
-    <pre><code>curl -sL https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh | bash</code></pre>
-
-    <h3 id="windows-install">Windows</h3>
+    <h4 id="windows-install">Windows</h4>
     <p>Native PowerShell installation (run as Administrator):</p>
     <pre><code>irm https://ctx-vault.com/install.ps1 | iex</code></pre>
 
@@ -159,65 +198,40 @@
       <p>For full hook support on Windows, install <a href="https://gitforwindows.org/">Git for Windows</a> which includes Git Bash. The installer will auto-detect it.</p>
     </div>
 
-    <h3>Alternative: WSL</h3>
-    <p>Windows users can also use WSL (Windows Subsystem for Linux):</p>
-    <pre><code># In WSL terminal
-curl -sL https://ctx-vault.com/install | bash</code></pre>
-
-    <h3 id="mcp-install">MCP Server (Any AI Tool)</h3>
-    <p>Use ContextVault with <strong>any</strong> MCP-compatible AI tool — Cursor, Windsurf, OpenCode, Cline, Continue, Copilot CLI, or Claude Code itself:</p>
-    <pre><code>npx contextvault-mcp</code></pre>
-    <p>Then add to your AI tool's MCP config:</p>
-    <pre><code>{
-  "mcpServers": {
-    "contextvault": {
-      "command": "npx",
-      "args": ["contextvault-mcp"]
-    }
-  }
-}</code></pre>
-    <p>For Claude Code, you can also add via CLI:</p>
-    <pre><code>claude mcp add contextvault -- npx -y contextvault-mcp</code></pre>
-
-    <div class="callout callout-info">
-      <div class="callout-title">MCP vs Bash Installer</div>
-      <p>The <strong>bash installer</strong> is optimized for Claude Code with hooks and slash commands. The <strong>MCP server</strong> works with any AI tool via Model Context Protocol. Both use the same vault format — the MCP server auto-detects your existing <code>.claude/vault/</code> if present, so you can use both side by side with zero conflicts.</p>
-    </div>
-
-    <div class="callout callout-info">
-      <div class="callout-title">What the MCP Server Provides</div>
-      <p><strong>25 tools</strong> (ctx_doc, ctx_error, ctx_decision, ctx_search, ctx_read, and 20 more) plus <strong>4 auto-loaded resources</strong> (global index, project index, settings, documentation rules). Works as a stdio MCP server — no API keys, no cloud, 100% local.</p>
-    </div>
-
     <h3>What Gets Installed</h3>
     <table>
       <thead>
         <tr>
           <th>Component</th>
-          <th>Location</th>
-          <th>Purpose</th>
+          <th>MCP Server</th>
+          <th>Native Installer</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>CLAUDE.md</code></td>
-          <td><code>~/.claude/</code></td>
-          <td>Global instructions for Claude</td>
-        </tr>
-        <tr>
-          <td>25 Commands</td>
-          <td><code>~/.claude/commands/</code></td>
-          <td>Slash command definitions</td>
+          <td>25 Commands/Tools</td>
+          <td>MCP tools (<code>ctx_*</code>)</td>
+          <td>Slash commands (<code>/ctx-*</code>)</td>
         </tr>
         <tr>
           <td>Global Vault</td>
+          <td><code>~/.contextvault/</code></td>
           <td><code>~/.claude/vault/</code></td>
-          <td>Cross-project knowledge</td>
         </tr>
         <tr>
-          <td>Hooks</td>
-          <td><code>~/.claude/settings.json</code></td>
-          <td>Smart reminder system</td>
+          <td>Project Vault</td>
+          <td><code>./.contextvault/</code></td>
+          <td><code>./.claude/vault/</code></td>
+        </tr>
+        <tr>
+          <td>Auto-Context</td>
+          <td>4 MCP resources</td>
+          <td><code>CLAUDE.md</code> + hooks</td>
+        </tr>
+        <tr>
+          <td>Enforcement</td>
+          <td>Server-side</td>
+          <td>Bash hooks</td>
         </tr>
       </tbody>
     </table>
@@ -226,32 +240,34 @@ curl -sL https://ctx-vault.com/install | bash</code></pre>
 
     <h3>1. Initialize a Project</h3>
     <p>Navigate to your project and initialize ContextVault:</p>
-    <pre><code>cd your-project
-# In Claude Code, type:
-/ctx-init</code></pre>
-    <p>This creates <code>.claude/vault/</code> in your project with an <code>index.md</code> file.</p>
+    <pre><code># Slash command (Claude Code):
+/ctx-init
+
+# MCP tool (Cursor, Windsurf, etc.):
+# Just ask: "initialize contextvault" or call ctx_init</code></pre>
+    <p>This creates a vault directory in your project with an <code>index.md</code> file.</p>
 
     <h3>2. Start Documenting</h3>
     <p>As you work, use commands to capture knowledge:</p>
     <pre><code># Fixed a bug?
-/ctx-error
+/ctx-error          # or MCP: ctx_error
 
 # Made an architecture decision?
-/ctx-decision
+/ctx-decision       # or MCP: ctx_decision
 
 # Learned something useful?
-/ctx-doc
+/ctx-doc            # or MCP: ctx_doc
 
 # Ending your session?
-/ctx-handoff</code></pre>
+/ctx-handoff        # or MCP: ctx_handoff</code></pre>
 
     <h3>3. Auto-Document a Codebase</h3>
     <p>For new projects, let ContextVault scan and document automatically:</p>
-    <pre><code>/ctx-bootstrap</code></pre>
+    <pre><code>/ctx-bootstrap      # or MCP: ctx_bootstrap</code></pre>
     <p>This creates architecture docs and feature docs based on your codebase structure.</p>
 
     <h3>4. Continue in Future Sessions</h3>
-    <p>When you start a new Claude Code session, it automatically reads your vault indexes and has full context of your project.</p>
+    <p>Your AI tool automatically reads your vault indexes and has full context of your project. With MCP, indexes are loaded as resources. With native, Claude reads the index files via <code>CLAUDE.md</code> instructions.</p>
 
     <div class="callout callout-tip">
       <div class="callout-title">Pro Tip</div>

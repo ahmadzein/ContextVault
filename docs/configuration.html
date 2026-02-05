@@ -66,13 +66,10 @@
     <nav class="header-nav">
       <a href="../index.html">Home</a>
       <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
-      <div class="version-dropdown">
-        <button class="version-btn">v1.8.4 <span>&#9662;</span></button>
-        <div class="version-menu">
-          <a href="#" class="current">v1.8.4 (latest)</a>
-          <a href="#">v1.8.0</a>
-          <a href="#">v1.7.0</a>
-        </div>
+      <div class="version-badge">
+        <span class="version-mcp">MCP v1.0.2</span>
+        <span class="version-sep">|</span>
+        <span class="version-native">Native v1.8.4</span>
       </div>
     </nav>
     <div class="search-wrapper">
@@ -91,7 +88,8 @@
       <div class="sidebar-title">Getting Started</div>
       <ul class="sidebar-links">
         <li><a href="getting-started.html">Introduction</a></li>
-        <li><a href="getting-started.html#installation">Installation</a></li>
+        <li><a href="getting-started.html#mcp-install">MCP Setup</a></li>
+        <li><a href="getting-started.html#native-install">Native Setup</a></li>
         <li><a href="upgrade.html">Upgrade Guide</a></li>
       </ul>
     </div>
@@ -292,7 +290,47 @@
       <p>If you're near the 50-doc limit, consider: archiving old docs, merging related topics, or moving less-used docs to <code>archive/</code> folder.</p>
     </div>
 
+    <h2 id="mcp-config">MCP Server Configuration</h2>
+    <p>If you're using the MCP server, configure it in your AI tool's MCP settings:</p>
+
+    <h3>Cursor</h3>
+    <pre><code>// .cursor/mcp.json
+{
+  "mcpServers": {
+    "contextvault": {
+      "command": "npx",
+      "args": ["-y", "contextvault-mcp"]
+    }
+  }
+}</code></pre>
+
+    <h3>Windsurf</h3>
+    <pre><code>// .windsurf/mcp.json
+{
+  "mcpServers": {
+    "contextvault": {
+      "command": "npx",
+      "args": ["-y", "contextvault-mcp"]
+    }
+  }
+}</code></pre>
+
+    <h3>Claude Code</h3>
+    <pre><code># Via CLI:
+claude mcp add contextvault -- npx -y contextvault-mcp</code></pre>
+
+    <div class="callout callout-info">
+      <div class="callout-title">MCP Server Settings</div>
+      <p>The MCP server reads the same <code>settings.json</code> file in your vault directory. Mode, enforcement, and limits all apply. Change them with <code>ctx_mode</code> (MCP) or <code>/ctx-mode</code> (native).</p>
+    </div>
+
     <h2 id="hooks-config">Hooks Configuration</h2>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">Hooks = Native Installer Only</div>
+      <p>Hooks (SessionStart, PreToolUse, Stop) require the <strong>native bash installer</strong> and only work in <strong>Claude Code</strong>. If you use the MCP server with Cursor, Windsurf, or other tools, enforcement is handled server-side instead &mdash; no hooks needed.</p>
+    </div>
+
     <p>Hooks are defined in <code>~/.claude/settings.json</code> (not the vault settings):</p>
 
     <pre><code>{

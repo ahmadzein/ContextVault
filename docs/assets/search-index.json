@@ -3,15 +3,29 @@
     "title": "Getting Started",
     "url": "getting-started.html",
     "page": "Getting Started",
-    "content": "Install ContextVault in seconds. Works on macOS, Linux, and Windows. Two-tier documentation system for Claude Code.",
-    "keywords": ["install", "setup", "quick start", "begin", "introduction"]
+    "content": "Install ContextVault in seconds. Works on macOS, Linux, and Windows. Two-tier documentation system for any AI coding assistant via MCP or Claude Code native.",
+    "keywords": ["install", "setup", "quick start", "begin", "introduction", "mcp", "cursor", "windsurf"]
+  },
+  {
+    "title": "MCP Server Installation",
+    "url": "getting-started.html#mcp-install",
+    "page": "Getting Started",
+    "content": "Install ContextVault MCP server with npx contextvault-mcp. Works with Cursor, Windsurf, OpenCode, Cline, Continue, Copilot CLI, and Claude Code. Universal installation via Model Context Protocol.",
+    "keywords": ["mcp", "cursor", "windsurf", "opencode", "cline", "continue", "copilot", "npx", "model context protocol", "universal"]
+  },
+  {
+    "title": "MCP Configuration",
+    "url": "getting-started.html#mcp-config",
+    "page": "Getting Started",
+    "content": "Configure ContextVault MCP server in your AI tool. Add to mcpServers config in Cursor, Windsurf, Cline, or any MCP-compatible tool. JSON configuration examples for each tool.",
+    "keywords": ["mcp", "config", "configuration", "cursor", "windsurf", "cline", "mcpServers", "json", "setup"]
   },
   {
     "title": "macOS/Linux Installation",
     "url": "getting-started.html#unix-install",
     "page": "Getting Started",
-    "content": "Install on macOS or Linux using curl. Run the bash installer script from ctx-vault.com.",
-    "keywords": ["mac", "linux", "bash", "curl", "unix", "terminal"]
+    "content": "Install on macOS or Linux using curl. Run the bash installer script from ctx-vault.com. Native Claude Code installation with hooks and slash commands.",
+    "keywords": ["mac", "linux", "bash", "curl", "unix", "terminal", "native", "claude code"]
   },
   {
     "title": "Windows Installation",
@@ -21,11 +35,18 @@
     "keywords": ["windows", "powershell", "wsl", "git bash"]
   },
   {
+    "title": "MCP vs Native Comparison",
+    "url": "getting-started.html#choose-method",
+    "page": "Getting Started",
+    "content": "Compare MCP server vs native bash installer. MCP works with any AI tool (Cursor, Windsurf, Cline). Native provides Claude Code hooks and slash commands. Both use the same vault format.",
+    "keywords": ["mcp", "native", "comparison", "choose", "which", "difference", "vs"]
+  },
+  {
     "title": "Upgrade Guide",
     "url": "upgrade.html",
     "page": "Upgrade",
-    "content": "Complete guide to upgrading ContextVault. Update global installation, restart Claude Code, then upgrade each project.",
-    "keywords": ["upgrade", "update", "version", "latest", "new version"]
+    "content": "Complete guide to upgrading ContextVault. Update global installation, restart Claude Code, then upgrade each project. MCP auto-updates via npx.",
+    "keywords": ["upgrade", "update", "version", "latest", "new version", "mcp"]
   },
   {
     "title": "Global Upgrade",
@@ -45,183 +66,190 @@
     "title": "/ctx-init",
     "url": "commands.html#ctx-init",
     "page": "Commands",
-    "content": "Initialize ContextVault in the current project. Creates .claude/vault directory with index.md.",
-    "keywords": ["init", "initialize", "setup", "create vault", "new project"]
+    "content": "Initialize ContextVault in the current project. Creates .contextvault/ or .claude/vault directory with index. MCP tool: ctx_init",
+    "keywords": ["init", "initialize", "setup", "create vault", "new project", "ctx_init", "mcp"]
   },
   {
     "title": "/ctx-doc",
     "url": "commands.html#ctx-doc",
     "page": "Commands",
-    "content": "Quick document a learning, feature, or finding. General purpose documentation command.",
-    "keywords": ["document", "save", "learn", "feature", "finding"]
+    "content": "Quick document a learning, feature, or finding. General purpose documentation command. MCP tool: ctx_doc",
+    "keywords": ["document", "save", "learn", "feature", "finding", "ctx_doc", "mcp"]
   },
   {
     "title": "/ctx-error",
     "url": "commands.html#ctx-error",
     "page": "Commands",
-    "content": "Document a bug fix or error resolution. Records error message, root cause, and solution.",
-    "keywords": ["bug", "error", "fix", "debug", "solution", "troubleshoot"]
+    "content": "Document a bug fix or error resolution. Records error message, root cause, and solution. MCP tool: ctx_error",
+    "keywords": ["bug", "error", "fix", "debug", "solution", "troubleshoot", "ctx_error", "mcp"]
   },
   {
     "title": "/ctx-decision",
     "url": "commands.html#ctx-decision",
     "page": "Commands",
-    "content": "Document an architectural or technical decision. Records options considered, reasoning, and trade-offs.",
-    "keywords": ["decision", "architecture", "choice", "tradeoff", "reasoning"]
+    "content": "Document an architectural or technical decision. Records options considered, reasoning, and trade-offs. MCP tool: ctx_decision",
+    "keywords": ["decision", "architecture", "choice", "tradeoff", "reasoning", "ctx_decision", "mcp"]
   },
   {
     "title": "/ctx-plan",
     "url": "commands.html#ctx-plan",
     "page": "Commands",
-    "content": "Document implementation plan for multi-step tasks. Track progress and goals.",
-    "keywords": ["plan", "task", "steps", "progress", "implementation"]
+    "content": "Document implementation plan for multi-step tasks. Track progress and goals. MCP tool: ctx_plan",
+    "keywords": ["plan", "task", "steps", "progress", "implementation", "ctx_plan", "mcp"]
   },
   {
     "title": "/ctx-bootstrap",
     "url": "commands.html#ctx-bootstrap",
     "page": "Commands",
-    "content": "Auto-scan codebase and generate comprehensive documentation. Creates architecture doc and feature docs.",
-    "keywords": ["bootstrap", "auto", "scan", "generate", "automatic"]
+    "content": "Auto-scan codebase and generate comprehensive documentation. Creates architecture doc and feature docs. MCP tool: ctx_bootstrap",
+    "keywords": ["bootstrap", "auto", "scan", "generate", "automatic", "ctx_bootstrap", "mcp"]
   },
   {
     "title": "/ctx-snippet",
     "url": "commands.html#ctx-snippet",
     "page": "Commands",
-    "content": "Save a useful code snippet for reuse. Store patterns and utilities.",
-    "keywords": ["snippet", "code", "pattern", "utility", "reuse"]
+    "content": "Save a useful code snippet for reuse. Store patterns and utilities. MCP tool: ctx_snippet",
+    "keywords": ["snippet", "code", "pattern", "utility", "reuse", "ctx_snippet", "mcp"]
   },
   {
     "title": "/ctx-intel",
     "url": "commands.html#ctx-intel",
     "page": "Commands",
-    "content": "Document codebase exploration findings. Record architecture and patterns discovered.",
-    "keywords": ["intel", "explore", "discover", "architecture", "patterns"]
+    "content": "Document codebase exploration findings. Record architecture and patterns discovered. MCP tool: ctx_intel",
+    "keywords": ["intel", "explore", "discover", "architecture", "patterns", "ctx_intel", "mcp"]
   },
   {
     "title": "/ctx-handoff",
     "url": "commands.html#ctx-handoff",
     "page": "Commands",
-    "content": "Create session handoff summary for continuity. Helps next session continue where you left off.",
-    "keywords": ["handoff", "session", "continue", "summary", "end"]
+    "content": "Create session handoff summary for continuity. Helps next session continue where you left off. MCP tool: ctx_handoff",
+    "keywords": ["handoff", "session", "continue", "summary", "end", "ctx_handoff", "mcp"]
   },
   {
     "title": "/ctx-search",
     "url": "commands.html#ctx-search",
     "page": "Commands",
-    "content": "Search across vault documents. Find existing documentation by topic.",
-    "keywords": ["search", "find", "lookup", "query"]
+    "content": "Search across vault documents. Find existing documentation by topic. MCP tool: ctx_search",
+    "keywords": ["search", "find", "lookup", "query", "ctx_search", "mcp"]
   },
   {
     "title": "/ctx-read",
     "url": "commands.html#ctx-read",
     "page": "Commands",
-    "content": "Read a document by ID. View full content of a vault document.",
-    "keywords": ["read", "view", "show", "display"]
+    "content": "Read a document by ID. View full content of a vault document. MCP tool: ctx_read",
+    "keywords": ["read", "view", "show", "display", "ctx_read", "mcp"]
   },
   {
     "title": "/ctx-update",
     "url": "commands.html#ctx-update",
     "page": "Commands",
-    "content": "Update an existing document by ID. Modify vault documentation.",
-    "keywords": ["update", "edit", "modify", "change"]
+    "content": "Update an existing document by ID. Modify vault documentation. MCP tool: ctx_update",
+    "keywords": ["update", "edit", "modify", "change", "ctx_update", "mcp"]
   },
   {
     "title": "/ctx-new",
     "url": "commands.html#ctx-new",
     "page": "Commands",
-    "content": "Create a new document with guided routing. Choose global or project vault.",
-    "keywords": ["new", "create", "add", "document"]
+    "content": "Create a new document with guided routing. Choose global or project vault. MCP tool: ctx_new",
+    "keywords": ["new", "create", "add", "document", "ctx_new", "mcp"]
   },
   {
     "title": "/ctx-link",
     "url": "commands.html#ctx-link",
     "page": "Commands",
-    "content": "Link related documents together. Create connections between vault docs.",
-    "keywords": ["link", "connect", "relate", "reference"]
+    "content": "Link related documents together. Create connections between vault docs. MCP tool: ctx_link",
+    "keywords": ["link", "connect", "relate", "reference", "ctx_link", "mcp"]
   },
   {
     "title": "/ctx-note",
     "url": "commands.html#ctx-note",
     "page": "Commands",
-    "content": "Add a quick note to existing document. Append information without full edit.",
-    "keywords": ["note", "append", "add", "quick"]
+    "content": "Add a quick note to existing document. Append information without full edit. MCP tool: ctx_note",
+    "keywords": ["note", "append", "add", "quick", "ctx_note", "mcp"]
   },
   {
     "title": "/ctx-status",
     "url": "commands.html#ctx-status",
     "page": "Commands",
-    "content": "Show vault status and statistics. View document counts and health.",
-    "keywords": ["status", "stats", "info", "overview"]
+    "content": "Show vault status and statistics. View document counts and health. MCP tool: ctx_status",
+    "keywords": ["status", "stats", "info", "overview", "ctx_status", "mcp"]
   },
   {
     "title": "/ctx-health",
     "url": "commands.html#ctx-health",
     "page": "Commands",
-    "content": "Check vault health and fix issues. Verify index consistency.",
-    "keywords": ["health", "check", "fix", "verify", "consistency"]
+    "content": "Check vault health and fix issues. Verify index consistency. MCP tool: ctx_health",
+    "keywords": ["health", "check", "fix", "verify", "consistency", "ctx_health", "mcp"]
   },
   {
     "title": "/ctx-mode",
     "url": "commands.html#ctx-mode",
     "page": "Commands",
-    "content": "Switch between local, global, or full mode. Change vault scope.",
-    "keywords": ["mode", "local", "global", "full", "scope"]
+    "content": "Switch between local, global, or full mode. Change vault scope. MCP tool: ctx_mode",
+    "keywords": ["mode", "local", "global", "full", "scope", "ctx_mode", "mcp"]
   },
   {
     "title": "/ctx-explain",
     "url": "commands.html#ctx-explain",
     "page": "Commands",
-    "content": "Explain a concept and save to vault. Document understanding of topics.",
-    "keywords": ["explain", "concept", "understand", "learn"]
+    "content": "Explain a concept and save to vault. Document understanding of topics. MCP tool: ctx_explain",
+    "keywords": ["explain", "concept", "understand", "learn", "ctx_explain", "mcp"]
   },
   {
     "title": "/ctx-quiz",
     "url": "commands.html#ctx-quiz",
     "page": "Commands",
-    "content": "Test knowledge retention from vault docs. Review documented learnings.",
-    "keywords": ["quiz", "test", "review", "retention"]
+    "content": "Test knowledge retention from vault docs. Review documented learnings. MCP tool: ctx_quiz",
+    "keywords": ["quiz", "test", "review", "retention", "ctx_quiz", "mcp"]
   },
   {
     "title": "/ctx-share",
     "url": "commands.html#ctx-share",
     "page": "Commands",
-    "content": "Export vault docs for sharing. Create shareable documentation.",
-    "keywords": ["share", "export", "send", "distribute"]
+    "content": "Export vault docs for sharing. Create shareable documentation. MCP tool: ctx_share",
+    "keywords": ["share", "export", "send", "distribute", "ctx_share", "mcp"]
   },
   {
     "title": "/ctx-import",
     "url": "commands.html#ctx-import",
     "page": "Commands",
-    "content": "Import external documentation into vault. Add existing docs to vault.",
-    "keywords": ["import", "add", "external", "bring"]
+    "content": "Import external documentation into vault. Add existing docs to vault. MCP tool: ctx_import",
+    "keywords": ["import", "add", "external", "bring", "ctx_import", "mcp"]
   },
   {
     "title": "/ctx-upgrade",
     "url": "commands.html#ctx-upgrade",
     "page": "Commands",
-    "content": "Upgrade ContextVault to latest version. Update installation.",
-    "keywords": ["upgrade", "update", "version", "latest"]
+    "content": "Upgrade ContextVault to latest version. Update installation. MCP tool: ctx_upgrade",
+    "keywords": ["upgrade", "update", "version", "latest", "ctx_upgrade", "mcp"]
   },
   {
     "title": "/ctx-changelog",
     "url": "commands.html#ctx-changelog",
     "page": "Commands",
-    "content": "View ContextVault changelog and version history. See what's new.",
-    "keywords": ["changelog", "history", "version", "updates", "release"]
+    "content": "View ContextVault changelog and version history. See what's new. MCP tool: ctx_changelog",
+    "keywords": ["changelog", "history", "version", "updates", "release", "ctx_changelog", "mcp"]
   },
   {
     "title": "/ctx-help",
     "url": "commands.html#ctx-help",
     "page": "Commands",
-    "content": "Show all ContextVault commands and usage. Display help information.",
-    "keywords": ["help", "commands", "usage", "guide"]
+    "content": "Show all ContextVault commands and usage. Display help information. MCP tool: ctx_help",
+    "keywords": ["help", "commands", "usage", "guide", "ctx_help", "mcp"]
   },
   {
     "title": "Two-Tier Architecture",
     "url": "architecture.html#two-tier",
     "page": "Architecture",
-    "content": "Global vault at ~/.claude/vault for cross-project knowledge. Project vault at ./.claude/vault for project-specific docs.",
-    "keywords": ["architecture", "tier", "global", "project", "structure"]
+    "content": "Global vault at ~/.contextvault/ (or ~/.claude/vault/) for cross-project knowledge. Project vault at ./.contextvault/ (or ./.claude/vault/) for project-specific docs. MCP and native share the same vault format.",
+    "keywords": ["architecture", "tier", "global", "project", "structure", "mcp", "contextvault"]
+  },
+  {
+    "title": "MCP Architecture",
+    "url": "architecture.html#mcp-architecture",
+    "page": "Architecture",
+    "content": "MCP server architecture for ContextVault. stdio-based server with 25 tools and 4 auto-loaded resources. Works with any MCP-compatible AI tool. No API keys, no cloud, 100% local.",
+    "keywords": ["mcp", "architecture", "server", "tools", "resources", "stdio", "model context protocol"]
   },
   {
     "title": "Document Prefixes",
@@ -241,8 +269,8 @@
     "title": "Smart Hooks",
     "url": "architecture.html#hooks",
     "page": "Architecture",
-    "content": "Automatic reminders to document work. SessionStart, PreToolUse, and Stop hooks. Configurable enforcement.",
-    "keywords": ["hooks", "reminders", "automatic", "enforce"]
+    "content": "Automatic reminders to document work. SessionStart, PreToolUse, and Stop hooks. Configurable enforcement. Native Claude Code only — MCP uses server-side enforcement instead.",
+    "keywords": ["hooks", "reminders", "automatic", "enforce", "native"]
   },
   {
     "title": "Enforcement Levels",
@@ -257,6 +285,13 @@
     "page": "Configuration",
     "content": "Local mode uses only project vault. Global mode uses only global vault. Full mode uses both.",
     "keywords": ["mode", "local", "global", "full", "scope"]
+  },
+  {
+    "title": "MCP Server Configuration",
+    "url": "configuration.html#mcp-config",
+    "page": "Configuration",
+    "content": "Configure the MCP server for Cursor, Windsurf, Cline, and other tools. JSON config examples. Hooks are Claude Code native only — MCP uses server-side enforcement.",
+    "keywords": ["mcp", "config", "cursor", "windsurf", "cline", "server", "configuration"]
   },
   {
     "title": "Settings File",
@@ -276,8 +311,8 @@
     "title": "First Project Setup",
     "url": "tutorials.html#first-project",
     "page": "Tutorials",
-    "content": "Tutorial for setting up ContextVault in your first project. Step by step initialization.",
-    "keywords": ["tutorial", "first", "setup", "beginner", "start"]
+    "content": "Tutorial for setting up ContextVault in your first project. Step by step initialization. MCP or native installation.",
+    "keywords": ["tutorial", "first", "setup", "beginner", "start", "mcp"]
   },
   {
     "title": "Documenting Bug Fixes",
@@ -292,6 +327,27 @@
     "page": "Tutorials",
     "content": "How to create effective session handoffs. Ensure continuity between sessions.",
     "keywords": ["tutorial", "handoff", "session", "continue"]
+  },
+  {
+    "title": "Supported AI Tools",
+    "url": "faq.html#supported-tools",
+    "page": "FAQ",
+    "content": "ContextVault works with Claude Code, Cursor, Windsurf, OpenCode, Cline, Continue, Copilot CLI, and any MCP-compatible AI coding tool. MCP server for universal support, bash installer for Claude Code native.",
+    "keywords": ["supported", "tools", "cursor", "windsurf", "cline", "opencode", "continue", "copilot", "mcp", "compatible"]
+  },
+  {
+    "title": "MCP vs Native: Which should I choose?",
+    "url": "faq.html#mcp-vs-native",
+    "page": "FAQ",
+    "content": "Choose MCP if you use Cursor, Windsurf, Cline, or want universal compatibility. Choose native bash installer if you use Claude Code exclusively and want hooks and slash commands. You can use both side by side.",
+    "keywords": ["mcp", "native", "choose", "which", "comparison", "difference"]
+  },
+  {
+    "title": "MCP Troubleshooting",
+    "url": "faq.html#mcp-troubleshooting",
+    "page": "FAQ",
+    "content": "Common MCP server issues: tool not connecting, vault not found, npx errors. Check your mcpServers config, ensure Node.js is installed, verify vault directory exists.",
+    "keywords": ["mcp", "troubleshoot", "error", "not working", "fix", "npx", "node"]
   },
   {
     "title": "Why documents not loading?",
@@ -311,7 +367,21 @@
     "title": "Hooks not working?",
     "url": "faq.html#hooks-not-working",
     "page": "FAQ",
-    "content": "Hooks require Claude Code settings. On Windows, Git Bash is needed for hook support.",
-    "keywords": ["faq", "hooks", "not working", "windows", "bash"]
+    "content": "Hooks require Claude Code native installation. On Windows, Git Bash is needed. MCP uses server-side enforcement instead of hooks.",
+    "keywords": ["faq", "hooks", "not working", "windows", "bash", "native"]
+  },
+  {
+    "title": "Natural Language Commands",
+    "url": "commands.html#usage-methods",
+    "page": "Commands",
+    "content": "Use ContextVault commands three ways: /ctx-* slash commands in Claude Code, ctx_* MCP tools in any AI tool, or natural language like 'document this bug fix' or 'create a session handoff'.",
+    "keywords": ["natural language", "usage", "methods", "slash commands", "mcp tools", "how to use"]
+  },
+  {
+    "title": "MCP Changelog",
+    "url": "changelog.html#mcp",
+    "page": "Changelog",
+    "content": "MCP Server changelog. v1.0.0 initial release with 25 tools. v1.0.1 fixed legacy import. v1.0.2 auto-detect .claude/vault paths.",
+    "keywords": ["mcp", "changelog", "version", "release", "npm", "updates"]
   }
 ]

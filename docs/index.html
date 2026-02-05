@@ -918,39 +918,44 @@ footer {
     <h1 class="reveal reveal-delay-1">Your Knowledge,<br><em>Never Lost</em></h1>
     <p class="hero-sub reveal reveal-delay-2">External context management for AI coding assistants. A two-tier documentation system that persists your knowledge across every session.</p>
     <div class="install-wrapper reveal reveal-delay-3">
-      <div class="os-tabs">
-        <button class="os-tab" data-os="mcp" onclick="switchOS('mcp')">MCP (Any AI Tool)</button>
-        <button class="os-tab" data-os="mac" onclick="switchOS('mac')">macOS <span style="opacity:.6;font-size:.65rem">&middot; Claude Code</span></button>
-        <button class="os-tab" data-os="linux" onclick="switchOS('linux')">Linux <span style="opacity:.6;font-size:.65rem">&middot; Claude Code</span></button>
-        <button class="os-tab" data-os="windows" onclick="switchOS('windows')">Windows <span style="opacity:.6;font-size:.65rem">&middot; Claude Code</span></button>
-      </div>
-      <div class="install-cmd" data-os="mcp">
-        <div class="hero-install" data-prefix="$">
-          <code>npx contextvault-mcp</code>
-          <button class="copy-btn" onclick="copyCmd('npx contextvault-mcp')">Copy</button>
+      <div class="install-cards">
+        <div class="install-card recommended">
+          <h4 style="color:#64b5f6;">MCP Server <span style="font-size:.7rem;font-weight:400;color:var(--stone-500)">(Any AI Tool)</span></h4>
+          <p>Works with Cursor, Windsurf, OpenCode, Cline, Continue, Copilot CLI &amp; Claude Code</p>
+          <div class="hero-install" data-prefix="$">
+            <code>npx contextvault-mcp</code>
+            <button class="copy-btn" onclick="copyCmd('npx contextvault-mcp')">Copy</button>
+          </div>
         </div>
-        <p style="color:var(--stone-400);font-size:.85rem;margin-top:.5rem">Works with Cursor, Windsurf, OpenCode, Cline, Continue, Copilot CLI &amp; Claude Code</p>
-      </div>
-      <div class="install-cmd" data-os="mac">
-        <div class="hero-install" data-prefix="$">
-          <code>curl -sL https://ctx-vault.com/install | bash</code>
-          <button class="copy-btn" onclick="copyCmd('curl -sL https://ctx-vault.com/install | bash')">Copy</button>
+        <div class="install-card">
+          <h4>Native Installer <span style="font-size:.7rem;font-weight:400;color:var(--stone-500)">(Claude Code)</span></h4>
+          <p>Hooks, slash commands &amp; deep integration for Claude Code</p>
+          <div style="margin-bottom:.5rem">
+            <div class="os-tabs" style="justify-content:flex-start;margin-bottom:.5rem">
+              <button class="os-tab" data-os="mac" onclick="switchOS('mac')">macOS</button>
+              <button class="os-tab" data-os="linux" onclick="switchOS('linux')">Linux</button>
+              <button class="os-tab" data-os="windows" onclick="switchOS('windows')">Windows</button>
+            </div>
+            <div class="install-cmd" data-os="mac">
+              <div class="hero-install" data-prefix="$">
+                <code>curl -sL https://ctx-vault.com/install | bash</code>
+                <button class="copy-btn" onclick="copyCmd('curl -sL https://ctx-vault.com/install | bash')">Copy</button>
+              </div>
+            </div>
+            <div class="install-cmd" data-os="linux">
+              <div class="hero-install" data-prefix="$">
+                <code>curl -sL https://ctx-vault.com/install | bash</code>
+                <button class="copy-btn" onclick="copyCmd('curl -sL https://ctx-vault.com/install | bash')">Copy</button>
+              </div>
+            </div>
+            <div class="install-cmd" data-os="windows">
+              <div class="hero-install" data-prefix="PS>">
+                <code>irm https://ctx-vault.com/install.ps1 | iex</code>
+                <button class="copy-btn" onclick="copyCmd('irm https://ctx-vault.com/install.ps1 | iex')">Copy</button>
+              </div>
+            </div>
+          </div>
         </div>
-        <p style="color:var(--stone-500);font-size:.8rem;margin-top:.5rem">Bash installer &mdash; optimized for Claude Code with hooks &amp; slash commands</p>
-      </div>
-      <div class="install-cmd" data-os="linux">
-        <div class="hero-install" data-prefix="$">
-          <code>curl -sL https://ctx-vault.com/install | bash</code>
-          <button class="copy-btn" onclick="copyCmd('curl -sL https://ctx-vault.com/install | bash')">Copy</button>
-        </div>
-        <p style="color:var(--stone-500);font-size:.8rem;margin-top:.5rem">Bash installer &mdash; optimized for Claude Code with hooks &amp; slash commands</p>
-      </div>
-      <div class="install-cmd" data-os="windows">
-        <div class="hero-install" data-prefix="PS>">
-          <code>irm https://ctx-vault.com/install.ps1 | iex</code>
-          <button class="copy-btn" onclick="copyCmd('irm https://ctx-vault.com/install.ps1 | iex')">Copy</button>
-        </div>
-        <p style="color:var(--stone-500);font-size:.8rem;margin-top:.5rem">PowerShell installer &mdash; optimized for Claude Code with hooks &amp; slash commands</p>
       </div>
     </div>
     <div class="hero-actions reveal reveal-delay-4">
@@ -1099,16 +1104,16 @@ footer {
     <h2 class="reveal reveal-delay-1">A command for every moment.</h2>
     <p class="reveal reveal-delay-2">25 purpose-built slash commands. Here are the ones you'll use most.</p>
     <div class="cmd-grid">
-      <div class="cmd reveal reveal-delay-1"><code>/ctx-doc</code><span>Document a feature or learning</span></div>
-      <div class="cmd reveal reveal-delay-1"><code>/ctx-error</code><span>Document a bug fix with root cause</span></div>
-      <div class="cmd reveal reveal-delay-2"><code>/ctx-decision</code><span>Record an architecture decision</span></div>
-      <div class="cmd reveal reveal-delay-2"><code>/ctx-plan</code><span>Track a multi-step implementation</span></div>
-      <div class="cmd reveal reveal-delay-3"><code>/ctx-bootstrap</code><span>Auto-generate docs for entire codebase</span></div>
-      <div class="cmd reveal reveal-delay-3"><code>/ctx-handoff</code><span>Create session summary for next time</span></div>
-      <div class="cmd reveal reveal-delay-4"><code>/ctx-intel</code><span>Document codebase exploration findings</span></div>
-      <div class="cmd reveal reveal-delay-4"><code>/ctx-snippet</code><span>Save reusable code patterns</span></div>
-      <div class="cmd reveal reveal-delay-5"><code>/ctx-search</code><span>Search across all vault documents</span></div>
-      <div class="cmd reveal reveal-delay-5"><code>/ctx-mode</code><span>Switch enforcement level on the fly</span></div>
+      <div class="cmd reveal reveal-delay-1"><code>/ctx-doc</code><span class="command-mcp">ctx_doc</span><span>Document a feature or learning</span></div>
+      <div class="cmd reveal reveal-delay-1"><code>/ctx-error</code><span class="command-mcp">ctx_error</span><span>Document a bug fix with root cause</span></div>
+      <div class="cmd reveal reveal-delay-2"><code>/ctx-decision</code><span class="command-mcp">ctx_decision</span><span>Record an architecture decision</span></div>
+      <div class="cmd reveal reveal-delay-2"><code>/ctx-plan</code><span class="command-mcp">ctx_plan</span><span>Track a multi-step implementation</span></div>
+      <div class="cmd reveal reveal-delay-3"><code>/ctx-bootstrap</code><span class="command-mcp">ctx_bootstrap</span><span>Auto-generate docs for entire codebase</span></div>
+      <div class="cmd reveal reveal-delay-3"><code>/ctx-handoff</code><span class="command-mcp">ctx_handoff</span><span>Create session summary for next time</span></div>
+      <div class="cmd reveal reveal-delay-4"><code>/ctx-intel</code><span class="command-mcp">ctx_intel</span><span>Document codebase exploration findings</span></div>
+      <div class="cmd reveal reveal-delay-4"><code>/ctx-snippet</code><span class="command-mcp">ctx_snippet</span><span>Save reusable code patterns</span></div>
+      <div class="cmd reveal reveal-delay-5"><code>/ctx-search</code><span class="command-mcp">ctx_search</span><span>Search across all vault documents</span></div>
+      <div class="cmd reveal reveal-delay-5"><code>/ctx-mode</code><span class="command-mcp">ctx_mode</span><span>Switch enforcement level on the fly</span></div>
     </div>
   </div>
 </section>
@@ -1141,40 +1146,20 @@ footer {
     <div class="cta-box reveal">
       <h2>Start remembering.</h2>
       <p>Install ContextVault in 30 seconds. Your vault starts building from session one.</p>
-      <div class="install-wrapper" style="margin-bottom:2rem;">
-        <div class="os-tabs">
-          <button class="os-tab" data-os="mcp" onclick="switchOS('mcp')">MCP (Any AI Tool)</button>
-          <button class="os-tab" data-os="mac" onclick="switchOS('mac')">macOS <span style="opacity:.6;font-size:.65rem">&middot; Claude Code</span></button>
-          <button class="os-tab" data-os="linux" onclick="switchOS('linux')">Linux <span style="opacity:.6;font-size:.65rem">&middot; Claude Code</span></button>
-          <button class="os-tab" data-os="windows" onclick="switchOS('windows')">Windows <span style="opacity:.6;font-size:.65rem">&middot; Claude Code</span></button>
-        </div>
-        <div class="install-cmd" data-os="mcp">
-          <div class="hero-install" data-prefix="$" style="margin:0 auto;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem;text-align:left;max-width:700px;margin-left:auto;margin-right:auto;">
+        <div style="background:var(--stone-800);border:1px solid rgba(100,181,246,0.3);border-radius:10px;padding:1.25rem;position:relative;">
+          <div style="font-family:var(--font-mono);font-size:.7rem;color:#64b5f6;margin-bottom:.5rem;font-weight:600;">MCP &mdash; ANY AI TOOL</div>
+          <div class="hero-install" data-prefix="$" style="margin:0;">
             <code>npx contextvault-mcp</code>
             <button class="copy-btn" onclick="copyCmd('npx contextvault-mcp')">Copy</button>
           </div>
-          <p style="color:var(--stone-400);font-size:.85rem;margin-top:.5rem;text-align:center">Works with Cursor, Windsurf, OpenCode, Cline, Continue, Copilot CLI &amp; Claude Code</p>
         </div>
-        <div class="install-cmd" data-os="mac">
-          <div class="hero-install" data-prefix="$" style="margin:0 auto;">
-            <code>curl -sL https://ctx-vault.com/install | bash</code>
+        <div style="background:var(--stone-800);border:1px solid var(--stone-700);border-radius:10px;padding:1.25rem;">
+          <div style="font-family:var(--font-mono);font-size:.7rem;color:var(--gold-400);margin-bottom:.5rem;font-weight:600;">NATIVE &mdash; CLAUDE CODE</div>
+          <div class="hero-install" data-prefix="$" style="margin:0;">
+            <code>curl -sL ctx-vault.com/install | bash</code>
             <button class="copy-btn" onclick="copyCmd('curl -sL https://ctx-vault.com/install | bash')">Copy</button>
           </div>
-          <p style="color:var(--stone-500);font-size:.8rem;margin-top:.5rem;text-align:center">Bash installer &mdash; optimized for Claude Code with hooks &amp; slash commands</p>
-        </div>
-        <div class="install-cmd" data-os="linux">
-          <div class="hero-install" data-prefix="$" style="margin:0 auto;">
-            <code>curl -sL https://ctx-vault.com/install | bash</code>
-            <button class="copy-btn" onclick="copyCmd('curl -sL https://ctx-vault.com/install | bash')">Copy</button>
-          </div>
-          <p style="color:var(--stone-500);font-size:.8rem;margin-top:.5rem;text-align:center">Bash installer &mdash; optimized for Claude Code with hooks &amp; slash commands</p>
-        </div>
-        <div class="install-cmd" data-os="windows">
-          <div class="hero-install" data-prefix="PS>" style="margin:0 auto;">
-            <code>irm https://ctx-vault.com/install.ps1 | iex</code>
-            <button class="copy-btn" onclick="copyCmd('irm https://ctx-vault.com/install.ps1 | iex')">Copy</button>
-          </div>
-          <p style="color:var(--stone-500);font-size:.8rem;margin-top:.5rem;text-align:center">PowerShell installer &mdash; optimized for Claude Code with hooks &amp; slash commands</p>
         </div>
       </div>
       <div class="hero-actions">
@@ -1194,7 +1179,7 @@ footer {
 <footer>
   <div class="container footer-inner">
     <div class="footer-left">
-      <img src="docs/images/logo-64x64.png" alt="" style="width:20px;height:20px;vertical-align:middle;margin-right:6px;border-radius:4px;">ContextVault v1.8.4 &mdash; MIT License &mdash; Built by <a href="https://github.com/ahmadzein" target="_blank" rel="noopener">Ahmad Zein</a>
+      <img src="docs/images/logo-64x64.png" alt="" style="width:20px;height:20px;vertical-align:middle;margin-right:6px;border-radius:4px;">ContextVault <span style="color:#64b5f6">MCP v1.0.2</span> / <span style="color:var(--gold-400)">Native v1.8.4</span> &mdash; MIT License &mdash; Built by <a href="https://github.com/ahmadzein" target="_blank" rel="noopener">Ahmad Zein</a>
     </div>
     <div class="footer-links">
       <a href="https://github.com/ahmadzein/ContextVault" target="_blank" rel="noopener">GitHub</a>
@@ -1235,9 +1220,9 @@ function copyCmd(cmd) {
   });
 }
 
-// Initialize OS tabs on load — default to MCP (universal)
+// Initialize OS tabs on load — default to user's OS for native installer
 document.addEventListener('DOMContentLoaded', () => {
-  switchOS('mcp');
+  switchOS(detectOS());
 });
 
 // Scroll reveal

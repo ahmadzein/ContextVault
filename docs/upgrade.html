@@ -68,13 +68,10 @@
     <nav class="header-nav">
       <a href="../index.html">Home</a>
       <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
-      <div class="version-dropdown">
-        <button class="version-btn">v1.8.4 <span>&#9662;</span></button>
-        <div class="version-menu">
-          <a href="#" class="current">v1.8.4 (latest)</a>
-          <a href="#">v1.8.0</a>
-          <a href="#">v1.7.0</a>
-        </div>
+      <div class="version-badge">
+        <span class="version-mcp">MCP v1.0.2</span>
+        <span class="version-sep">|</span>
+        <span class="version-native">Native v1.8.4</span>
       </div>
     </nav>
     <div class="search-wrapper">
@@ -93,7 +90,8 @@
       <div class="sidebar-title">Getting Started</div>
       <ul class="sidebar-links">
         <li><a href="getting-started.html">Introduction</a></li>
-        <li><a href="getting-started.html#installation">Installation</a></li>
+        <li><a href="getting-started.html#mcp-install">MCP Setup</a></li>
+        <li><a href="getting-started.html#native-install">Native Setup</a></li>
         <li><a href="upgrade.html" class="active">Upgrade Guide</a></li>
       </ul>
     </div>
@@ -130,8 +128,16 @@
       <p>Upgrades <strong>never</strong> delete or modify your vault documents. Only the instructions, commands, and hooks are updated.</p>
     </div>
 
-    <h2>Understanding ContextVault Components</h2>
-    <p>ContextVault has two layers that can be upgraded independently:</p>
+    <h2>MCP Server Upgrade</h2>
+    <p>If you use the MCP server, it <strong>auto-updates via npx</strong>. Every time your AI tool starts, <code>npx contextvault-mcp</code> fetches the latest version automatically. No manual upgrade step needed.</p>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Force a specific MCP version</div>
+      <p>To pin a version: <code>npx contextvault-mcp@1.0.2</code>. To clear the npx cache and force a fresh download: <code>npx --yes contextvault-mcp</code>.</p>
+    </div>
+
+    <h2>Native Installer Upgrade</h2>
+    <p>The native installer has two layers that can be upgraded independently:</p>
 
     <table>
       <thead>
