@@ -310,6 +310,34 @@ nav.scrolled { padding: 0.75rem 0; background: rgba(12, 10, 9, 0.95); }
   background: var(--stone-700);
   color: var(--stone-200);
 }
+/* --- Install cards layout --- */
+.install-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.install-card {
+  background: var(--stone-900);
+  border: 1px solid var(--stone-800);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+}
+.install-card.recommended {
+  border-color: rgba(100, 181, 246, 0.3);
+}
+.install-card h4 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+.install-card p {
+  margin: 0 0 1rem;
+  font-size: 0.8rem;
+  color: var(--stone-400);
+  line-height: 1.4;
+}
 .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 .btn {
   display: inline-flex; align-items: center; gap: 0.5rem;
@@ -920,39 +948,36 @@ footer {
     <div class="install-wrapper reveal reveal-delay-3">
       <div class="install-cards">
         <div class="install-card recommended">
-          <h4 style="color:#64b5f6;">MCP Server <span style="font-size:.7rem;font-weight:400;color:var(--stone-500)">(Any AI Tool)</span></h4>
-          <p>Works with Cursor, Windsurf, OpenCode, Cline, Continue, Copilot CLI &amp; Claude Code</p>
+          <h4 style="color:#64b5f6;">MCP Server <span style="font-size:.7rem;font-weight:400;color:var(--stone-500)">(Recommended)</span></h4>
+          <p>Works with any MCP-compatible tool</p>
           <div class="hero-install" data-prefix="$">
             <code>npx contextvault-mcp</code>
             <button class="copy-btn" onclick="copyCmd('npx contextvault-mcp')">Copy</button>
           </div>
         </div>
         <div class="install-card">
-          <h4>Native Installer <span style="font-size:.7rem;font-weight:400;color:var(--stone-500)">(Claude Code)</span></h4>
-          <p>Hooks, slash commands &amp; deep integration for Claude Code</p>
-          <div style="margin-bottom:.5rem">
-            <div class="os-tabs" style="justify-content:flex-start;margin-bottom:.5rem">
-              <button class="os-tab" data-os="mac" onclick="switchOS('mac')">macOS</button>
-              <button class="os-tab" data-os="linux" onclick="switchOS('linux')">Linux</button>
-              <button class="os-tab" data-os="windows" onclick="switchOS('windows')">Windows</button>
+          <h4>Native Installer <span style="font-size:.7rem;font-weight:400;color:var(--stone-500)">(Claude Code only)</span></h4>
+          <div class="os-tabs">
+            <button class="os-tab" data-os="mac" onclick="switchOS('mac')">macOS</button>
+            <button class="os-tab" data-os="linux" onclick="switchOS('linux')">Linux</button>
+            <button class="os-tab" data-os="windows" onclick="switchOS('windows')">Windows</button>
+          </div>
+          <div class="install-cmd" data-os="mac">
+            <div class="hero-install" data-prefix="$">
+              <code>curl -sL https://ctx-vault.com/install | bash</code>
+              <button class="copy-btn" onclick="copyCmd('curl -sL https://ctx-vault.com/install | bash')">Copy</button>
             </div>
-            <div class="install-cmd" data-os="mac">
-              <div class="hero-install" data-prefix="$">
-                <code>curl -sL https://ctx-vault.com/install | bash</code>
-                <button class="copy-btn" onclick="copyCmd('curl -sL https://ctx-vault.com/install | bash')">Copy</button>
-              </div>
+          </div>
+          <div class="install-cmd" data-os="linux">
+            <div class="hero-install" data-prefix="$">
+              <code>curl -sL https://ctx-vault.com/install | bash</code>
+              <button class="copy-btn" onclick="copyCmd('curl -sL https://ctx-vault.com/install | bash')">Copy</button>
             </div>
-            <div class="install-cmd" data-os="linux">
-              <div class="hero-install" data-prefix="$">
-                <code>curl -sL https://ctx-vault.com/install | bash</code>
-                <button class="copy-btn" onclick="copyCmd('curl -sL https://ctx-vault.com/install | bash')">Copy</button>
-              </div>
-            </div>
-            <div class="install-cmd" data-os="windows">
-              <div class="hero-install" data-prefix="PS>">
-                <code>irm https://ctx-vault.com/install.ps1 | iex</code>
-                <button class="copy-btn" onclick="copyCmd('irm https://ctx-vault.com/install.ps1 | iex')">Copy</button>
-              </div>
+          </div>
+          <div class="install-cmd" data-os="windows">
+            <div class="hero-install" data-prefix="PS>">
+              <code>irm https://ctx-vault.com/install.ps1 | iex</code>
+              <button class="copy-btn" onclick="copyCmd('irm https://ctx-vault.com/install.ps1 | iex')">Copy</button>
             </div>
           </div>
         </div>
