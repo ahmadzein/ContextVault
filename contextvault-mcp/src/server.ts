@@ -36,6 +36,9 @@ import { handleExplain } from './tools/explain.js';
 import { handleUpgrade } from './tools/upgrade.js';
 import { handleShare } from './tools/share.js';
 import { handleImport } from './tools/import.js';
+import { handleArchive } from './tools/archive.js';
+import { handleReview } from './tools/review.js';
+import { handleAsk } from './tools/ask.js';
 
 export class ContextVaultServer {
   private server: Server;
@@ -61,7 +64,7 @@ export class ContextVaultServer {
   }
 
   private registerTools(): void {
-    // List all 25 tools
+    // List all 28 tools
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
       tools: [
         {
@@ -334,6 +337,40 @@ export class ContextVaultServer {
             required: ['source_path'],
           },
         },
+        {
+          name: 'ctx_archive',
+          description: 'Archive a vault document. Moves doc to archive folder, removes from active index, adds to archived table.',
+          inputSchema: {
+            type: 'object' as const,
+            properties: {
+              id: { type: 'string', description: 'Document ID to archive (e.g. "P001", "G003")' },
+              reason: { type: 'string', description: 'Reason for archiving (e.g. "Replaced by new auth system", "Feature deprecated")' },
+            },
+            required: ['id', 'reason'],
+          },
+        },
+        {
+          name: 'ctx_review',
+          description: 'Run curation review on vault. Finds stale docs, suggests merges, identifies cleanup opportunities.',
+          inputSchema: {
+            type: 'object' as const,
+            properties: {
+              vault: { type: 'string', enum: ['global', 'project'], description: 'Which vault to review', default: 'project' },
+              stale_days: { type: 'number', description: 'Days without update to consider stale', default: 30 },
+            },
+          },
+        },
+        {
+          name: 'ctx_ask',
+          description: 'Ask a question and get a targeted answer from vault documents. Searches for relevant docs and synthesizes an answer.',
+          inputSchema: {
+            type: 'object' as const,
+            properties: {
+              question: { type: 'string', description: 'Natural language question (e.g. "What was the auth decision?", "How does caching work?")' },
+            },
+            required: ['question'],
+          },
+        },
       ],
     }));
 
@@ -371,6 +408,9 @@ export class ContextVaultServer {
           case 'ctx_upgrade': result = handleUpgrade(this.vault); break;
           case 'ctx_share': result = handleShare(this.vault, params); break;
           case 'ctx_import': result = handleImport(this.vault, params); break;
+          case 'ctx_archive': result = handleArchive(this.vault, params); break;
+          case 'ctx_review': result = handleReview(this.vault, params); break;
+          case 'ctx_ask': result = handleAsk(this.vault, params); break;
           default:
             result = { content: [{ type: 'text', text: `Unknown tool: ${name}` }], isError: true };
         }
@@ -386,10 +426,14 @@ export class ContextVaultServer {
         this.vault.trackResearch(params['id'] as string);
       }
 
+      // Track edits for non-ctx tools (before checking reminder)
+      if (!name.startsWith('ctx_')) {
+        this.vault.trackEdit();
+      }
+
       // Append enforcement reminder if needed (edit-based)
       const reminder = this.vault.getEnforcementReminder();
       if (reminder && !name.startsWith('ctx_')) {
-        this.vault.trackEdit();
         const lastContent = result.content[result.content.length - 1];
         if (lastContent && lastContent.type === 'text') {
           lastContent.text += reminder;

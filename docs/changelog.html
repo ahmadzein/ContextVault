@@ -67,9 +67,9 @@
       <a href="../index.html">Home</a>
       <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
       <div class="version-badge">
-        <span class="version-mcp">MCP v1.0.3 Beta</span>
+        <span class="version-mcp">MCP v1.0.4 Beta</span>
         <span class="version-sep">|</span>
-        <span class="version-native">Native v1.8.5 Beta</span>
+        <span class="version-native">Native v1.8.6 Beta</span>
       </div>
     </nav>
     <div class="search-wrapper">
@@ -103,7 +103,7 @@
     <div class="sidebar-section">
       <div class="sidebar-title">Reference</div>
       <ul class="sidebar-links">
-        <li><a href="commands.html">Commands (25)</a></li>
+        <li><a href="commands.html">Commands (28)</a></li>
         <li><a href="changelog.html" class="active">Changelog</a></li>
       </ul>
     </div>
@@ -121,7 +121,36 @@
     <h1>Changelog</h1>
     <p class="subtitle">Version history and release notes for ContextVault.</p>
 
-    <h2>v1.8.5 + MCP v1.0.3 <span style="color: var(--gold-500); font-size: 0.8em;">(Latest)</span></h2>
+    <h2>v1.8.6 + MCP v1.0.4 <span style="color: var(--gold-500); font-size: 0.8em;">(Latest)</span></h2>
+    <p><strong>Released:</strong> February 2026</p>
+    <h4>New: 3 Commands (28 total)</h4>
+    <ul>
+      <li><strong>/ctx-archive</strong>: Archive deprecated docs to <code>archive/</code> folder with reason header</li>
+      <li><strong>/ctx-review</strong>: Weekly curation review — finds stale docs, suggests merges, identifies archive candidates</li>
+      <li><strong>/ctx-ask</strong>: Natural language Q&amp;A — extracts keywords, searches vault, synthesizes answers with excerpts</li>
+    </ul>
+    <h4>Enhanced: Code-Drift Detection</h4>
+    <ul>
+      <li><code>/ctx-health</code> now detects broken file references in docs</li>
+      <li>Checks if referenced files still exist</li>
+      <li>Validates line numbers are within file bounds</li>
+      <li>Flags docs needing updates when codebase changes</li>
+    </ul>
+    <h4>Enhanced: Semantic Clustering</h4>
+    <ul>
+      <li>Research tracking now categorizes by domain (frontend, backend, database, testing, config, etc.)</li>
+      <li>Cross-domain exploration weighted higher (1.0x to 2.0x)</li>
+      <li>Exploring frontend + backend + database triggers reminders sooner than same-domain exploration</li>
+      <li>Research reminders now show domains explored</li>
+    </ul>
+    <h4>Technical</h4>
+    <ul>
+      <li>45 tests (up from 42), all pass</li>
+      <li>10 domain categories for semantic clustering</li>
+      <li>Native hooks updated with domain categorization</li>
+    </ul>
+
+    <h2>v1.8.5 + MCP v1.0.3</h2>
     <p><strong>Released:</strong> February 2026</p>
     <h4>New: Research Insight Detection</h4>
     <ul>
@@ -164,6 +193,7 @@
       <li>v1.0.1 — Fixed legacy import overwriting index</li>
       <li>v1.0.2 — Auto-detect <code>.claude/vault/</code> paths, zero-conflict with bash installer</li>
       <li>v1.0.3 — Research insight detection (trackResearch, getResearchReminder)</li>
+      <li>v1.0.4 — 3 new tools (ctx_archive, ctx_review, ctx_ask), code-drift detection, semantic clustering</li>
     </ul>
 
     <h2>v1.8.4</h2>

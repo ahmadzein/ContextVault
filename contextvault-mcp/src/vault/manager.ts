@@ -207,6 +207,88 @@ export class VaultManager {
     }
   }
 
+  // --- Semantic Clustering: Domain categorization ---
+
+  private categorizeDomain(identifier: string): string {
+    const lower = identifier.toLowerCase();
+
+    // Frontend domains
+    if (/\/(components?|ui|views?|pages?|layouts?|widgets?)\//.test(lower) ||
+        /\.(tsx|jsx|vue|svelte)$/.test(lower) ||
+        /css|style|theme|tailwind/.test(lower)) {
+      return 'frontend';
+    }
+
+    // Backend/API domains
+    if (/\/(api|routes?|controllers?|handlers?|middleware|endpoints?)\//.test(lower) ||
+        /server|express|fastify|nest/.test(lower)) {
+      return 'backend';
+    }
+
+    // Database/ORM domains
+    if (/\/(models?|schemas?|migrations?|seeds?|entities|repositories)\//.test(lower) ||
+        /prisma|drizzle|typeorm|sequelize|mongoose|sql|database/.test(lower)) {
+      return 'database';
+    }
+
+    // Testing domains
+    if (/\/(tests?|__tests__|spec|e2e|integration|unit)\//.test(lower) ||
+        /\.(test|spec)\.(ts|js|tsx|jsx)$/.test(lower) ||
+        /jest|vitest|mocha|cypress|playwright/.test(lower)) {
+      return 'testing';
+    }
+
+    // Config/DevOps domains
+    if (/\/(config|configs|\.config|settings)\//.test(lower) ||
+        /dockerfile|docker-compose|\.yml$|\.yaml$|webpack|vite|tsconfig|package\.json/.test(lower)) {
+      return 'config';
+    }
+
+    // Utilities/Helpers
+    if (/\/(utils?|helpers?|lib|common|shared)\//.test(lower)) {
+      return 'utils';
+    }
+
+    // Services/Business logic
+    if (/\/(services?|usecases?|domains?|core)\//.test(lower)) {
+      return 'services';
+    }
+
+    // Types/Interfaces
+    if (/\/(types?|interfaces?|dtos?)\//.test(lower) ||
+        /\.d\.ts$/.test(lower)) {
+      return 'types';
+    }
+
+    // Documentation/Content
+    if (/\.(md|mdx|txt|rst)$/.test(lower) ||
+        /\/(docs?|documentation|content)\//.test(lower)) {
+      return 'docs';
+    }
+
+    return 'other';
+  }
+
+  getDomainsExplored(): Set<string> {
+    const domains = new Set<string>();
+    for (const area of this._enforcement.areasExplored) {
+      domains.add(this.categorizeDomain(area));
+    }
+    return domains;
+  }
+
+  getDomainDiversityScore(): number {
+    const domains = this.getDomainsExplored();
+    // Score: 1.0 for 1 domain, up to 2.0 for 5+ domains
+    // Cross-domain exploration is more significant
+    const domainCount = domains.size;
+    if (domainCount <= 1) return 1.0;
+    if (domainCount === 2) return 1.25;
+    if (domainCount === 3) return 1.5;
+    if (domainCount === 4) return 1.75;
+    return 2.0; // 5+ domains
+  }
+
   resetEnforcement(): void {
     this._enforcement.editCount = 0;
     this._enforcement.filesEdited.clear();
@@ -270,12 +352,20 @@ export class VaultManager {
 
     const minutesSinceDoc = (Date.now() - lastDocTime) / (1000 * 60);
 
+    // Apply domain diversity weighting
+    // Cross-domain exploration (frontend + backend + db) is more significant
+    const diversityScore = this.getDomainDiversityScore();
+    const effectiveResearchCount = Math.round(researchCount * diversityScore);
+    const domainsExplored = this.getDomainsExplored();
+
     if (
-      researchCount >= researchThreshold &&
+      effectiveResearchCount >= researchThreshold &&
       areasExplored.size >= areaThreshold &&
       minutesSinceDoc >= timeSinceDocMinutes
     ) {
-      return `\n\n---\n**ContextVault Nudge:** You've explored ${areasExplored.size} areas with ${researchCount} lookups without documenting findings. Consider using ctx_intel or ctx_doc to capture what you've discovered.`;
+      const domainList = Array.from(domainsExplored).slice(0, 4).join(', ');
+      const domainMsg = domainsExplored.size > 1 ? ` across ${domainsExplored.size} domains (${domainList})` : '';
+      return `\n\n---\n**ContextVault Nudge:** You've explored ${areasExplored.size} areas${domainMsg} with ${researchCount} lookups without documenting findings. Consider using ctx_intel or ctx_doc to capture what you've discovered.`;
     }
 
     return null;

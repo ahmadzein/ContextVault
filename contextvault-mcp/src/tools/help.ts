@@ -21,10 +21,13 @@ export function handleHelp(_vault: VaultManager): ToolResponse {
 |---------|-------------|
 | **ctx_search** | Search vault documents by keyword |
 | **ctx_read** | Read a document by ID (P001, G003) |
+| **ctx_ask** | Ask a question, get targeted answers with excerpts |
 | **ctx_update** | Update an existing document |
 | **ctx_new** | Create a new document with custom content |
 | **ctx_note** | Add a quick note to existing doc |
 | **ctx_link** | Link two related documents |
+| **ctx_archive** | Archive a deprecated document |
+| **ctx_review** | Run weekly curation review |
 
 ## Vault Management
 | Command | Description |

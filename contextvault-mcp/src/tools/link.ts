@@ -26,6 +26,11 @@ export function handleLink(vault: VaultManager, params: Record<string, unknown>)
   const fromContent = fs.readFileSync(fromPath, 'utf-8');
   const linkLine = `- Related: **${toId}**`;
 
+  // Check if link already exists
+  if (fromContent.includes(`Related: **${toId}**`)) {
+    return { content: [{ type: 'text', text: `Link already exists between **${fromId}** and **${toId}**.` }], isError: false };
+  }
+
   let updatedFrom: string;
   const linksIdx = fromContent.indexOf('## Related Documents');
   if (linksIdx > -1) {

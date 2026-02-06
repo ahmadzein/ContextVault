@@ -5550,6 +5550,292 @@ This explanation combines 8 documents into one narrative.
 CMD_EOF
 }
 
+create_cmd_ctx_archive() {
+    cat << 'CMD_EOF'
+---
+description: Archive a vault document
+---
+
+# /ctx-archive
+
+Move a document to the archive folder. Use when content is deprecated, replaced, or no longer relevant.
+
+## Usage
+
+```
+/ctx-archive [ID] [REASON]
+```
+
+## Arguments
+
+- `ID`: Document ID to archive (e.g., P001, G003)
+- `REASON`: Why this document is being archived
+
+## Examples
+
+```
+/ctx-archive P005 "Replaced by new authentication system"
+/ctx-archive G002 "Feature deprecated in v2.0"
+/ctx-archive P012 "Merged into P001"
+```
+
+---
+
+## Instructions
+
+When this command is invoked:
+
+### Step 1: Validate Input
+
+1. Parse document ID (must match pattern G### or P###)
+2. Parse reason (required)
+3. If missing, ask user: "Which document do you want to archive and why?"
+
+### Step 2: Find Document
+
+1. Determine vault from prefix (G = global, P = project)
+2. Read the appropriate index
+3. Find the document entry
+4. If not found, show error and list available documents
+
+### Step 3: Confirm with User
+
+Show:
+```
+📦 Archive Document?
+
+Document: [ID] - [Topic]
+Summary: [current summary]
+Reason: [provided reason]
+
+This will:
+1. Move file to vault/archive/ folder
+2. Remove from Active Documents table
+3. Add to Archived table with date and reason
+
+Proceed? (y/n)
+```
+
+### Step 4: Archive the Document
+
+If confirmed:
+
+1. **Read the document file**
+   - Path: `vault/[ID]_topic.md`
+
+2. **Add archive header to document**
+   ```markdown
+   > **ARCHIVED:** 2026-02-06
+   > **Reason:** [reason]
+
+   ---
+
+   [original content]
+   ```
+
+3. **Move file to archive folder**
+   - From: `vault/[ID]_topic.md`
+   - To: `vault/archive/[ID]_topic.md`
+
+4. **Update index - Remove from Active Documents**
+   - Find and remove the row `| [ID] | ... |`
+
+5. **Update index - Add to Archived table**
+   - Add row: `| [ID] | [Topic] | [Today's Date] | [Reason] |`
+   - If placeholder row exists (`| - | - | - | - |`), replace it
+
+6. **Update Quick Stats**
+   - Decrement entry count
+
+### Step 5: Confirm Completion
+
+```
+✅ Document Archived
+
+📦 [ID] - [Topic]
+📁 Moved to: vault/archive/[ID]_topic.md
+📋 Reason: [reason]
+📅 Archived: [date]
+
+To restore: manually move the file back and update the index.
+```
+
+---
+
+## When to Archive
+
+✅ **DO archive:**
+- Deprecated features or decisions
+- Content replaced by newer documentation
+- Merged documents (archive the old ones)
+- Outdated configurations or patterns
+
+❌ **DON'T archive:**
+- Still-relevant content (use /ctx-update instead)
+- Content that might be useful soon (just mark as stale)
+- Content you're unsure about (ask first)
+
+---
+
+## Restoring Archived Documents
+
+To restore an archived document:
+
+1. Move file from `vault/archive/` back to `vault/`
+2. Remove the archive header from the document
+3. Remove entry from Archived table in index
+4. Add entry back to Active Documents table
+5. Update Quick Stats
+CMD_EOF
+}
+
+create_cmd_ctx_review() {
+    cat << 'CMD_EOF'
+---
+description: Run curation review on vault
+---
+
+# /ctx-review
+
+Weekly curation workflow. Identifies stale documents, suggests merges, and finds cleanup opportunities.
+
+## Usage
+
+```
+/ctx-review                    # Review project vault (default)
+/ctx-review -global            # Review global vault
+/ctx-review -days 60           # Custom stale threshold
+```
+
+## Arguments
+
+- `-global`: Review global vault instead of project
+- `-days N`: Consider docs stale after N days (default: 30)
+
+---
+
+## Instructions
+
+When this command is invoked:
+
+### Step 1: Determine Scope
+
+Parse arguments:
+- No args or `-local`: Review project vault
+- `-global`: Review global vault
+- `-days N`: Set stale threshold
+
+### Step 2: Load Documents
+
+1. Read the appropriate index
+2. For each document, gather metadata:
+   - Last modified date (from file stat)
+   - Line count
+   - Topic keywords
+
+### Step 3: Identify Issues
+
+Check each document for:
+
+**High Priority:**
+- Not updated in >90 days
+
+**Medium Priority:**
+- Not updated in 30-90 days
+- Very short (<15 lines) - might be incomplete
+
+**Low Priority:**
+- Multiple docs share keywords (merge candidates)
+- Similar topics that could be consolidated
+
+### Step 4: Generate Report
+
+Show summary with priority counts and action items for each issue.
+
+### Step 5: Offer Actions
+
+Suggest:
+- /ctx-read [ID] to view document
+- /ctx-update [ID] to update document
+- /ctx-archive [ID] "reason" to archive document
+
+---
+
+## When to Run
+
+- Weekly: Regular maintenance
+- Before releases: Clean up outdated docs
+- After major refactors: Find docs referencing old code
+- When vault feels cluttered: Identify merge opportunities
+CMD_EOF
+}
+
+create_cmd_ctx_ask() {
+    cat << 'CMD_EOF'
+---
+description: Ask a question and get answers from vault
+---
+
+# /ctx-ask
+
+Ask a natural language question and get a targeted answer from vault documents.
+
+## Usage
+
+```
+/ctx-ask What was the authentication decision?
+/ctx-ask How does the caching system work?
+/ctx-ask Why did we choose PostgreSQL?
+```
+
+## Arguments
+
+- `question`: Natural language question about the project
+
+---
+
+## Instructions
+
+When this command is invoked:
+
+### Step 1: Extract Keywords
+
+From the question, extract meaningful keywords:
+- Remove stop words (what, how, why, the, a, etc.)
+- Keep technical terms and nouns
+
+### Step 2: Search Both Vaults
+
+1. Search project vault index for keyword matches
+2. Search global vault index for keyword matches
+3. Rank results by relevance
+4. Take top 3 most relevant documents
+
+### Step 3: Extract Relevant Content
+
+For each matched document:
+1. Read the full document
+2. Extract sections that contain the keywords
+3. Always include the Summary section
+4. Limit output to ~30 lines per doc
+
+### Step 4: Synthesize Answer
+
+Format response with relevant excerpts from each matched document.
+Include links to read full documents.
+
+---
+
+## Difference from /ctx-search
+
+| /ctx-search | /ctx-ask |
+|-------------|----------|
+| Returns list of matching doc IDs | Returns actual content excerpts |
+| Good for finding docs | Good for getting answers |
+| Shows summaries only | Shows relevant sections |
+CMD_EOF
+}
+
 #===============================================================================
 # INSTALLATION FUNCTIONS
 #===============================================================================
@@ -5829,6 +6115,9 @@ install_contextvault() {
         "ctx-link:🔗"
         "ctx-quiz:🎯"
         "ctx-explain:📖"
+        "ctx-archive:📦"
+        "ctx-review:📋"
+        "ctx-ask:❓"
     )
 
     for cmd_info in "${commands[@]}"; do
@@ -5861,6 +6150,9 @@ install_contextvault() {
             ctx-link) create_cmd_ctx_link > "$COMMANDS_DIR/ctx-link.md" ;;
             ctx-quiz) create_cmd_ctx_quiz > "$COMMANDS_DIR/ctx-quiz.md" ;;
             ctx-explain) create_cmd_ctx_explain > "$COMMANDS_DIR/ctx-explain.md" ;;
+            ctx-archive) create_cmd_ctx_archive > "$COMMANDS_DIR/ctx-archive.md" ;;
+            ctx-review) create_cmd_ctx_review > "$COMMANDS_DIR/ctx-review.md" ;;
+            ctx-ask) create_cmd_ctx_ask > "$COMMANDS_DIR/ctx-ask.md" ;;
         esac
 
         printf " ${GREEN}✓${NC}\n"
@@ -5868,7 +6160,7 @@ install_contextvault() {
     done
 
     echo ""
-    print_success "25 commands installed"
+    print_success "28 commands installed"
 
     # Install global hooks
     echo ""
@@ -5954,7 +6246,7 @@ uninstall_contextvault() {
         print_success "Removed vault directory"
     fi
 
-    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-plan ctx-bootstrap ctx-upgrade ctx-health ctx-note ctx-changelog ctx-link ctx-quiz ctx-explain; do
+    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-plan ctx-bootstrap ctx-upgrade ctx-health ctx-note ctx-changelog ctx-link ctx-quiz ctx-explain ctx-archive ctx-review ctx-ask; do
         if [ -f "$COMMANDS_DIR/$cmd.md" ]; then
             rm "$COMMANDS_DIR/$cmd.md"
         fi
@@ -5997,7 +6289,7 @@ check_status() {
     if [ -d "$COMMANDS_DIR" ]; then
         print_success "Commands directory exists"
         local cmd_count=0
-        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-plan ctx-bootstrap ctx-upgrade ctx-health ctx-note ctx-changelog ctx-link ctx-quiz ctx-explain; do
+        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-plan ctx-bootstrap ctx-upgrade ctx-health ctx-note ctx-changelog ctx-link ctx-quiz ctx-explain ctx-archive ctx-review ctx-ask; do
             [ -f "$COMMANDS_DIR/$cmd.md" ] && ((cmd_count++))
         done
         [ $cmd_count -eq 25 ] && print_success "  └── All 25 commands ✓" || print_warning "  └── $cmd_count/25 commands"

@@ -302,4 +302,91 @@ ${this.tier === 'project' ? '> Read global index (~/.contextvault/index.md) FIRS
       .sort((a, b) => b.score - a.score)
       .map(r => r.entry);
   }
+
+  archiveEntry(id: string, reason: string): { success: boolean; message: string } {
+    const entries = this.parseEntries();
+    const entry = entries.find(e => e.id === id);
+
+    if (!entry) {
+      return { success: false, message: `Document ${id} not found in index` };
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const content = this.readRaw();
+    const lines = content.split('\n');
+
+    // 1. Remove from Active Documents table
+    let removedLine = -1;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].startsWith('|') && lines[i].includes(`| ${id} |`)) {
+        removedLine = i;
+        lines.splice(i, 1);
+        break;
+      }
+    }
+
+    if (removedLine === -1) {
+      return { success: false, message: `Could not find ${id} in Active Documents table` };
+    }
+
+    // 2. Add to Archived table
+    const archiveRow = `| ${id} | ${entry.topic} | ${today} | ${reason} |`;
+    let archivedTableIdx = -1;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('| ID') && lines[i].includes('| Archived') && lines[i].includes('| Reason')) {
+        // Find the placeholder row or end of table
+        for (let j = i + 2; j < lines.length; j++) {
+          if (lines[j].includes('| - | - | - | - |')) {
+            // Replace placeholder
+            lines[j] = archiveRow;
+            archivedTableIdx = j;
+            break;
+          } else if (!lines[j].startsWith('|') || lines[j].trim() === '') {
+            // Insert before this line
+            lines.splice(j, 0, archiveRow);
+            archivedTableIdx = j;
+            break;
+          }
+        }
+        break;
+      }
+    }
+
+    if (archivedTableIdx === -1) {
+      return { success: false, message: 'Could not find Archived table in index' };
+    }
+
+    // 3. Move the actual document file to archive folder
+    const docFileName = this.findDocFile(id);
+    if (docFileName) {
+      const srcPath = path.join(this.vaultPath, docFileName);
+      const archivePath = path.join(this.vaultPath, 'archive', docFileName);
+
+      if (fs.existsSync(srcPath)) {
+        // Add archive header to the document
+        let docContent = fs.readFileSync(srcPath, 'utf-8');
+        const archiveHeader = `> **ARCHIVED:** ${today}\n> **Reason:** ${reason}\n\n---\n\n`;
+        docContent = archiveHeader + docContent;
+
+        fs.writeFileSync(archivePath, docContent, 'utf-8');
+        fs.unlinkSync(srcPath);
+      }
+    }
+
+    // 4. Update stats and save
+    const updatedContent = this.updateStats(lines.join('\n'), today);
+    fs.writeFileSync(this.indexPath, updatedContent, 'utf-8');
+
+    return { success: true, message: `Archived ${id}: ${entry.topic}` };
+  }
+
+  private findDocFile(id: string): string | null {
+    const files = fs.readdirSync(this.vaultPath);
+    for (const file of files) {
+      if (file.startsWith(id) && file.endsWith('.md') && !file.includes('index')) {
+        return file;
+      }
+    }
+    return null;
+  }
 }

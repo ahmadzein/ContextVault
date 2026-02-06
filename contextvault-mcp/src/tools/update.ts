@@ -94,6 +94,9 @@ export function handleUpdate(vault: VaultManager, params: Record<string, unknown
   const indexMgr = id.startsWith('G') ? vault.globalIndex : vault.projectIndex;
   indexMgr.updateEntry(id, { status: 'Active' });
 
+  // Reset enforcement counters (documentation was created/updated)
+  vault.resetEnforcement();
+
   return {
     content: [{ type: 'text', text: `Updated **${id}**${section ? ` (section: ${section})` : ''}\n\nContent appended successfully.` }],
   };

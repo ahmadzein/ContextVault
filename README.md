@@ -137,7 +137,7 @@ claude mcp add contextvault -- npx -y contextvault-mcp
 
 **Auto-detect:** If you already have the bash installer, the MCP server automatically detects and uses your existing `.claude/vault/` — zero migration needed. Both systems share the same vault.
 
-📦 **npm:** [contextvault-mcp](https://www.npmjs.com/package/contextvault-mcp) • **25 tools** • **4 resources** • **41 KB**
+📦 **npm:** [contextvault-mcp](https://www.npmjs.com/package/contextvault-mcp) • **28 tools** • **4 resources** • **41 KB**
 
 </details>
 
@@ -410,7 +410,7 @@ Usage: /ctx-help
 ```
 
 When you run this, you'll see a beautiful command reference card with:
-- All 25 commands and their purposes
+- All 28 commands and their purposes
 - Mode options explained
 - Quick reference for limits and rules
 - Routing guide (global vs project)

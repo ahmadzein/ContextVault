@@ -11,8 +11,8 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>25 Commands for AI Coding Assistants | ContextVault Commands Reference</title>
-  <meta name="description" content="All 25 ContextVault commands — available as slash commands in Claude Code or MCP tools in Cursor, Windsurf, Cline & more. Use ctx-doc, ctx-error, ctx-bootstrap and more.">
+  <title>28 Commands for AI Coding Assistants | ContextVault Commands Reference</title>
+  <meta name="description" content="All 28 ContextVault commands — available as slash commands in Claude Code or MCP tools in Cursor, Windsurf, Cline & more. Use ctx-doc, ctx-error, ctx-bootstrap and more.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://ctx-vault.com/docs/commands.html">
 
@@ -27,13 +27,13 @@
   <meta property="og:url" content="https://ctx-vault.com/docs/commands.html">
   <meta property="og:site_name" content="ContextVault">
   <meta property="og:title" content="Commands Reference - ContextVault Documentation">
-  <meta property="og:description" content="All 25 ContextVault slash commands with usage examples.">
+  <meta property="og:description" content="All 28 ContextVault slash commands with usage examples.">
   <meta property="og:image" content="https://ctx-vault.com/docs/images/og-image.png">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Commands Reference - ContextVault">
-  <meta name="twitter:description" content="All 25 ContextVault slash commands with usage examples.">
+  <meta name="twitter:description" content="All 28 ContextVault slash commands with usage examples.">
   <meta name="twitter:image" content="https://ctx-vault.com/docs/images/og-image.png">
 
   <!-- Structured Data -->
@@ -67,9 +67,9 @@
       <a href="../index.html">Home</a>
       <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
       <div class="version-badge">
-        <span class="version-mcp">MCP v1.0.3 Beta</span>
+        <span class="version-mcp">MCP v1.0.4 Beta</span>
         <span class="version-sep">|</span>
-        <span class="version-native">Native v1.8.5 Beta</span>
+        <span class="version-native">Native v1.8.6 Beta</span>
       </div>
     </nav>
     <div class="search-wrapper">
@@ -103,7 +103,7 @@
     <div class="sidebar-section">
       <div class="sidebar-title">Reference</div>
       <ul class="sidebar-links">
-        <li><a href="commands.html" class="active">Commands (25)</a></li>
+        <li><a href="commands.html" class="active">Commands (28)</a></li>
         <li><a href="changelog.html">Changelog</a></li>
       </ul>
     </div>
@@ -119,7 +119,7 @@
   <!-- Main Content -->
   <main class="docs-main">
     <h1>Commands Reference</h1>
-    <p class="subtitle">All 25 ContextVault slash commands with usage examples.</p>
+    <p class="subtitle">All 28 ContextVault slash commands with usage examples.</p>
 
     <div class="callout callout-tip">
       <div class="callout-title">Quick Reference</div>
@@ -177,10 +177,10 @@
 
     <div class="command-card" id="ctx-health">
       <div class="command-name">/ctx-health <span class="command-mcp">ctx_health</span></div>
-      <div class="command-desc">Check vault health and fix issues. Verifies index consistency, finds orphan docs, and repairs problems.</div>
+      <div class="command-desc">Check vault health and fix issues. Verifies index consistency, finds orphan docs, detects code-drift (broken file references), and repairs problems.</div>
       <div class="command-example">
         /ctx-health<br>
-        # Scans both vaults and reports any issues
+        # Scans both vaults, checks file references, reports issues
       </div>
     </div>
 
@@ -189,7 +189,7 @@
       <div class="command-desc">Show all ContextVault commands and their descriptions. Quick reference for available commands.</div>
       <div class="command-example">
         /ctx-help<br>
-        # Lists all 25 commands with brief descriptions
+        # Lists all 28 commands with brief descriptions
       </div>
     </div>
 
@@ -306,6 +306,16 @@
       </div>
     </div>
 
+    <div class="command-card" id="ctx-ask">
+      <div class="command-name">/ctx-ask <span class="command-mcp">ctx_ask</span></div>
+      <div class="command-desc">Ask a natural language question and get targeted answers from vault documents. Extracts keywords, searches both vaults, and synthesizes relevant excerpts.</div>
+      <div class="command-example">
+        /ctx-ask Why did we choose PostgreSQL?<br>
+        /ctx-ask How does the caching system work?<br>
+        # Returns top 3 relevant documents with excerpts
+      </div>
+    </div>
+
     <h2>Editing & Updates</h2>
 
     <div class="command-card" id="ctx-update">
@@ -406,6 +416,24 @@
       </div>
     </div>
 
+    <div class="command-card" id="ctx-archive">
+      <div class="command-name">/ctx-archive <span class="command-mcp">ctx_archive</span></div>
+      <div class="command-desc">Archive a vault document. Moves deprecated or outdated docs to the archive folder with a reason, keeping your vault lean while preserving history.</div>
+      <div class="command-example">
+        /ctx-archive P005 "Feature removed in v2.0"<br>
+        # Moves P005 to archive/ with reason header
+      </div>
+    </div>
+
+    <div class="command-card" id="ctx-review">
+      <div class="command-name">/ctx-review <span class="command-mcp">ctx_review</span></div>
+      <div class="command-desc">Run weekly curation review on vault. Finds stale docs, suggests merges for related topics, identifies candidates for archiving.</div>
+      <div class="command-example">
+        /ctx-review<br>
+        # Reports: stale docs, short docs, merge candidates
+      </div>
+    </div>
+
     <h2>Quick Reference Table</h2>
     <table>
       <thead>
@@ -427,7 +455,10 @@
         <tr><td><code>/ctx-handoff</code></td><td>Session summary</td><td>P00X_handoff_*.md</td></tr>
         <tr><td><code>/ctx-search</code></td><td>Find docs</td><td>&mdash;</td></tr>
         <tr><td><code>/ctx-read</code></td><td>View doc</td><td>&mdash;</td></tr>
+        <tr><td><code>/ctx-ask</code></td><td>Q&amp;A from vault</td><td>&mdash;</td></tr>
         <tr><td><code>/ctx-update</code></td><td>Edit doc</td><td>&mdash;</td></tr>
+        <tr><td><code>/ctx-archive</code></td><td>Archive doc</td><td>&mdash;</td></tr>
+        <tr><td><code>/ctx-review</code></td><td>Curation review</td><td>&mdash;</td></tr>
         <tr><td><code>/ctx-status</code></td><td>View stats</td><td>&mdash;</td></tr>
         <tr><td><code>/ctx-mode</code></td><td>Change mode</td><td>&mdash;</td></tr>
         <tr><td><code>/ctx-help</code></td><td>Show help</td><td>&mdash;</td></tr>

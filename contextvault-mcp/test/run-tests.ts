@@ -1,7 +1,7 @@
 #!/usr/bin/env npx tsx
 /**
  * ContextVault MCP Server - Integration Tests
- * Tests all 25 tools via direct function calls
+ * Tests all 28 tools via direct function calls
  */
 
 import * as fs from 'node:fs';
@@ -33,6 +33,9 @@ import { handleExplain } from '../src/tools/explain.js';
 import { handleUpgrade } from '../src/tools/upgrade.js';
 import { handleShare } from '../src/tools/share.js';
 import { handleImport } from '../src/tools/import.js';
+import { handleArchive } from '../src/tools/archive.js';
+import { handleReview } from '../src/tools/review.js';
+import { handleAsk } from '../src/tools/ask.js';
 
 // --- Test Infrastructure ---
 
@@ -426,6 +429,58 @@ function runTests() {
     assertContains(text, 'Imported');
   });
 
+  // 26. ctx_archive
+  console.log('\n[ctx_archive]');
+  test('archives a document', () => {
+    // First create a doc to archive
+    const docResult = handleDoc(vault, { topic: 'Archive Test Doc', content: 'Content to be archived' });
+    const docText = getText(docResult);
+    // Extract ID from "Created **P00X_..."
+    const idMatch = docText.match(/\*\*([PG]\d{3})/);
+    assert(idMatch !== null, 'Should have created a document');
+    const archiveId = idMatch![1];
+
+    const result = handleArchive(vault, { id: archiveId, reason: 'No longer needed' });
+    const text = getText(result);
+    assertContains(text, 'Archived');
+  });
+
+  test('archive requires id and reason', () => {
+    const result = handleArchive(vault, { id: 'P999' });
+    assert(result.isError === true, 'Should error without reason');
+  });
+
+  // 27. ctx_review
+  console.log('\n[ctx_review]');
+  test('runs curation review', () => {
+    const result = handleReview(vault, {});
+    const text = getText(result);
+    assertContains(text, 'Curation Review');
+  });
+
+  // 28. ctx_ask
+  console.log('\n[ctx_ask]');
+  test('answers question from vault', () => {
+    // Create a doc with specific content to search
+    handleDoc(vault, { topic: 'Authentication System', content: 'We use JWT tokens for auth. Session management is handled by Redis.' });
+
+    const result = handleAsk(vault, { question: 'How does authentication work?' });
+    const text = getText(result);
+    // Should find the auth doc
+    assertContains(text, 'Answer');
+  });
+
+  test('ask requires question', () => {
+    const result = handleAsk(vault, {});
+    assert(result.isError === true, 'Should error without question');
+  });
+
+  test('ask handles no results', () => {
+    const result = handleAsk(vault, { question: 'xyznonexistenttopic123' });
+    const text = getText(result);
+    assertContains(text, 'No relevant documents');
+  });
+
   // --- Research Tracking Tests ---
 
   console.log('\n[research tracking]');
@@ -525,6 +580,63 @@ function runTests() {
     // High research count + areas, but lastDocTime is recent (< 10 min)
     const reminder = vault.getResearchReminder();
     assert(reminder === null, 'Should not trigger if documented recently (time condition not met)');
+    vault.resetEnforcement();
+  });
+
+  // --- Domain Diversity / Semantic Clustering Tests ---
+
+  console.log('\n[semantic clustering]');
+
+  test('getDomainsExplored categorizes paths correctly', () => {
+    vault.resetEnforcement();
+    vault.trackResearch('src/components/Button.tsx'); // frontend
+    vault.trackResearch('src/api/routes/users.ts');   // backend
+    vault.trackResearch('src/models/User.ts');        // database
+    vault.trackResearch('src/tests/api.test.ts');     // testing
+
+    const domains = vault.getDomainsExplored();
+    assert(domains.size === 4, `Expected 4 domains, got ${domains.size}: ${Array.from(domains).join(', ')}`);
+  });
+
+  test('getDomainDiversityScore returns higher score for more domains', () => {
+    vault.resetEnforcement();
+    // Single domain
+    vault.trackResearch('src/components/Button.tsx');
+    vault.trackResearch('src/components/Input.tsx');
+    const score1 = vault.getDomainDiversityScore();
+    assert(score1 === 1.0, `Single domain should be 1.0, got ${score1}`);
+
+    // Add second domain
+    vault.trackResearch('src/api/routes.ts');
+    const score2 = vault.getDomainDiversityScore();
+    assert(score2 === 1.25, `Two domains should be 1.25, got ${score2}`);
+
+    // Add more domains
+    vault.trackResearch('src/models/User.ts');  // database
+    vault.trackResearch('test/unit.test.ts');   // testing
+    vault.trackResearch('webpack.config.js');   // config
+    const score5 = vault.getDomainDiversityScore();
+    assert(score5 === 2.0, `Five domains should be 2.0, got ${score5}`);
+  });
+
+  test('cross-domain research triggers reminder sooner', () => {
+    vault.resetEnforcement();
+    handleMode(vault, { enforcement: 'balanced' });
+    vault.enforcement.lastDocTime = Date.now() - 15 * 60 * 1000;
+
+    // Only 6 lookups but across 5 different domains
+    // Without diversity: 6 < 10 threshold, wouldn't trigger
+    // With diversity (2.0x): 6 * 2.0 = 12 effective, triggers
+    vault.trackResearch('src/components/Button.tsx'); // frontend
+    vault.trackResearch('src/api/routes.ts');         // backend
+    vault.trackResearch('src/models/User.ts');        // database
+    vault.trackResearch('test/unit.test.ts');         // testing
+    vault.trackResearch('docker-compose.yml');        // config
+    vault.trackResearch('src/services/auth.ts');      // services
+
+    const reminder = vault.getResearchReminder();
+    assert(reminder !== null, 'Cross-domain exploration should trigger reminder with diversity weighting');
+    assertContains(reminder!, 'domains', 'Should mention domains in reminder');
     vault.resetEnforcement();
   });
 

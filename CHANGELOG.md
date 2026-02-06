@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.6] - 2026-02-06
+
+### Added - 3 New Commands (28 total)
+- **`/ctx-archive`** / `ctx_archive`: Archive deprecated docs to `archive/` folder with reason header
+- **`/ctx-review`** / `ctx_review`: Weekly curation review — finds stale docs (>30 days), short docs (<15 lines), suggests merges for related topics
+- **`/ctx-ask`** / `ctx_ask`: Natural language Q&A — extracts keywords, searches both vaults, synthesizes targeted answers with relevant excerpts
+
+### Added - Code-Drift Detection
+- `/ctx-health` now detects broken file references in docs
+- Parses references like `` `src/file.ts:123` ``, `**File:** path/file.ts`, `src/...` paths
+- Checks if referenced files still exist
+- Validates line numbers are within file bounds
+- Flags docs needing updates when codebase changes
+
+### Added - Semantic Clustering
+- Research tracking now categorizes by domain (frontend, backend, database, testing, config, utils, services, types, docs, other)
+- Domain diversity weighting: 1.0x (single domain) to 2.0x (5+ domains)
+- Cross-domain exploration triggers reminders sooner (exploring frontend + backend + database = more significant)
+- Research reminders now show domains explored ("5 areas across 3 domains")
+- Native hooks updated with domain categorization
+
+### Technical Details
+- **MCP Server v1.0.4**: 28 tools (up from 25), 4 resources
+- 45 tests (up from 42), all pass
+- New methods: `categorizeDomain()`, `getDomainsExplored()`, `getDomainDiversityScore()`
+- `extractFileReferences()` and `checkFileReference()` in health.ts
+
+---
+
 ## [1.8.5] - 2026-02-06
 
 ### Added - Research Insight Detection
