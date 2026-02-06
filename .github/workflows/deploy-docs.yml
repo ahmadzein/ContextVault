@@ -1,0 +1,26 @@
+name: Deploy Marketing Site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+
+      - name: Deploy to DreamHost
+        env:
+          DREAMHOST_PASSWORD: ${{ secrets.DREAMHOST_PASSWORD }}
+        run: |
+          sshpass -p "$DREAMHOST_PASSWORD" rsync -avz --delete \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            docs/ ctx@vps36880.dreamhostps.com:ctx-vault.com/docs/
+          echo "✅ Deployed to ctx-vault.com"
