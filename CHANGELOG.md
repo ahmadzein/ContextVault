@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.5] - 2026-02-06
+
+### Added - Research Insight Detection
+- **New enforcement axis: Research tracking** alongside edit tracking
+  - Tracks Read, Grep, Glob, WebSearch, WebFetch tool usage
+  - Non-blocking nudges (not hard blocks) when significant exploration without documentation
+  - Suggests `/ctx-intel` or `/ctx-doc` to capture findings
+- **MCP Server v1.0.3** — Same research tracking for ctx_search/ctx_read calls
+- **Thresholds (balanced)**: 10 actions + 4 areas + 10 min since last doc (AND logic)
+- **Thresholds (strict)**: 6 actions + 3 areas + 5 min since last doc
+- **Native thresholds 2x MCP** (20/5 vs 10/4) due to Read/Grep burst patterns
+- **Light mode**: Research reminders completely disabled
+- **Stop hook**: Now includes research stats in session summary + significance check
+
+### Changed
+- Updated enforcement levels table in documentation (now includes Research Nudge column)
+- PostToolUse hooks now include 5 research matchers (Read, Grep, Glob, WebSearch, WebFetch)
+- ctx-stop-enforcer.sh cleans up research temp files
+
+### Technical Details
+- `EnforcementState` extended with `researchCount`, `areasExplored`, `lastResearchTime`
+- New methods: `trackResearch(identifier)`, `getResearchReminder()`
+- `resetEnforcement()` clears both edit and research counters
+- 8 new integration tests (42 total, all pass)
+
+---
+
 ## [1.8.4] - 2026-02-02
 
 ### Changed - Optimized Global CLAUDE.md

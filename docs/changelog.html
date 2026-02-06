@@ -67,9 +67,9 @@
       <a href="../index.html">Home</a>
       <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
       <div class="version-badge">
-        <span class="version-mcp">MCP v1.0.2</span>
+        <span class="version-mcp">MCP v1.0.3</span>
         <span class="version-sep">|</span>
-        <span class="version-native">Native v1.8.4</span>
+        <span class="version-native">Native v1.8.5</span>
       </div>
     </nav>
     <div class="search-wrapper">
@@ -121,7 +121,31 @@
     <h1>Changelog</h1>
     <p class="subtitle">Version history and release notes for ContextVault.</p>
 
-    <h2>MCP Server v1.0.2 <span style="color: var(--gold-500); font-size: 0.8em;">(Latest)</span></h2>
+    <h2>v1.8.5 + MCP v1.0.3 <span style="color: var(--gold-500); font-size: 0.8em;">(Latest)</span></h2>
+    <p><strong>Released:</strong> February 2026</p>
+    <h4>New: Research Insight Detection</h4>
+    <ul>
+      <li><strong>Second enforcement axis</strong>: Research tracking alongside edit tracking</li>
+      <li>Tracks <code>Read</code>, <code>Grep</code>, <code>Glob</code>, <code>WebSearch</code>, <code>WebFetch</code> tool usage</li>
+      <li>Non-blocking nudges when significant exploration happens without documentation</li>
+      <li>Suggests <code>/ctx-intel</code> or <code>/ctx-doc</code> to capture findings</li>
+      <li><strong>MCP v1.0.3</strong>: Same research tracking for <code>ctx_search</code>/<code>ctx_read</code> calls</li>
+    </ul>
+    <h4>Thresholds</h4>
+    <ul>
+      <li><strong>Balanced</strong>: 10 actions + 4 areas + 10 min since last doc (all must be true)</li>
+      <li><strong>Strict</strong>: 6 actions + 3 areas + 5 min since last doc</li>
+      <li><strong>Native</strong>: 2x MCP thresholds (20/5 vs 10/4) to handle Read/Grep burst patterns</li>
+      <li><strong>Light mode</strong>: Research reminders completely disabled</li>
+    </ul>
+    <h4>Technical</h4>
+    <ul>
+      <li>Stop hook now includes research stats in session summary</li>
+      <li>Research becomes a significance factor (15+ lookups / 5+ areas)</li>
+      <li>8 new integration tests (42 total, all pass)</li>
+    </ul>
+
+    <h2>MCP Server v1.0.2</h2>
     <p><strong>Released:</strong> February 2026</p>
     <h4>New: MCP Server</h4>
     <ul>
@@ -139,6 +163,7 @@
       <li>v1.0.0 — Initial release (25 tools, 4 resources)</li>
       <li>v1.0.1 — Fixed legacy import overwriting index</li>
       <li>v1.0.2 — Auto-detect <code>.claude/vault/</code> paths, zero-conflict with bash installer</li>
+      <li>v1.0.3 — Research insight detection (trackResearch, getResearchReminder)</li>
     </ul>
 
     <h2>v1.8.4</h2>
