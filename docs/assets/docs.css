@@ -79,7 +79,7 @@ a:hover { color: var(--gold-300); text-decoration: underline; }
   height: 28px;
   border-radius: 6px;
 }
-.header-logo span { color: var(--gold-400); margin-left: -0.15em; }
+.header-logo span:not(.beta-badge) { color: var(--gold-400); margin-left: -0.15em; }
 
 .header-nav {
   display: flex;
