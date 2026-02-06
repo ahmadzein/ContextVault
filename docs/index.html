@@ -146,6 +146,20 @@ nav.scrolled { padding: 0.75rem 0; background: rgba(12, 10, 9, 0.95); }
   border-radius: 6px;
 }
 .nav-logo span { color: var(--gold-400); margin-left: -0.15em; }
+.nav-logo .beta-badge {
+  font-size: 0.5rem;
+  font-weight: 600;
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.15);
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  margin-left: 0.3rem;
+  vertical-align: super;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: relative;
+  top: -0.4em;
+}
 .nav-links { display: flex; gap: 2rem; align-items: center; }
 .nav-links a {
   font-size: 0.875rem; font-weight: 500;
@@ -319,14 +333,10 @@ nav.scrolled { padding: 0.75rem 0; background: rgba(12, 10, 9, 0.95); }
   margin: 0 auto;
 }
 .install-card {
-  background: var(--stone-900);
-  border: 1px solid var(--stone-800);
-  border-radius: 12px;
-  padding: 1.25rem 1.5rem;
   text-align: center;
+  padding: 0.5rem 0;
 }
 .install-card.recommended {
-  border-color: rgba(100, 181, 246, 0.3);
 }
 .install-card h4 {
   margin: 0 0 0.5rem;
