@@ -806,22 +806,43 @@ if [ "`$edit_count" -ge 5 ] && [ "`$file_count" -ge 2 ]; then
     exit 0
 fi
 
-rm -f "`$FILES_CHANGED" "`$STOP_REMINDED" 2>/dev/null
+rm -f "`$FILES_CHANGED" "`$STOP_REMINDED" /tmp/ctx-research-count /tmp/ctx-research-areas 2>/dev/null
 exit 0
 "@
     Set-Content -Path (Join-Path $HOOKS_DIR "ctx-stop-enforcer.sh") -Value $STOP_HOOK -Encoding UTF8 -NoNewline
 
-    # Create post-tool hook
+    # Create post-tool hook (v1.8.4 - edit + research tracking)
     $POST_HOOK = @"
 #!/bin/bash
-# ContextVault PostToolUse Hook
+# ContextVault PostToolUse Hook v1.8.4
 
 FILES_CHANGED="/tmp/ctx-files-changed"
-TOOL_NAME="`$TOOL_NAME"
+RESEARCH_COUNT="/tmp/ctx-research-count"
+RESEARCH_AREAS="/tmp/ctx-research-areas"
 
-if [ "`$TOOL_NAME" = "Edit" ] || [ "`$TOOL_NAME" = "Write" ]; then
-    echo "`$TOOL_INPUT" | grep -o '"file_path":"[^"]*"' | cut -d'"' -f4 >> "`$FILES_CHANGED" 2>/dev/null
-fi
+INPUT=`$(cat)
+TOOL_NAME=`$(echo "`$INPUT" | grep -o '"tool_name"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
+FILE_PATH=`$(echo "`$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
+PATTERN=`$(echo "`$INPUT" | grep -o '"pattern"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
+QUERY=`$(echo "`$INPUT" | grep -o '"query"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
+
+case "`$TOOL_NAME" in
+    "Edit"|"Write")
+        echo "`$FILE_PATH" >> "`$FILES_CHANGED" 2>/dev/null
+        ;;
+    "Read")
+        echo "1" >> "`$RESEARCH_COUNT"
+        [ -n "`$FILE_PATH" ] && echo "`$FILE_PATH" >> "`$RESEARCH_AREAS"
+        ;;
+    "Grep"|"Glob")
+        echo "1" >> "`$RESEARCH_COUNT"
+        [ -n "`$PATTERN" ] && echo "`$PATTERN" >> "`$RESEARCH_AREAS"
+        ;;
+    "WebSearch")
+        echo "1" >> "`$RESEARCH_COUNT"
+        [ -n "`$QUERY" ] && echo "`$QUERY" >> "`$RESEARCH_AREAS"
+        ;;
+esac
 
 exit 0
 "@
@@ -853,6 +874,41 @@ exit 0
                 },
                 @{
                     matcher = "Write"
+                    hooks = @(@{
+                        type = "command"
+                        command = "$HOOKS_DIR/ctx-post-tool.sh" -replace '\\', '/'
+                    })
+                },
+                @{
+                    matcher = "Read"
+                    hooks = @(@{
+                        type = "command"
+                        command = "$HOOKS_DIR/ctx-post-tool.sh" -replace '\\', '/'
+                    })
+                },
+                @{
+                    matcher = "Grep"
+                    hooks = @(@{
+                        type = "command"
+                        command = "$HOOKS_DIR/ctx-post-tool.sh" -replace '\\', '/'
+                    })
+                },
+                @{
+                    matcher = "Glob"
+                    hooks = @(@{
+                        type = "command"
+                        command = "$HOOKS_DIR/ctx-post-tool.sh" -replace '\\', '/'
+                    })
+                },
+                @{
+                    matcher = "WebSearch"
+                    hooks = @(@{
+                        type = "command"
+                        command = "$HOOKS_DIR/ctx-post-tool.sh" -replace '\\', '/'
+                    })
+                },
+                @{
+                    matcher = "WebFetch"
                     hooks = @(@{
                         type = "command"
                         command = "$HOOKS_DIR/ctx-post-tool.sh" -replace '\\', '/'

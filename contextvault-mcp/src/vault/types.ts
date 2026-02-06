@@ -73,6 +73,9 @@ export interface EnforcementState {
   filesEdited: Set<string>;
   lastDocTime: number;
   sessionStart: number;
+  researchCount: number;
+  areasExplored: Set<string>;
+  lastResearchTime: number;
 }
 
 export interface ToolResponse {

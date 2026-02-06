@@ -46,7 +46,7 @@ export class ContextVaultServer {
     this.server = new Server(
       {
         name: 'contextvault-mcp',
-        version: '1.0.0',
+        version: '1.0.3',
       },
       {
         capabilities: {
@@ -379,13 +379,29 @@ export class ContextVaultServer {
         result = { content: [{ type: 'text', text: `Error: ${msg}` }], isError: true };
       }
 
-      // Append enforcement reminder if needed
+      // Track research activity on search/read operations
+      if (name === 'ctx_search') {
+        this.vault.trackResearch(params['query'] as string);
+      } else if (name === 'ctx_read') {
+        this.vault.trackResearch(params['id'] as string);
+      }
+
+      // Append enforcement reminder if needed (edit-based)
       const reminder = this.vault.getEnforcementReminder();
       if (reminder && !name.startsWith('ctx_')) {
         this.vault.trackEdit();
         const lastContent = result.content[result.content.length - 1];
         if (lastContent && lastContent.type === 'text') {
           lastContent.text += reminder;
+        }
+      }
+
+      // Append research reminder if needed (non-blocking nudge)
+      const researchReminder = this.vault.getResearchReminder();
+      if (researchReminder && (name === 'ctx_search' || name === 'ctx_read')) {
+        const lastContent = result.content[result.content.length - 1];
+        if (lastContent && lastContent.type === 'text') {
+          lastContent.text += researchReminder;
         }
       }
 

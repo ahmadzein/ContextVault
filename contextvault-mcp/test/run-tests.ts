@@ -426,6 +426,108 @@ function runTests() {
     assertContains(text, 'Imported');
   });
 
+  // --- Research Tracking Tests ---
+
+  console.log('\n[research tracking]');
+
+  // Reset enforcement to start clean
+  vault.resetEnforcement();
+
+  test('trackResearch increments counter', () => {
+    vault.trackResearch('auth module');
+    vault.trackResearch('database layer');
+    assert(vault.enforcement.researchCount === 2, `Expected 2 research actions, got ${vault.enforcement.researchCount}`);
+    assert(vault.enforcement.areasExplored.size === 2, `Expected 2 areas, got ${vault.enforcement.areasExplored.size}`);
+  });
+
+  test('getResearchReminder returns null below threshold', () => {
+    // Still well below threshold (10 actions, 4 areas for balanced)
+    const reminder = vault.getResearchReminder();
+    assert(reminder === null, 'Should not trigger reminder below threshold');
+  });
+
+  test('getResearchReminder triggers at threshold', () => {
+    // Push past balanced thresholds: 10 actions, 4 areas, 10 min since doc
+    // Set lastDocTime to 15 minutes ago
+    vault.enforcement.lastDocTime = Date.now() - 15 * 60 * 1000;
+    for (let i = 0; i < 8; i++) {
+      vault.trackResearch(`area_${i}`);
+    }
+    // Now we have 10 research actions and 10 areas (2 + 8), lastDocTime 15 min ago
+    const reminder = vault.getResearchReminder();
+    assert(reminder !== null, `Should trigger reminder at threshold (count=${vault.enforcement.researchCount}, areas=${vault.enforcement.areasExplored.size})`);
+    assertContains(reminder!, 'ContextVault Nudge', 'Reminder text');
+    assertContains(reminder!, 'ctx_intel', 'Should suggest ctx_intel');
+  });
+
+  test('resetEnforcement clears research counters', () => {
+    vault.resetEnforcement();
+    assert(vault.enforcement.researchCount === 0, 'Research count should be 0');
+    assert(vault.enforcement.areasExplored.size === 0, 'Areas should be empty');
+    assert(vault.enforcement.editCount === 0, 'Edit count should also be 0');
+  });
+
+  test('writing a doc resets research counters', () => {
+    // Simulate research activity
+    for (let i = 0; i < 5; i++) {
+      vault.trackResearch(`topic_${i}`);
+    }
+    assert(vault.enforcement.researchCount === 5, 'Should have 5 research actions');
+
+    // Write a doc (which calls resetEnforcement internally)
+    const nextId = vault.projectIndex.getNextId();
+    vault.writeDocument(nextId, `${nextId}_test_reset.md`, '# Test\n\nContent', 'project');
+
+    assert(vault.enforcement.researchCount === 0, 'Research count should reset after doc write');
+    assert(vault.enforcement.areasExplored.size === 0, 'Areas should reset after doc write');
+  });
+
+  test('light mode disables research reminders', () => {
+    // Switch to light mode
+    handleMode(vault, { enforcement: 'light' });
+
+    // Simulate tons of research
+    vault.enforcement.lastDocTime = Date.now() - 30 * 60 * 1000;
+    for (let i = 0; i < 20; i++) {
+      vault.trackResearch(`light_area_${i}`);
+    }
+
+    const reminder = vault.getResearchReminder();
+    assert(reminder === null, 'Light mode should never show research reminders');
+
+    // Reset back to balanced
+    handleMode(vault, { enforcement: 'balanced' });
+    vault.resetEnforcement();
+  });
+
+  test('strict mode has lower thresholds', () => {
+    handleMode(vault, { enforcement: 'strict' });
+
+    // Strict thresholds: 6 actions, 3 areas, 5 min
+    vault.enforcement.lastDocTime = Date.now() - 6 * 60 * 1000;
+    for (let i = 0; i < 6; i++) {
+      vault.trackResearch(`strict_area_${i}`);
+    }
+
+    const reminder = vault.getResearchReminder();
+    assert(reminder !== null, `Strict mode should trigger at 6 actions/6 areas/6 min (count=${vault.enforcement.researchCount}, areas=${vault.enforcement.areasExplored.size})`);
+
+    // Reset
+    handleMode(vault, { enforcement: 'balanced' });
+    vault.resetEnforcement();
+  });
+
+  test('research reminder not triggered if recently documented', () => {
+    // lastDocTime is now (just reset)
+    for (let i = 0; i < 15; i++) {
+      vault.trackResearch(`recent_area_${i}`);
+    }
+    // High research count + areas, but lastDocTime is recent (< 10 min)
+    const reminder = vault.getResearchReminder();
+    assert(reminder === null, 'Should not trigger if documented recently (time condition not met)');
+    vault.resetEnforcement();
+  });
+
   // --- Results ---
   console.log('\n========================================');
   console.log(`  Results: ${passed} passed, ${failed} failed`);

@@ -29,6 +29,9 @@ export class VaultManager {
       filesEdited: new Set(),
       lastDocTime: Date.now(),
       sessionStart: Date.now(),
+      researchCount: 0,
+      areasExplored: new Set(),
+      lastResearchTime: Date.now(),
     };
   }
 
@@ -196,10 +199,21 @@ export class VaultManager {
     }
   }
 
+  trackResearch(identifier?: string): void {
+    this._enforcement.researchCount++;
+    this._enforcement.lastResearchTime = Date.now();
+    if (identifier) {
+      this._enforcement.areasExplored.add(identifier);
+    }
+  }
+
   resetEnforcement(): void {
     this._enforcement.editCount = 0;
     this._enforcement.filesEdited.clear();
     this._enforcement.lastDocTime = Date.now();
+    this._enforcement.researchCount = 0;
+    this._enforcement.areasExplored.clear();
+    this._enforcement.lastResearchTime = Date.now();
   }
 
   getEnforcementReminder(): string | null {
@@ -225,6 +239,43 @@ export class VaultManager {
 
     if (editCount >= editThreshold && filesEdited.size >= fileThreshold) {
       return `\n\n---\n**ContextVault Reminder:** You've made ${editCount} edits across ${filesEdited.size} files without documenting. Consider using ctx_doc, ctx_error, or ctx_decision to capture what you've learned.`;
+    }
+
+    return null;
+  }
+
+  getResearchReminder(): string | null {
+    const settings = this._settings.load();
+    const { researchCount, areasExplored, lastDocTime } = this._enforcement;
+
+    let researchThreshold: number;
+    let areaThreshold: number;
+    let timeSinceDocMinutes: number;
+
+    switch (settings.enforcement) {
+      case 'light':
+        return null; // No research reminders
+      case 'strict':
+        researchThreshold = 6;
+        areaThreshold = 3;
+        timeSinceDocMinutes = 5;
+        break;
+      case 'balanced':
+      default:
+        researchThreshold = 10;
+        areaThreshold = 4;
+        timeSinceDocMinutes = 10;
+        break;
+    }
+
+    const minutesSinceDoc = (Date.now() - lastDocTime) / (1000 * 60);
+
+    if (
+      researchCount >= researchThreshold &&
+      areasExplored.size >= areaThreshold &&
+      minutesSinceDoc >= timeSinceDocMinutes
+    ) {
+      return `\n\n---\n**ContextVault Nudge:** You've explored ${areasExplored.size} areas with ${researchCount} lookups without documenting findings. Consider using ctx_intel or ctx_doc to capture what you've discovered.`;
     }
 
     return null;

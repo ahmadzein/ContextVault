@@ -608,7 +608,7 @@ create_stop_enforcer_script() {
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault Stop Hook v1.8.2
+# ContextVault Stop Hook v1.8.4
 # SMART BLOCKING: Only blocks when significant work is undocumented
 # Trivial changes (version bumps, typos, config) → pass through
 # Already documented this session → pass through
@@ -630,6 +630,12 @@ if [ -f "$FILES_CHANGED" ]; then
 fi
 # Check for new files created (tracked by PostToolUse Write handler)
 [ -f "/tmp/ctx-new-files" ] && new_files=$(wc -l < "/tmp/ctx-new-files" 2>/dev/null | tr -d ' ')
+
+# Count research activity this session
+research_count=0
+research_areas=0
+[ -f "/tmp/ctx-research-count" ] && research_count=$(wc -l < "/tmp/ctx-research-count" 2>/dev/null | tr -d ' ')
+[ -f "/tmp/ctx-research-areas" ] && research_areas=$(sort -u "/tmp/ctx-research-areas" 2>/dev/null | wc -l | tr -d ' ')
 
 # Detect session start for doc counting
 session_file=""
@@ -656,11 +662,15 @@ fi
 
 # Determine if work was SIGNIFICANT (worth documenting)
 # Significant = (5+ edits across 2+ files) OR (any new code files created)
+#            OR (significant research: 15+ lookups across 5+ areas)
 significant=0
 if [ "$total_edits" -ge 5 ] && [ "$unique_files" -ge 2 ]; then
     significant=1
 fi
 if [ "$new_files" -gt 0 ]; then
+    significant=1
+fi
+if [ "$research_areas" -ge 5 ] && [ "$research_count" -ge 15 ]; then
     significant=1
 fi
 
@@ -690,6 +700,7 @@ echo "📊 ContextVault Session Summary"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Changes: $total_edits edits, $unique_files files"
 [ "$new_files" -gt 0 ] && echo "  New files: $new_files"
+[ "$research_count" -gt 0 ] && echo "  Research: $research_count lookups, $research_areas areas"
 echo "  Docs: $docs_modified updated"
 if [ "$docs_modified" -gt 0 ]; then
     echo "  ✅ Documentation captured"
@@ -701,7 +712,8 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 # Clean up ALL temp files
 rm -f "$FILES_CHANGED" "$MILESTONE_FILE" /tmp/ctx-hook-seen /tmp/ctx-new-files \
       "$STOP_REMINDED" /tmp/ctx-edit-count /tmp/ctx-write-count \
-      /tmp/ctx-first-edit-done /tmp/ctx-work-type /tmp/ctx-plan-reminded 2>/dev/null
+      /tmp/ctx-first-edit-done /tmp/ctx-work-type /tmp/ctx-plan-reminded \
+      /tmp/ctx-research-count /tmp/ctx-research-areas 2>/dev/null
 [ -n "$session_file" ] && rm -f "$session_file" 2>/dev/null
 
 exit 0
@@ -719,16 +731,17 @@ create_pre_tool_script() {
     rm -f "$script_path" 2>/dev/null
 }
 
-# Create the ctx-post-tool hook script (v1.8.3 - configurable enforcement)
+# Create the ctx-post-tool hook script (v1.8.4 - configurable enforcement + research tracking)
 create_post_tool_script() {
     local script_path="$CLAUDE_DIR/hooks/ctx-post-tool.sh"
     safe_mkdir "$CLAUDE_DIR/hooks" "hooks directory"
 
     cat << 'SCRIPT_EOF' > "$script_path"
 #!/bin/bash
-# ContextVault PostToolUse Hook v1.8.3
+# ContextVault PostToolUse Hook v1.8.4
 # Configurable enforcement: light | balanced (default) | strict
 # Edit/Write: track files + block when threshold reached (balanced/strict)
+# Read/Grep/Glob/WebSearch/WebFetch: track research + non-blocking nudge
 # TodoWrite: gentle non-blocking reminder
 # Bash: gentle non-blocking reminder on git commit
 
@@ -736,6 +749,8 @@ FILES_CHANGED="/tmp/ctx-files-changed"
 NEW_FILES="/tmp/ctx-new-files"
 MILESTONE_FILE="/tmp/ctx-milestones"
 DEDUP_FILE="/tmp/ctx-hook-seen"
+RESEARCH_COUNT="/tmp/ctx-research-count"
+RESEARCH_AREAS="/tmp/ctx-research-areas"
 
 # Read enforcement level from vault settings (fast grep, no jq needed)
 ENFORCEMENT="balanced"
@@ -747,9 +762,9 @@ fi
 
 # Set thresholds based on enforcement level
 case "$ENFORCEMENT" in
-    "light")  EDIT_THRESH=999; FILE_THRESH=999 ;;  # effectively no mid-work blocking
-    "strict") EDIT_THRESH=4;   FILE_THRESH=2 ;;
-    *)        EDIT_THRESH=8;   FILE_THRESH=2 ;;     # balanced (default)
+    "light")  EDIT_THRESH=999; FILE_THRESH=999; RESEARCH_THRESH=999; AREA_THRESH=999 ;;
+    "strict") EDIT_THRESH=4;   FILE_THRESH=2;   RESEARCH_THRESH=12;  AREA_THRESH=3 ;;
+    *)        EDIT_THRESH=8;   FILE_THRESH=2;   RESEARCH_THRESH=20;  AREA_THRESH=5 ;;
 esac
 
 INPUT=$(cat)
@@ -757,6 +772,9 @@ INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | grep -o '"tool_name"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
 FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
 COMMAND=$(echo "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
+PATTERN=$(echo "$INPUT" | grep -o '"pattern"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
+QUERY=$(echo "$INPUT" | grep -o '"query"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
+URL=$(echo "$INPUT" | grep -o '"url"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)".*/\1/')
 
 # DEDUP: Skip duplicate runs within same second (Claude Code double-execution bug)
 DEDUP_KEY="POST_${TOOL_NAME}_$(date +%s)"
@@ -834,6 +852,35 @@ check_threshold_block() {
     fi
 }
 
+# Track a research action (area identifier as $1)
+track_research() {
+    local area="$1"
+    echo "1" >> "$RESEARCH_COUNT"
+    if [ -n "$area" ]; then
+        echo "$area" >> "$RESEARCH_AREAS"
+    fi
+}
+
+# Non-blocking nudge when research threshold is reached
+check_research_threshold() {
+    if [ ! -f "$RESEARCH_COUNT" ]; then return; fi
+
+    local total_research=$(wc -l < "$RESEARCH_COUNT" 2>/dev/null | tr -d ' ')
+    local unique_areas=0
+    [ -f "$RESEARCH_AREAS" ] && unique_areas=$(sort -u "$RESEARCH_AREAS" 2>/dev/null | wc -l | tr -d ' ')
+
+    if [ "$total_research" -ge "$RESEARCH_THRESH" ] && [ "$unique_areas" -ge "$AREA_THRESH" ] && ! already_reminded "research_remind"; then
+        local docs=$(docs_modified_this_session)
+        if [ "$docs" -eq 0 ]; then
+            mark_reminded "research_remind"
+            echo ""
+            echo "🔍 ContextVault: $total_research lookups across $unique_areas areas without documenting findings"
+            echo "   Consider: /ctx-intel, /ctx-doc, or /ctx-snippet"
+            echo ""
+        fi
+    fi
+}
+
 case "$TOOL_NAME" in
     "Write")
         if is_code_file "$FILE_PATH"; then
@@ -873,6 +920,34 @@ case "$TOOL_NAME" in
             echo ""
         fi
         ;;
+    "Read")
+        # Skip vault reads
+        if [[ "$FILE_PATH" == *"vault/"* ]] && [[ "$FILE_PATH" == *".md" ]]; then
+            exit 0
+        fi
+        # Track research: area = parent dir / basename
+        local_area=$(basename "$(dirname "$FILE_PATH")")/$(basename "$FILE_PATH")
+        track_research "$local_area"
+        check_research_threshold
+        ;;
+    "Grep")
+        track_research "$PATTERN"
+        check_research_threshold
+        ;;
+    "Glob")
+        track_research "$PATTERN"
+        check_research_threshold
+        ;;
+    "WebSearch")
+        track_research "$QUERY"
+        check_research_threshold
+        ;;
+    "WebFetch")
+        # Track by domain
+        domain=$(echo "$URL" | sed 's|https\?://||' | sed 's|/.*||')
+        track_research "$domain"
+        check_research_threshold
+        ;;
 esac
 exit 0
 SCRIPT_EOF
@@ -893,10 +968,11 @@ create_global_hooks() {
     create_post_tool_script
 
     # The hooks JSON content - uses full path with $HOME for proper expansion
-    # v1.8.3: Configurable enforcement (light/balanced/strict)
+    # v1.8.4: Configurable enforcement (light/balanced/strict) + research tracking
     # Stop: smart blocking for significant undocumented work
     # PostToolUse Edit/Write: blocking (threshold-based, reads enforcement from settings)
     # PostToolUse Bash/TodoWrite: non-blocking reminders
+    # PostToolUse Read/Grep/Glob/WebSearch/WebFetch: non-blocking research tracking
     local hooks_json="{
   \"hooks\": {
     \"SessionStart\": [
@@ -952,6 +1028,51 @@ create_global_hooks() {
       },
       {
         \"matcher\": \"TodoWrite\",
+        \"hooks\": [
+          {
+            \"type\": \"command\",
+            \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\"
+          }
+        ]
+      },
+      {
+        \"matcher\": \"Read\",
+        \"hooks\": [
+          {
+            \"type\": \"command\",
+            \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\"
+          }
+        ]
+      },
+      {
+        \"matcher\": \"Grep\",
+        \"hooks\": [
+          {
+            \"type\": \"command\",
+            \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\"
+          }
+        ]
+      },
+      {
+        \"matcher\": \"Glob\",
+        \"hooks\": [
+          {
+            \"type\": \"command\",
+            \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\"
+          }
+        ]
+      },
+      {
+        \"matcher\": \"WebSearch\",
+        \"hooks\": [
+          {
+            \"type\": \"command\",
+            \"command\": \"$HOME/.claude/hooks/ctx-post-tool.sh\"
+          }
+        ]
+      },
+      {
+        \"matcher\": \"WebFetch\",
         \"hooks\": [
           {
             \"type\": \"command\",
@@ -1089,6 +1210,51 @@ generate_project_hooks_json() {
       },
       {
         "matcher": "TodoWrite",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "WebSearch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "WebFetch",
         "hooks": [
           {
             "type": "command",
@@ -1864,6 +2030,51 @@ Use the **Write tool** to create `.claude/settings.json` with this EXACT content
             "command": "~/.claude/hooks/ctx-post-tool.sh"
           }
         ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "WebSearch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
       }
     ]
   }
@@ -2105,11 +2316,11 @@ Toggle ContextVault mode, enforcement level, and limits.
 
 ## Enforcement Levels
 
-| Level | PostToolUse (Edit/Write) | Stop Hook |
-|-------|--------------------------|-----------|
-| `light` | No mid-work blocking | Smart block (significant work only) |
-| `balanced` | Block after 8 edits, 2+ files (DEFAULT) | Smart block (significant work only) |
-| `strict` | Block after 4 edits, 2+ files | Smart block (significant work only) |
+| Level | PostToolUse (Edit/Write) | Research Nudge | Stop Hook |
+|-------|--------------------------|----------------|-----------|
+| `light` | No mid-work blocking | Disabled | Smart block (significant work only) |
+| `balanced` | Block after 8 edits, 2+ files (DEFAULT) | Nudge after 20 lookups, 5+ areas | Smart block (significant work only) |
+| `strict` | Block after 4 edits, 2+ files | Nudge after 12 lookups, 3+ areas | Smart block (significant work only) |
 
 ## Instructions
 
@@ -4525,7 +4736,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
 | `balanced` (recommended) | Blocks after 8 edits across 2+ files if undocumented. |
 | `strict` | Blocks after 4 edits across 2+ files if undocumented. |
 
-Then **REPLACE** `.claude/settings.json` with this content (Edit/Write are blocking for threshold enforcement):
+Then **REPLACE** `.claude/settings.json` with this content (Edit/Write are blocking for threshold enforcement, Read/Grep/Glob/WebSearch/WebFetch are non-blocking research tracking):
 
 ```json
 {
@@ -4583,6 +4794,51 @@ Then **REPLACE** `.claude/settings.json` with this content (Edit/Write are block
       },
       {
         "matcher": "TodoWrite",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "WebSearch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/ctx-post-tool.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "WebFetch",
         "hooks": [
           {
             "type": "command",
@@ -5638,7 +5894,7 @@ install_contextvault() {
     echo ""
     echo -e "${BOLD}🪝 Hooks installed (v${VERSION}):${NC}"
     echo -e "   ${GREEN}SessionStart${NC}  → Loads vault indexes at session start"
-    echo -e "   ${GREEN}PostToolUse${NC}   → Reminds on task completion & git commit"
+    echo -e "   ${GREEN}PostToolUse${NC}   → Tracks edits & research, reminds on milestones"
     echo -e "   ${YELLOW}Stop${NC}          → Smart block: catches significant undocumented work"
     echo ""
     echo -e "${BOLD}🎮 New in v1.8 (25 commands total):${NC}"
