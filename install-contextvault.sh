@@ -24,7 +24,7 @@
 set -e
 
 # Version
-VERSION="1.8.4"
+VERSION="1.8.7"
 
 #===============================================================================
 # 🔒 SECURITY & VALIDATION
@@ -2481,24 +2481,22 @@ When this command is invoked, display:
 │  SESSION & CODEBASE                                              │
 │  ─────────────────────────────────────────────────────────────  │
 │  /ctx-handoff   Generate session handoff summary                 │
-│  /ctx-intel     Generate codebase intelligence file              │
-│  /ctx-bootstrap Auto-scan codebase and generate docs (NEW!)      │
+│  /ctx-bootstrap Auto-scan codebase and generate docs             │
 │  /ctx-plan      Document multi-step implementation plans         │
 │  /ctx-error     Capture error and solution to database           │
-│  /ctx-snippet   Save reusable code snippet with context          │
 │  /ctx-decision  Log decision with rationale and alternatives     │
 │                                                                  │
 │  VAULT MAINTENANCE                                               │
 │  ─────────────────────────────────────────────────────────────  │
 │  /ctx-health    Diagnose vault health issues                     │
-│  /ctx-note      Quick one-liner notes (no full doc needed)       │
 │  /ctx-changelog Generate changelog from doc history              │
 │  /ctx-link      Analyze and create doc bidirectional links       │
+│  /ctx-archive   Archive deprecated documents                     │
+│  /ctx-review    Weekly curation review                           │
 │                                                                  │
 │  KNOWLEDGE TOOLS                                                 │
 │  ─────────────────────────────────────────────────────────────  │
 │  /ctx-quiz      Quiz yourself on project knowledge               │
-│  /ctx-explain   Generate comprehensive project explanation       │
 │                                                                  │
 │  MODE OPTIONS (/ctx-mode)                                        │
 │  ─────────────────────────────────────────────────────────────  │
@@ -2641,18 +2639,28 @@ CMD_EOF
 create_cmd_ctx_doc() {
     cat << 'CMD_EOF'
 ---
-description: Quick document a learning, feature, or finding
+description: Document a learning, exploration finding, or code snippet
 ---
 
 # /ctx-doc
 
-Quick command to document current findings after completing a task.
+Document learnings, codebase exploration findings, or reusable code snippets.
 
 ## Usage
 
 ```
-/ctx-doc
+/ctx-doc                    # Default: learning (project vault)
+/ctx-doc type=intel         # Codebase exploration (project vault)
+/ctx-doc type=snippet       # Reusable code (global vault)
 ```
+
+## Document Types
+
+| Type | Use When | Default Vault |
+|------|----------|---------------|
+| `learning` | Learned something, built a feature | project |
+| `intel` | Explored codebase, found patterns | project |
+| `snippet` | Found reusable code worth saving | global |
 
 ## Instructions
 
@@ -3140,199 +3148,6 @@ Display:
 📧 Email client opened!
 
 Please attach this file manually:
-   ./ctx-export/${filename}
-
-The email body contains import instructions for the recipient.
-```
-
-### Step 10: Display Result
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  ✅ CONTEXTVAULT EXPORT COMPLETE                                │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  📦 Exported:                                                    │
-│     Scope: local (project only)                                  │
-│     Project docs: 5 documents                                    │
-│                                                                  │
-│  📁 Saved to:                                                    │
-│     ./ctx-export/ctx_local_myproject_20260118_143022.zip        │
-│     Size: 12.3 KB                                                │
-│                                                                  │
-│  📤 Share options:                                               │
-│     • Run again with -upload for shareable link                  │
-│     • Run again with -email to open email client                 │
-│     • Manual: attach file to Slack/Teams/Email                   │
-│                                                                  │
-│  📥 Import command (for recipient):                              │
-│     /ctx-import path/to/ctx_local_myproject_20260118_143022.zip │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-If `-upload` was used, also show:
-```
-│  🔗 Shareable Link (14 days):                                    │
-│     https://transfer.sh/abc123/ctx_local_myproject_....zip      │
-```
-
-### Step 11: Cleanup
-
-Remove temporary directory:
-```bash
-rm -rf "/tmp/ctx_export_${timestamp}"
-```
-
-## Examples
-
-```
-/ctx-share                    → Export project vault, save locally
-/ctx-share -local             → Same as above
-/ctx-share -global            → Export global vault only
-/ctx-share -all               → Export both vaults
-/ctx-share -upload            → Export project + upload to transfer.sh
-/ctx-share -all -upload       → Export both + upload
-/ctx-share -local -email      → Export project + open email client
-/ctx-share -all -upload -email → Export both + upload + email
-```
-
-## Output Files
-
-All exports saved to `./ctx-export/` folder:
-```
-./ctx-export/
-├── ctx_local_myproject_20260118_143022.zip
-├── ctx_all_myproject_20260119_091500.zip
-└── ctx_global_20260120_160000.zip
-```
-
-This folder can be:
-- Git tracked (for team sharing via repo)
-- Git ignored (add to .gitignore if preferred)
-CMD_EOF
-}
-
-create_cmd_ctx_import() {
-    cat << 'CMD_EOF'
----
-description: Import external documentation into vault
----
-
-# /ctx-import
-
-Import ContextVault documents from a shared ZIP file.
-
-## Usage
-
-```
-/ctx-import <path-to-zip>
-```
-
-## Arguments
-
-- `path-to-zip`: Path to the exported ContextVault ZIP file
-
-## Instructions
-
-When this command is invoked, perform the following:
-
-### Step 1: Validate ZIP File
-
-Check that the file exists and is a valid ZIP:
-
-```bash
-# Check file exists
-ls -la /path/to/file.zip
-
-# Validate ZIP integrity
-unzip -t /path/to/file.zip
-```
-
-If invalid, show error: "Invalid or corrupted ZIP file"
-
-### Step 2: Extract and Read Manifest
-
-Use Bash to extract to temp directory:
-
-```bash
-timestamp=$(date +%s)
-mkdir -p /tmp/ctx_import_${timestamp}
-unzip /path/to/file.zip -d /tmp/ctx_import_${timestamp}
-```
-
-Then read manifest.json to understand contents:
-- Check `contextvault_version` for compatibility
-- Read `includes` to know what's in the export
-- Read `counts` and `documents` for details
-
-### Step 3: Show Import Preview
-
-Display what will be imported:
-
-```
-📦 ContextVault Import Preview
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Source: contextvault_export_20260118_123456.zip
-Exported: 2026-01-18 12:34:56
-Version: 1.6.9
-
-📚 Contents:
-├── Global: X documents
-│   ├── G001_docker_tips.md
-│   ├── G002_git_workflows.md
-│   └── ...
-└── Project: Y documents
-    ├── P001_auth_system.md
-    └── ...
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
-### Step 4: Check for Conflicts
-
-Compare imported documents with existing ones:
-
-For global imports:
-- Check each G###.md against ~/.claude/vault/
-- List files that already exist
-
-For project imports:
-- Check each P###.md against ./.claude/vault/
-- List files that already exist
-
-If conflicts found, display:
-```
-⚠️ Conflicts Detected:
-   Global:
-   • G001 exists: "Docker Tips" (local) vs "Container Patterns" (import)
-   Project:
-   • P002 exists: "Auth System" (local) vs "Authentication" (import)
-```
-
-### Step 5: Ask Conflict Resolution
-
-Use AskUserQuestion tool if conflicts exist:
-
-```
-How should I handle conflicting documents?
-
-Options:
-1. Skip - Keep existing, only import new documents
-2. Overwrite - Replace existing with imported (⚠️ destructive)
-3. Merge - Import new docs, keep existing, merge indexes (recommended)
-4. Backup & Overwrite - Backup existing first, then overwrite
-```
-
-### Step 6: Perform Import
-
-Based on user choice:
-
-**Skip Mode:**
-```bash
-# Only copy non-existing files
-for file in import/global/*.md; do
-  [ ! -f ~/.claude/vault/$(basename $file) ] && cp $file ~/.claude/vault/
-done
 ```
 
 **Overwrite Mode:**
@@ -3548,200 +3363,6 @@ Summary:
 CMD_EOF
 }
 
-create_cmd_ctx_intel() {
-    cat << 'CMD_EOF'
----
-description: Document codebase exploration findings
----
-
-# /ctx-intel
-
-Generate a codebase intelligence file that helps Claude understand the project structure instantly.
-
-## Usage
-
-```
-/ctx-intel
-```
-
----
-
-## What This Creates
-
-A `.claude/codebase.md` file containing:
-1. **Languages & Frameworks** - What tech stack is used
-2. **Key Files** - Entry points, configs, important files
-3. **Architecture** - How the code is organized
-4. **Patterns** - Common patterns used in the codebase
-5. **Dependencies** - Key packages and their purposes
-
----
-
-## CRITICAL INSTRUCTIONS
-
-**You MUST analyze the codebase and generate an intelligence file.**
-
----
-
-## Step 1: Detect Languages and Frameworks
-
-Analyze the project to identify:
-
-**Languages** (check file extensions):
-- `.js`, `.ts`, `.tsx` → JavaScript/TypeScript
-- `.py` → Python
-- `.go` → Go
-- `.rs` → Rust
-- `.java` → Java
-- `.rb` → Ruby
-- `.php` → PHP
-- `.cs` → C#
-- `.sh` → Shell
-
-**Frameworks** (check package files and patterns):
-- `package.json` → Check for React, Vue, Next.js, Express, etc.
-- `requirements.txt`, `pyproject.toml` → Django, Flask, FastAPI
-- `go.mod` → Check imports
-- `Cargo.toml` → Check dependencies
-- `Gemfile` → Rails, Sinatra
-
----
-
-## Step 2: Map Key Files
-
-Identify and list:
-- **Entry points**: main.*, index.*, app.*, server.*
-- **Configuration**: .env, config/, settings.*
-- **Package files**: package.json, requirements.txt, go.mod, etc.
-- **Build config**: webpack.*, vite.config.*, tsconfig.json
-- **CI/CD**: .github/workflows/, .gitlab-ci.yml, Dockerfile
-
----
-
-## Step 3: Understand Architecture
-
-Determine:
-- **Project type**: CLI, API, Web app, Library, Monorepo
-- **Directory structure**: src/, lib/, app/, components/, etc.
-- **State management**: Redux, Context, Zustand, etc.
-- **Data layer**: ORM, raw SQL, API calls
-- **Testing**: Jest, Pytest, Go test, etc.
-
----
-
-## Step 4: Write Intelligence File
-
-Use the **Write tool** to create `.claude/codebase.md`:
-
-```markdown
-# Codebase Intelligence
-
-**Generated:** [TODAY'S DATE]
-**Project:** [Project name from package.json or directory]
-
----
-
-## Tech Stack
-
-| Category | Technology |
-|----------|------------|
-| Language | [Primary language] |
-| Framework | [Main framework] |
-| Runtime | [Node, Python, etc.] |
-| Package Manager | [npm, yarn, pip, etc.] |
-
----
-
-## Key Files
-
-| File | Purpose |
-|------|---------|
-| `[path]` | [What it does] |
-| `[path]` | [What it does] |
-
----
-
-## Directory Structure
-
-```
-[Show relevant directory tree]
-```
-
-### Purpose of Key Directories
-- `src/` - [Purpose]
-- `lib/` - [Purpose]
-- `tests/` - [Purpose]
-
----
-
-## Architecture Patterns
-
-- **[Pattern]**: [Where/how it's used]
-- **[Pattern]**: [Where/how it's used]
-
----
-
-## Dependencies (Key)
-
-| Package | Purpose |
-|---------|---------|
-| [name] | [What it's used for] |
-
----
-
-## Entry Points
-
-- **Main**: `[file]` - [What happens here]
-- **API**: `[file]` - [Endpoints defined here]
-- **Build**: `[command]` - [What it does]
-
----
-
-## Common Tasks
-
-| Task | Command |
-|------|---------|
-| Run dev | `[command]` |
-| Build | `[command]` |
-| Test | `[command]` |
-
----
-
-## Notes
-
-[Any quirks, gotchas, or important context]
-```
-
----
-
-## Step 5: Confirm Completion
-
-Output:
-```
-✅ Codebase Intelligence Generated!
-
-📄 Saved to: .claude/codebase.md
-
-Detected:
-• Language: [Primary language]
-• Framework: [Main framework]
-• Type: [API/Web/CLI/Library]
-• Key files: [Count] mapped
-
-💡 Claude will now understand this codebase instantly!
-```
-
----
-
-## When to Run
-
-- After cloning a new repo
-- When starting work on unfamiliar codebase
-- After major architectural changes
-- When onboarding new team members
-CMD_EOF
-}
-
 create_cmd_ctx_error() {
     cat << 'CMD_EOF'
 ---
@@ -3879,100 +3500,6 @@ To find a previously solved error, read `.claude/vault/errors.md` and search for
 - Be specific about the solution steps
 - Add prevention tips when relevant
 - Keep entries concise but complete
-CMD_EOF
-}
-
-create_cmd_ctx_snippet() {
-    cat << 'CMD_EOF'
----
-description: Save a useful code snippet
----
-
-# /ctx-snippet
-
-Save a reusable code snippet with context about when and how to use it.
-
-## Usage
-
-```
-/ctx-snippet [brief description]
-```
-
----
-
-## When to Use
-
-- You wrote code you'll want to reuse
-- Found a useful pattern worth remembering
-- Solved something that took research to figure out
-- Created a utility function others might need
-
----
-
-## Step 1: Check for Existing Snippets File
-
-Check if `.claude/vault/snippets.md` exists:
-- If YES: Read it and append new entry
-- If NO: Create it with the template below
-
----
-
-## Step 2: Add Snippet Entry
-
-Use the **Edit tool** (or Write if creating new) to add to `.claude/vault/snippets.md`:
-
-```markdown
-# Code Snippets Library
-
-**Last Updated:** [TODAY'S DATE]
-
-> Reusable code patterns with context. Search by language or keyword.
-
----
-
-## Snippets
-
-### [Title] - [Language]
-**Date:** [TODAY]
-**Keywords:** `keyword1`, `keyword2`
-
-**When to use:**
-[Describe the situation where this is useful]
-
-**Code:**
-```[language]
-[The actual code snippet]
-```
-
-**Usage example:**
-```[language]
-[How to use it in context]
-```
-
-**Gotchas:**
-- [Things to watch out for]
-
----
-
-### [Next Snippet...]
-```
-
----
-
-## Step 3: Confirm Save
-
-Output:
-```
-✅ Snippet Saved!
-
-📄 Added to: .claude/vault/snippets.md
-🏷️  Keywords: [keywords]
-🔤 Language: [language]
-
-Title: [title]
-
-💡 Search snippets.md when you need reusable code!
-```
 CMD_EOF
 }
 
@@ -4611,7 +4138,7 @@ Also add related terms to the "Related Terms Map":
 💡 Next steps:
    • Review generated docs for accuracy
    • Run /ctx-doc to add details
-   • Run /ctx-intel for deeper analysis
+   • Run /ctx-doc type=intel for deeper codebase analysis
 ```
 
 ---
@@ -4794,103 +4321,6 @@ Then **REPLACE** `.claude/settings.json` with this content (Edit/Write are block
         "matcher": "TodoWrite",
         "hooks": [
           {
-            "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Read",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Grep",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Glob",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "WebSearch",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "WebFetch",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/ctx-post-tool.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
----
-
-## Step 4: Install Git Pre-Commit Hook
-
-Check if git repo and install hook:
-
-```bash
-[ -d .git ] && echo "IS_GIT_REPO" || echo "NOT_GIT_REPO"
-```
-
-If IS_GIT_REPO, create `.git/hooks/pre-commit`:
-
-```bash
-#!/bin/bash
-# ContextVault Pre-Commit Documentation Reminder
-
-STAGED_COUNT=$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
-
-if [ "$STAGED_COUNT" -gt 0 ]; then
-    echo ""
-    echo "📝 ContextVault: Committing $STAGED_COUNT file(s)"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "   ✍️  Did you document what you changed?"
-    echo "   💡 Run /ctx-doc if not!"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-fi
-exit 0
-```
-
-Then: `chmod +x .git/hooks/pre-commit`
-
----
-
-## Step 5: Confirm Upgrade
-
-Output this (replace X.Y.Z with actual version from VERSION variable):
-```
-ContextVault vX.Y.Z Upgrade Complete!
-
-Updated:
-  ./CLAUDE.md              Milestone-based documentation instructions
   .claude/settings.json    Hooks (SessionStart, Stop, PostToolUse)
   .git/hooks/pre-commit    Git commit reminder
 
@@ -5008,103 +4438,6 @@ Overall Health: ⚠️ NEEDS ATTENTION
 | Healthy | ✅ | No issues found |
 | Warning | ⚠️ | Minor issues, vault still functional |
 | Critical | ❌ | Major issues requiring immediate fix |
-CMD_EOF
-}
-
-create_cmd_ctx_note() {
-    cat << 'CMD_EOF'
----
-description: Add a quick note to existing document
----
-
-# /ctx-note
-
-Quick one-liner notes without full document structure. For small learnings that don't need their own doc.
-
-## Usage
-
-```
-/ctx-note "Your quick note here"
-/ctx-note Redis needs restart after config change
-```
-
----
-
-## How It Works
-
-Notes are stored in `vault/notes.md` as timestamped entries.
-
----
-
-## Instructions
-
-### Step 1: Determine Vault Location
-
-Check settings for mode (local/global/full):
-- local/full → Use `./.claude/vault/notes.md`
-- global → Use `~/.claude/vault/notes.md`
-
-### Step 2: Create or Append to notes.md
-
-If `notes.md` doesn't exist, create with header:
-
-```markdown
-# Quick Notes
-
-> Fast captures. No full doc needed.
-> Review periodically - promote important ones to full docs!
-
----
-
-## Notes
-
-| Date | Note | Tags |
-|------|------|------|
-```
-
-### Step 3: Add the Note
-
-Append to the table:
-
-```markdown
-| 2026-01-18 | [User's note content] | #tag |
-```
-
-Auto-detect tags from keywords:
-- "error", "bug", "fix" → #bug
-- "config", "setup" → #config
-- "todo", "later" → #todo
-- "tip", "trick" → #tip
-
-### Step 4: Confirm
-
-```
-📝 Note captured!
-
-→ [Note content preview...]
-
-Saved to: ./.claude/vault/notes.md
-Total notes: X
-
-💡 Review notes periodically with /ctx-read notes
-   Promote important ones to full docs with /ctx-new
-```
-
----
-
-## Example Output
-
-```
-📝 Note captured!
-
-→ "Redis needs restart after config change"
-
-Saved to: ./.claude/vault/notes.md
-Total notes: 12
-Tags: #config
-
-💡 Review notes periodically with /ctx-read notes
-```
 CMD_EOF
 }
 
@@ -5331,158 +4664,6 @@ Based on arguments:
 ### Step 2: Read Document Content
 
 Extract key facts from:
-- "Current Understanding" sections
-- "Key Points" sections
-- "Gotchas" sections
-
-### Step 3: Generate Questions
-
-Create questions like:
-
-```
-🎯 Question 1/5
-
-According to your docs, what authentication method
-does this project use?
-
-   a) Session cookies
-   b) JWT tokens
-   c) OAuth2
-   d) Basic auth
-
-Source: P001 (Auth System)
-```
-
-### Step 4: Interactive Quiz
-
-Present questions one at a time:
-- Show question and options
-- Wait for user answer
-- Reveal correct answer with doc reference
-
-### Step 5: Show Results
-
-```
-🏆 Quiz Complete!
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Score: 4/5 (80%)
-
-✅ Correct:
-   • Auth method: JWT tokens (P001)
-   • Database: PostgreSQL (P002)
-   • Cache: Redis (P001)
-   • Deploy: Docker (G003)
-
-❌ Missed:
-   • API rate limit: 1000/hour (P004)
-     → You said: 500/hour
-     → Review P004 for refresh
-
-📚 Knowledge Level: GOOD
-
-💡 Recommendation: Review P004 for rate limiting details
-```
-
----
-
-## Question Types
-
-| Type | Example |
-|------|---------|
-| Fact recall | "What database does this project use?" |
-| Gotcha check | "What's the gotcha with Redis config?" |
-| Decision recall | "Why was React chosen over Vue?" |
-CMD_EOF
-}
-
-create_cmd_ctx_explain() {
-    cat << 'CMD_EOF'
----
-description: Explain a concept and save to vault
----
-
-# /ctx-explain
-
-Generate a comprehensive project explanation from all documentation.
-
-## Usage
-
-```
-/ctx-explain                    # Full project explanation
-/ctx-explain --onboarding       # New team member format
-/ctx-explain --architecture     # Technical deep-dive
-```
-
----
-
-## What This Does
-
-Combines all vault documents into a cohesive narrative that explains the entire project.
-Perfect for onboarding or creating project overviews.
-
----
-
-## Instructions
-
-### Step 1: Read All Documents
-
-Load all docs from both vaults:
-- Global vault (reusable patterns)
-- Project vault (project-specific)
-
-### Step 2: Categorize Content
-
-Group information by topic:
-- **Overview**: What is this project?
-- **Architecture**: How is it built?
-- **Key Decisions**: Why was it built this way?
-- **Gotchas**: What to watch out for?
-- **Setup**: How to get started?
-
-### Step 3: Generate Narrative
-
-Create flowing explanation:
-
-```markdown
-# Project Explanation: [Project Name]
-
-> Auto-generated from ContextVault documentation
-> Generated: 2026-01-18
-
----
-
-## Overview
-
-[Synthesized from P001 and other overview docs]
-
-This project is a [description]. It was built to solve [problem].
-
----
-
-## Architecture
-
-[Synthesized from architecture-related docs]
-
-### Tech Stack
-- **Backend**: Node.js with Express
-- **Database**: PostgreSQL with Redis cache
-- **Frontend**: React with TypeScript
-
-### Key Components
-1. **Auth System** (P001): JWT-based authentication
-2. **API Layer** (P003): RESTful endpoints
-3. **Cache** (P001): Redis for session storage
-
----
-
-## Key Decisions
-
-[Synthesized from decision docs and history]
-
-| Decision | Rationale | Doc |
-|----------|-----------|-----|
-| JWT over sessions | Stateless, scalable | P001 |
 | PostgreSQL | ACID compliance needed | P002 |
 
 ---
@@ -5523,7 +4704,7 @@ This explanation was generated from:
 
 ---
 
-*Generated by /ctx-explain on 2026-01-18*
+*Generated by /ctx-doc on 2026-01-18*
 ```
 
 ### Step 4: Output Options
@@ -5768,71 +4949,6 @@ Suggest:
 CMD_EOF
 }
 
-create_cmd_ctx_ask() {
-    cat << 'CMD_EOF'
----
-description: Ask a question and get answers from vault
----
-
-# /ctx-ask
-
-Ask a natural language question and get a targeted answer from vault documents.
-
-## Usage
-
-```
-/ctx-ask What was the authentication decision?
-/ctx-ask How does the caching system work?
-/ctx-ask Why did we choose PostgreSQL?
-```
-
-## Arguments
-
-- `question`: Natural language question about the project
-
----
-
-## Instructions
-
-When this command is invoked:
-
-### Step 1: Extract Keywords
-
-From the question, extract meaningful keywords:
-- Remove stop words (what, how, why, the, a, etc.)
-- Keep technical terms and nouns
-
-### Step 2: Search Both Vaults
-
-1. Search project vault index for keyword matches
-2. Search global vault index for keyword matches
-3. Rank results by relevance
-4. Take top 3 most relevant documents
-
-### Step 3: Extract Relevant Content
-
-For each matched document:
-1. Read the full document
-2. Extract sections that contain the keywords
-3. Always include the Summary section
-4. Limit output to ~30 lines per doc
-
-### Step 4: Synthesize Answer
-
-Format response with relevant excerpts from each matched document.
-Include links to read full documents.
-
----
-
-## Difference from /ctx-search
-
-| /ctx-search | /ctx-ask |
-|-------------|----------|
-| Returns list of matching doc IDs | Returns actual content excerpts |
-| Good for finding docs | Good for getting answers |
-| Shows summaries only | Shows relevant sections |
-CMD_EOF
-}
 
 #===============================================================================
 # INSTALLATION FUNCTIONS
