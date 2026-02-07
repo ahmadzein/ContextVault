@@ -875,7 +875,7 @@ check_research_threshold() {
             mark_reminded "research_remind"
             echo ""
             echo "🔍 ContextVault: $total_research lookups across $unique_areas areas without documenting findings"
-            echo "   Consider: /ctx-intel, /ctx-doc, or /ctx-snippet"
+            echo "   Consider: /ctx-doc or /ctx-doc type=intel"
             echo ""
         fi
     fi
@@ -1447,12 +1447,10 @@ Read from `~/.claude/vault/settings.json`:
 
 | Command | When to use |
 |---------|-------------|
-| `/ctx-doc` | Built a feature, learned something |
+| `/ctx-doc` | Built a feature, learned something (type=intel for exploration, type=snippet for code) |
 | `/ctx-error` | Fixed a bug (error, root cause, solution) |
 | `/ctx-decision` | Made architecture/design choice (options, trade-offs) |
 | `/ctx-plan` | Working on multi-step task (goals, progress) |
-| `/ctx-snippet` | Found reusable code pattern |
-| `/ctx-intel` | Explored codebase (architecture, patterns) |
 | `/ctx-bootstrap` | New project — auto-generate all docs |
 | `/ctx-handoff` | Ending session (summary for next time) |
 | `/ctx-search` | Find existing docs |
@@ -1787,8 +1785,8 @@ Use the **Write tool** to create `./CLAUDE.md` with this EXACT content:
 │  ✅ Fixed a bug?        → /ctx-error or /ctx-doc                │
 │  ✅ Made a decision?    → /ctx-decision                         │
 │  ✅ Learned something?  → /ctx-doc                              │
-│  ✅ Found useful code?  → /ctx-snippet                          │
-│  ✅ Explored codebase?  → /ctx-intel or /ctx-doc                │
+│  ✅ Found useful code?  → /ctx-doc type=snippet                 │
+│  ✅ Explored codebase?  → /ctx-doc type=intel                   │
 │  ✅ Ending session?     → /ctx-handoff                          │
 │                                                                 │
 │  💭 Not every edit needs documenting                             │
@@ -1814,7 +1812,7 @@ Use the **Write tool** to create `./CLAUDE.md` with this EXACT content:
 - Search before creating (no duplicates)
 
 ### COMMANDS:
-`/ctx-doc` `/ctx-error` `/ctx-decision` `/ctx-snippet` `/ctx-handoff` `/ctx-intel` `/ctx-bootstrap`
+`/ctx-doc` `/ctx-error` `/ctx-decision` `/ctx-handoff` `/ctx-search` `/ctx-read` `/ctx-bootstrap` `/ctx-plan`
 ```
 
 #### OPTION 2: If ./CLAUDE.md EXISTS but has NO "ContextVault" section → APPEND TO IT
@@ -1839,8 +1837,8 @@ Use the **Write tool** to create `./CLAUDE.md` with this EXACT content:
 │  ✅ Fixed a bug?        → /ctx-error or /ctx-doc                │
 │  ✅ Made a decision?    → /ctx-decision                         │
 │  ✅ Learned something?  → /ctx-doc                              │
-│  ✅ Found useful code?  → /ctx-snippet                          │
-│  ✅ Explored codebase?  → /ctx-intel or /ctx-doc                │
+│  ✅ Found useful code?  → /ctx-doc type=snippet                 │
+│  ✅ Explored codebase?  → /ctx-doc type=intel                   │
 │  ✅ Ending session?     → /ctx-handoff                          │
 │                                                                 │
 │  💭 Not every edit needs documenting                             │
@@ -1866,7 +1864,7 @@ Use the **Write tool** to create `./CLAUDE.md` with this EXACT content:
 - Search before creating (no duplicates)
 
 ### COMMANDS:
-`/ctx-doc` `/ctx-error` `/ctx-decision` `/ctx-snippet` `/ctx-handoff` `/ctx-intel` `/ctx-bootstrap`
+`/ctx-doc` `/ctx-error` `/ctx-decision` `/ctx-handoff` `/ctx-search` `/ctx-read` `/ctx-bootstrap` `/ctx-plan`
 ```
 
 #### OPTION 3: If ./CLAUDE.md EXISTS and ALREADY has "ContextVault" section → SKIP
@@ -4698,8 +4696,8 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
 │  ✅ Fixed a bug?        → /ctx-error                            │
 │  ✅ Made a decision?    → /ctx-decision                         │
 │  ✅ Built a feature?    → /ctx-doc                              │
-│  ✅ Found useful code?  → /ctx-snippet                          │
-│  ✅ Explored codebase?  → /ctx-intel                            │
+│  ✅ Found useful code?  → /ctx-doc type=snippet                 │
+│  ✅ Explored codebase?  → /ctx-doc type=intel                   │
 │  ✅ Ending session?     → /ctx-handoff                          │
 │                                                                 │
 │  💭 Not every edit needs documenting                             │
@@ -4721,7 +4719,7 @@ Use the **Write tool** to create/overwrite `./CLAUDE.md` with this content (if o
 - Update index after doc changes
 
 ### Commands
-`/ctx-doc` `/ctx-error` `/ctx-snippet` `/ctx-decision` `/ctx-intel` `/ctx-handoff` `/ctx-search` `/ctx-read` `/ctx-bootstrap`
+`/ctx-doc` `/ctx-error` `/ctx-decision` `/ctx-handoff` `/ctx-search` `/ctx-read` `/ctx-bootstrap` `/ctx-plan`
 ```
 
 ---
@@ -6102,22 +6100,17 @@ install_contextvault() {
         "ctx-share:📤"
         "ctx-import:📥"
         "ctx-handoff:🤝"
-        "ctx-intel:🧠"
         "ctx-error:🐛"
-        "ctx-snippet:📎"
         "ctx-decision:⚖️"
         "ctx-plan:📋"
         "ctx-bootstrap:🚀"
         "ctx-upgrade:⬆️"
         "ctx-health:🏥"
-        "ctx-note:📝"
         "ctx-changelog:📜"
         "ctx-link:🔗"
         "ctx-quiz:🎯"
-        "ctx-explain:📖"
         "ctx-archive:📦"
         "ctx-review:📋"
-        "ctx-ask:❓"
     )
 
     for cmd_info in "${commands[@]}"; do
@@ -6137,22 +6130,17 @@ install_contextvault() {
             ctx-share) create_cmd_ctx_share > "$COMMANDS_DIR/ctx-share.md" ;;
             ctx-import) create_cmd_ctx_import > "$COMMANDS_DIR/ctx-import.md" ;;
             ctx-handoff) create_cmd_ctx_handoff > "$COMMANDS_DIR/ctx-handoff.md" ;;
-            ctx-intel) create_cmd_ctx_intel > "$COMMANDS_DIR/ctx-intel.md" ;;
             ctx-error) create_cmd_ctx_error > "$COMMANDS_DIR/ctx-error.md" ;;
-            ctx-snippet) create_cmd_ctx_snippet > "$COMMANDS_DIR/ctx-snippet.md" ;;
             ctx-decision) create_cmd_ctx_decision > "$COMMANDS_DIR/ctx-decision.md" ;;
             ctx-plan) create_cmd_ctx_plan > "$COMMANDS_DIR/ctx-plan.md" ;;
             ctx-bootstrap) create_cmd_ctx_bootstrap > "$COMMANDS_DIR/ctx-bootstrap.md" ;;
             ctx-upgrade) create_cmd_ctx_upgrade > "$COMMANDS_DIR/ctx-upgrade.md" ;;
             ctx-health) create_cmd_ctx_health > "$COMMANDS_DIR/ctx-health.md" ;;
-            ctx-note) create_cmd_ctx_note > "$COMMANDS_DIR/ctx-note.md" ;;
             ctx-changelog) create_cmd_ctx_changelog > "$COMMANDS_DIR/ctx-changelog.md" ;;
             ctx-link) create_cmd_ctx_link > "$COMMANDS_DIR/ctx-link.md" ;;
             ctx-quiz) create_cmd_ctx_quiz > "$COMMANDS_DIR/ctx-quiz.md" ;;
-            ctx-explain) create_cmd_ctx_explain > "$COMMANDS_DIR/ctx-explain.md" ;;
             ctx-archive) create_cmd_ctx_archive > "$COMMANDS_DIR/ctx-archive.md" ;;
             ctx-review) create_cmd_ctx_review > "$COMMANDS_DIR/ctx-review.md" ;;
-            ctx-ask) create_cmd_ctx_ask > "$COMMANDS_DIR/ctx-ask.md" ;;
         esac
 
         printf " ${GREEN}✓${NC}\n"
@@ -6160,7 +6148,7 @@ install_contextvault() {
     done
 
     echo ""
-    print_success "28 commands installed"
+    print_success "23 commands installed"
 
     # Install global hooks
     echo ""
@@ -6246,7 +6234,7 @@ uninstall_contextvault() {
         print_success "Removed vault directory"
     fi
 
-    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-plan ctx-bootstrap ctx-upgrade ctx-health ctx-note ctx-changelog ctx-link ctx-quiz ctx-explain ctx-archive ctx-review ctx-ask; do
+    for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-error ctx-decision ctx-plan ctx-bootstrap ctx-upgrade ctx-health ctx-changelog ctx-link ctx-quiz ctx-archive ctx-review; do
         if [ -f "$COMMANDS_DIR/$cmd.md" ]; then
             rm "$COMMANDS_DIR/$cmd.md"
         fi
@@ -6289,7 +6277,7 @@ check_status() {
     if [ -d "$COMMANDS_DIR" ]; then
         print_success "Commands directory exists"
         local cmd_count=0
-        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-intel ctx-error ctx-snippet ctx-decision ctx-plan ctx-bootstrap ctx-upgrade ctx-health ctx-note ctx-changelog ctx-link ctx-quiz ctx-explain ctx-archive ctx-review ctx-ask; do
+        for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-error ctx-decision ctx-plan ctx-bootstrap ctx-upgrade ctx-health ctx-changelog ctx-link ctx-quiz ctx-archive ctx-review; do
             [ -f "$COMMANDS_DIR/$cmd.md" ] && ((cmd_count++))
         done
         [ $cmd_count -eq 25 ] && print_success "  └── All 25 commands ✓" || print_warning "  └── $cmd_count/25 commands"

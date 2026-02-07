@@ -9,8 +9,8 @@
 │  ✅ Fixed a bug?        → /ctx-error                            │
 │  ✅ Made a decision?    → /ctx-decision                         │
 │  ✅ Learned something?  → /ctx-doc                              │
-│  ✅ Found useful code?  → /ctx-snippet                          │
-│  ✅ Explored codebase?  → /ctx-intel                            │
+│  ✅ Found useful code?  → /ctx-doc type=snippet                 │
+│  ✅ Explored codebase?  → /ctx-doc type=intel                   │
 │                                                                 │
 │  WHEN to document:                                              │
 │  • Feature complete (not mid-edit)                              │
@@ -40,4 +40,4 @@
 - Update index after EVERY change
 
 ### Commands
-`/ctx-doc` `/ctx-error` `/ctx-snippet` `/ctx-decision` `/ctx-intel` `/ctx-handoff` `/ctx-search` `/ctx-read` `/ctx-bootstrap`
+`/ctx-doc` `/ctx-error` `/ctx-decision` `/ctx-handoff` `/ctx-search` `/ctx-read` `/ctx-bootstrap` `/ctx-plan`

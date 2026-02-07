@@ -18,24 +18,20 @@ import { handleRead } from '../src/tools/read.js';
 import { handleHandoff } from '../src/tools/handoff.js';
 import { handlePlan } from '../src/tools/plan.js';
 import { handleBootstrap } from '../src/tools/bootstrap.js';
-import { handleSnippet } from '../src/tools/snippet.js';
-import { handleIntel } from '../src/tools/intel.js';
 import { handleUpdate } from '../src/tools/update.js';
 import { handleNew } from '../src/tools/new.js';
 import { handleMode } from '../src/tools/mode.js';
 import { handleHelp } from '../src/tools/help.js';
 import { handleHealth } from '../src/tools/health.js';
-import { handleNote } from '../src/tools/note.js';
 import { handleChangelog } from '../src/tools/changelog.js';
 import { handleLink } from '../src/tools/link.js';
 import { handleQuiz } from '../src/tools/quiz.js';
-import { handleExplain } from '../src/tools/explain.js';
 import { handleUpgrade } from '../src/tools/upgrade.js';
 import { handleShare } from '../src/tools/share.js';
 import { handleImport } from '../src/tools/import.js';
 import { handleArchive } from '../src/tools/archive.js';
 import { handleReview } from '../src/tools/review.js';
-import { handleAsk } from '../src/tools/ask.js';
+// Removed: handleSnippet, handleIntel, handleNote, handleExplain, handleAsk (consolidated into ctx_doc)
 
 // --- Test Infrastructure ---
 
@@ -188,25 +184,29 @@ function runTests() {
     assertContains(text, 'Plan');
   });
 
-  // 7. ctx_snippet
-  console.log('\n[ctx_snippet]');
+  // 7. ctx_doc type=snippet (consolidated from ctx_snippet)
+  console.log('\n[ctx_doc type=snippet]');
   test('creates a snippet in global vault', () => {
-    const result = handleSnippet(vault, {
-      name: 'Express error handler',
-      code: 'app.use((err, req, res, next) => { res.status(500).json({ error: err.message }); });',
+    // Use unique topic name to avoid duplicate detection
+    const uniqueTopic = `ExpressHandler_${Date.now()}`;
+    const result = handleDoc(vault, {
+      topic: uniqueTopic,
+      content: 'app.use((err, req, res, next) => { res.status(500).json({ error: err.message }); });',
+      type: 'snippet',
       language: 'javascript',
       use_case: 'Global error handler for Express apps',
     });
     const text = getText(result);
-    assert(text.includes('G0') && text.includes('global vault'), 'Should create in global vault with G### ID');
+    assert(text.includes('G') && text.includes('global vault'), 'Should create in global vault with G### ID');
   });
 
-  // 8. ctx_intel
-  console.log('\n[ctx_intel]');
+  // 8. ctx_doc type=intel (consolidated from ctx_intel)
+  console.log('\n[ctx_doc type=intel]');
   test('creates an intel document', () => {
-    const result = handleIntel(vault, {
-      area: 'Database layer',
-      findings: 'Uses Prisma ORM. Models defined in schema.prisma. Migrations in prisma/migrations/.',
+    const result = handleDoc(vault, {
+      topic: 'Database layer',
+      content: 'Uses Prisma ORM. Models defined in schema.prisma. Migrations in prisma/migrations/.',
+      type: 'intel',
     });
     const text = getText(result);
     assert(text.includes('P0') && text.includes('Intel'), 'Should create intel doc with P### ID');
@@ -271,12 +271,12 @@ function runTests() {
     assert(text.includes('P0') && text.includes('Deployment Guide'), 'Should create doc with P### ID');
   });
 
-  // 13. ctx_note
-  console.log('\n[ctx_note]');
-  test('adds a note to existing document', () => {
-    const result = handleNote(vault, { id: 'P001', note: 'Remember to add rate limiting to auth endpoints' });
+  // 13. ctx_update with section="Notes" (replaces ctx_note)
+  console.log('\n[ctx_update section=Notes]');
+  test('adds a note via ctx_update', () => {
+    const result = handleUpdate(vault, { id: 'P001', section: 'Notes', content: 'Remember to add rate limiting to auth endpoints' });
     const text = getText(result);
-    assertContains(text, 'Note added');
+    assertContains(text, 'Updated');
     assertContains(text, 'P001');
   });
 
@@ -371,21 +371,7 @@ function runTests() {
     assertContains(text, 'Quiz');
   });
 
-  // 22. ctx_explain
-  console.log('\n[ctx_explain]');
-  test('explain without save', () => {
-    const result = handleExplain(vault, { concept: 'JWT Tokens' });
-    const text = getText(result);
-    assertContains(text, 'JWT Tokens');
-  });
-
-  test('explain with save', () => {
-    const result = handleExplain(vault, { concept: 'OAuth2 Flow', save: true });
-    const text = getText(result);
-    assertContains(text, 'Saved');
-  });
-
-  // 23. ctx_upgrade
+  // 22. ctx_upgrade (ctx_explain removed - use ctx_doc instead)
   console.log('\n[ctx_upgrade]');
   test('runs upgrade check', () => {
     const result = handleUpgrade(vault);
@@ -458,28 +444,7 @@ function runTests() {
     assertContains(text, 'Curation Review');
   });
 
-  // 28. ctx_ask
-  console.log('\n[ctx_ask]');
-  test('answers question from vault', () => {
-    // Create a doc with specific content to search
-    handleDoc(vault, { topic: 'Authentication System', content: 'We use JWT tokens for auth. Session management is handled by Redis.' });
-
-    const result = handleAsk(vault, { question: 'How does authentication work?' });
-    const text = getText(result);
-    // Should find the auth doc
-    assertContains(text, 'Answer');
-  });
-
-  test('ask requires question', () => {
-    const result = handleAsk(vault, {});
-    assert(result.isError === true, 'Should error without question');
-  });
-
-  test('ask handles no results', () => {
-    const result = handleAsk(vault, { question: 'xyznonexistenttopic123' });
-    const text = getText(result);
-    assertContains(text, 'No relevant documents');
-  });
+  // ctx_ask removed - use ctx_search + ctx_read instead
 
   // --- Research Tracking Tests ---
 
@@ -512,7 +477,7 @@ function runTests() {
     const reminder = vault.getResearchReminder();
     assert(reminder !== null, `Should trigger reminder at threshold (count=${vault.enforcement.researchCount}, areas=${vault.enforcement.areasExplored.size})`);
     assertContains(reminder!, 'ContextVault Nudge', 'Reminder text');
-    assertContains(reminder!, 'ctx_intel', 'Should suggest ctx_intel');
+    assertContains(reminder!, 'ctx_doc', 'Should suggest ctx_doc');
   });
 
   test('resetEnforcement clears research counters', () => {

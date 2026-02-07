@@ -365,7 +365,7 @@ export class VaultManager {
     ) {
       const domainList = Array.from(domainsExplored).slice(0, 4).join(', ');
       const domainMsg = domainsExplored.size > 1 ? ` across ${domainsExplored.size} domains (${domainList})` : '';
-      return `\n\n---\n**ContextVault Nudge:** You've explored ${areasExplored.size} areas${domainMsg} with ${researchCount} lookups without documenting findings. Consider using ctx_intel or ctx_doc to capture what you've discovered.`;
+      return `\n\n---\n**ContextVault Nudge:** You've explored ${areasExplored.size} areas${domainMsg} with ${researchCount} lookups without documenting findings. Consider using ctx_doc (type=intel) to capture what you've discovered.`;
     }
 
     return null;

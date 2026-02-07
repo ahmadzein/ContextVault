@@ -171,12 +171,10 @@ Search exact terms + synonyms (auth/login/signin = same topic, docker/container/
 
 | Command | When to use |
 |---------|-------------|
-| ``/ctx-doc`` | Built a feature, learned something |
+| ``/ctx-doc`` | Built a feature, learned something (type=intel for exploration, type=snippet for code) |
 | ``/ctx-error`` | Fixed a bug (error, root cause, solution) |
 | ``/ctx-decision`` | Made architecture/design choice |
 | ``/ctx-plan`` | Working on multi-step task |
-| ``/ctx-snippet`` | Found reusable code pattern |
-| ``/ctx-intel`` | Explored codebase (architecture, patterns) |
 | ``/ctx-bootstrap`` | New project — auto-generate all docs |
 | ``/ctx-handoff`` | Ending session (summary for next time) |
 | ``/ctx-search`` | Find existing docs |
@@ -519,42 +517,7 @@ description: Document implementation plan for multi-step tasks
 4. Confirm: "Plan documented"
 "@
 
-# ctx-snippet
-Create-Command "ctx-snippet" "✂️" @"
----
-description: Save a useful code snippet
----
-
-# /ctx-snippet — Save Code Snippet
-
-## Steps
-
-1. Ask for: code, language, purpose
-2. Route: Global (reusable) or Project (specific)
-3. Create doc with code block and usage notes
-4. Update index
-5. Confirm: "Snippet saved"
-"@
-
-# ctx-intel
-Create-Command "ctx-intel" "🔍" @"
----
-description: Document codebase exploration findings
----
-
-# /ctx-intel — Document Exploration
-
-## Steps
-
-1. Document what you learned about the codebase:
-   - Architecture patterns
-   - Key files and their purposes
-   - How components connect
-   - Entry points
-2. Create P###_intel_[area].md
-3. Update index
-4. Confirm: "Intel documented"
-"@
+# ctx-snippet and ctx-intel removed - use ctx-doc with type=snippet or type=intel
 
 # ctx-bootstrap
 Create-Command "ctx-bootstrap" "🚀" @"
@@ -690,8 +653,6 @@ Display this command reference:
 | /ctx-error | Document bug fix |
 | /ctx-decision | Document architecture decision |
 | /ctx-plan | Document multi-step plan |
-| /ctx-snippet | Save code snippet |
-| /ctx-intel | Document exploration findings |
 | /ctx-bootstrap | Auto-generate docs for codebase |
 | /ctx-handoff | Session summary for continuity |
 | /ctx-search | Search vault documents |

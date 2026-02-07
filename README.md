@@ -287,26 +287,24 @@ Never lose your docs
 │   ├── ctx-mode.md
 │   ├── ctx-help.md
 │   ├── ctx-new.md
-│   ├── ctx-doc.md
+│   ├── ctx-doc.md               # Supports type=intel/snippet
 │   ├── ctx-update.md
 │   ├── ctx-search.md
 │   ├── ctx-read.md
 │   ├── ctx-share.md
 │   ├── ctx-import.md
-│   ├── ctx-handoff.md           # v1.5.2
-│   ├── ctx-intel.md             # v1.5.2
-│   ├── ctx-error.md             # v1.5.2
-│   ├── ctx-snippet.md           # v1.5.2
-│   ├── ctx-decision.md          # v1.5.2
-│   ├── ctx-plan.md              # v1.7.1
-│   ├── ctx-bootstrap.md         # v1.7.5 - Auto-scan codebase
-│   ├── ctx-upgrade.md           # v1.5.3
-│   ├── ctx-health.md            # NEW in v1.6.0
-│   ├── ctx-note.md              # NEW in v1.6.0
-│   ├── ctx-changelog.md         # NEW in v1.6.0
-│   ├── ctx-link.md              # NEW in v1.6.0
-│   ├── ctx-quiz.md              # NEW in v1.6.0
-│   └── ctx-explain.md           # NEW in v1.6.0
+│   ├── ctx-handoff.md
+│   ├── ctx-error.md
+│   ├── ctx-decision.md
+│   ├── ctx-plan.md
+│   ├── ctx-bootstrap.md
+│   ├── ctx-upgrade.md
+│   ├── ctx-health.md
+│   ├── ctx-changelog.md
+│   ├── ctx-link.md
+│   ├── ctx-quiz.md
+│   ├── ctx-archive.md
+│   └── ctx-review.md
 └── 📁 vault/                    # Global knowledge storage
     ├── index.md                 # 📇 Quick lookup table
     ├── settings.json            # ⚙️ Mode & limits config
@@ -372,29 +370,28 @@ After installation, you get **25 powerful slash commands** in Claude Code:
 
 | Command | Description | When to Use |
 |---------|-------------|-------------|
+| `/ctx-doc` | 📸 Document learning, intel, or snippet | Any learning (use type=intel for exploration, type=snippet for code) |
 | `/ctx-handoff` | 🤝 Generate session handoff summary | Before ending session, for seamless continuation |
-| `/ctx-intel` | 🧠 Generate codebase intelligence file | First time in new codebase, understand structure |
 | `/ctx-error` | 🐛 Capture error and solution | After fixing a tricky bug |
-| `/ctx-snippet` | 📎 Save reusable code snippet | Found code worth reusing |
 | `/ctx-decision` | ⚖️ Log decision with rationale | Made architectural choice |
 | `/ctx-plan` | 📋 Document multi-step plan | Working on complex multi-task work |
 | `/ctx-bootstrap` | 🚀 Auto-scan and document codebase | After /ctx-init, jumpstart documentation |
 
-### 🏥 Vault Maintenance (NEW in v1.6.0!)
+### 🏥 Vault Maintenance
 
 | Command | Description | When to Use |
 |---------|-------------|-------------|
 | `/ctx-health` | 🏥 Diagnose vault health issues | Check for stale docs, over-limit files, orphans |
-| `/ctx-note` | 📝 Quick one-liner notes | Small learnings that don't need full docs |
-| `/ctx-changelog` | 📜 Generate changelog from history | See all doc changes over time |
-| `/ctx-link` | 🔗 Analyze doc bidirectional links | Find relationships between docs |
+| `/ctx-changelog` | 📜 Show ContextVault version history | See what changed in each version |
+| `/ctx-link` | 🔗 Link related documents | Connect related docs bidirectionally |
+| `/ctx-archive` | 📦 Archive deprecated documents | Remove docs while preserving history |
+| `/ctx-review` | 📋 Run curation review | Find stale docs, suggest cleanups |
 
-### 🎯 Knowledge Tools (NEW in v1.6.0!)
+### 🎯 Knowledge Tools
 
 | Command | Description | When to Use |
 |---------|-------------|-------------|
-| `/ctx-quiz` | 🎯 Quiz yourself on project knowledge | Verify documentation accuracy |
-| `/ctx-explain` | 📖 Generate project explanation | Create onboarding docs, project overview |
+| `/ctx-quiz` | 🎯 Quiz yourself on project knowledge | Fun way to verify documentation accuracy |
 
 ---
 

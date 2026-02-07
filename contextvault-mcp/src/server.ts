@@ -21,24 +21,20 @@ import { handleRead } from './tools/read.js';
 import { handleHandoff } from './tools/handoff.js';
 import { handlePlan } from './tools/plan.js';
 import { handleBootstrap } from './tools/bootstrap.js';
-import { handleSnippet } from './tools/snippet.js';
-import { handleIntel } from './tools/intel.js';
 import { handleUpdate } from './tools/update.js';
 import { handleNew } from './tools/new.js';
 import { handleMode } from './tools/mode.js';
 import { handleHelp } from './tools/help.js';
 import { handleHealth } from './tools/health.js';
-import { handleNote } from './tools/note.js';
 import { handleChangelog } from './tools/changelog.js';
 import { handleLink } from './tools/link.js';
 import { handleQuiz } from './tools/quiz.js';
-import { handleExplain } from './tools/explain.js';
 import { handleUpgrade } from './tools/upgrade.js';
 import { handleShare } from './tools/share.js';
 import { handleImport } from './tools/import.js';
 import { handleArchive } from './tools/archive.js';
 import { handleReview } from './tools/review.js';
-import { handleAsk } from './tools/ask.js';
+// Removed: handleSnippet, handleIntel, handleNote, handleExplain, handleAsk (consolidated)
 
 export class ContextVaultServer {
   private server: Server;
@@ -49,7 +45,7 @@ export class ContextVaultServer {
     this.server = new Server(
       {
         name: 'contextvault-mcp',
-        version: '1.0.3',
+        version: '1.0.5',
       },
       {
         capabilities: {
@@ -84,15 +80,19 @@ export class ContextVaultServer {
         },
         {
           name: 'ctx_doc',
-          description: 'Quick-document a learning, feature, or finding to the vault.',
+          description: 'Document a learning, exploration finding, or code snippet. Use type="intel" for codebase exploration, type="snippet" for reusable code patterns.',
           inputSchema: {
             type: 'object' as const,
             properties: {
               topic: { type: 'string', description: 'Topic name (e.g. "Auth System", "Docker Setup")' },
-              content: { type: 'string', description: 'What you learned or built' },
-              vault: { type: 'string', enum: ['global', 'project'], description: 'Which vault to save to', default: 'project' },
+              content: { type: 'string', description: 'What you learned, explored, or the code snippet' },
+              type: { type: 'string', enum: ['learning', 'intel', 'snippet'], description: 'Document type: learning (default), intel (exploration), snippet (code)', default: 'learning' },
+              vault: { type: 'string', enum: ['global', 'project'], description: 'Which vault (snippets default to global, others to project)' },
+              language: { type: 'string', description: 'Programming language (for snippets)' },
+              area: { type: 'string', description: 'Area explored (alias for topic, for intel type)' },
+              use_case: { type: 'string', description: 'When to use this snippet (for snippets)' },
             },
-            required: ['topic', 'content'],
+            required: ['content'],
           },
         },
         {
@@ -146,32 +146,7 @@ export class ContextVaultServer {
             },
           },
         },
-        {
-          name: 'ctx_snippet',
-          description: 'Save a useful code snippet for future reference.',
-          inputSchema: {
-            type: 'object' as const,
-            properties: {
-              name: { type: 'string', description: 'Snippet name' },
-              code: { type: 'string', description: 'The code snippet' },
-              language: { type: 'string', description: 'Programming language' },
-              use_case: { type: 'string', description: 'When to use this snippet' },
-            },
-            required: ['name', 'code'],
-          },
-        },
-        {
-          name: 'ctx_intel',
-          description: 'Document codebase exploration findings.',
-          inputSchema: {
-            type: 'object' as const,
-            properties: {
-              area: { type: 'string', description: 'Area explored (e.g. "Auth module", "API layer")' },
-              findings: { type: 'string', description: 'What you discovered' },
-            },
-            required: ['area', 'findings'],
-          },
-        },
+        // ctx_snippet and ctx_intel removed - use ctx_doc with type="snippet" or type="intel"
         {
           name: 'ctx_handoff',
           description: 'Create a session handoff summary for the next session to continue seamlessly.',
@@ -254,18 +229,7 @@ export class ContextVaultServer {
           description: 'Check vault health: orphaned docs, index mismatches, size limits.',
           inputSchema: { type: 'object' as const, properties: {} },
         },
-        {
-          name: 'ctx_note',
-          description: 'Add a quick note to an existing document.',
-          inputSchema: {
-            type: 'object' as const,
-            properties: {
-              id: { type: 'string', description: 'Document ID to add note to' },
-              note: { type: 'string', description: 'Note content to append' },
-            },
-            required: ['id', 'note'],
-          },
-        },
+        // ctx_note removed - use ctx_update with section="Notes"
         {
           name: 'ctx_changelog',
           description: 'Show ContextVault version history and changelog.',
@@ -293,18 +257,7 @@ export class ContextVaultServer {
             },
           },
         },
-        {
-          name: 'ctx_explain',
-          description: 'Explain a concept and optionally save the explanation to the vault.',
-          inputSchema: {
-            type: 'object' as const,
-            properties: {
-              concept: { type: 'string', description: 'Concept to explain' },
-              save: { type: 'boolean', description: 'Save explanation to vault', default: false },
-            },
-            required: ['concept'],
-          },
-        },
+        // ctx_explain removed - use ctx_doc instead
         {
           name: 'ctx_upgrade',
           description: 'Upgrade vault format to latest version. Fixes structure issues.',
@@ -360,17 +313,7 @@ export class ContextVaultServer {
             },
           },
         },
-        {
-          name: 'ctx_ask',
-          description: 'Ask a question and get a targeted answer from vault documents. Searches for relevant docs and synthesizes an answer.',
-          inputSchema: {
-            type: 'object' as const,
-            properties: {
-              question: { type: 'string', description: 'Natural language question (e.g. "What was the auth decision?", "How does caching work?")' },
-            },
-            required: ['question'],
-          },
-        },
+        // ctx_ask removed - use ctx_search + ctx_read instead
       ],
     }));
 
@@ -393,24 +336,19 @@ export class ContextVaultServer {
           case 'ctx_handoff': result = handleHandoff(this.vault, params); break;
           case 'ctx_plan': result = handlePlan(this.vault, params); break;
           case 'ctx_bootstrap': result = handleBootstrap(this.vault, params); break;
-          case 'ctx_snippet': result = handleSnippet(this.vault, params); break;
-          case 'ctx_intel': result = handleIntel(this.vault, params); break;
           case 'ctx_update': result = handleUpdate(this.vault, params); break;
           case 'ctx_new': result = handleNew(this.vault, params); break;
           case 'ctx_mode': result = handleMode(this.vault, params); break;
           case 'ctx_help': result = handleHelp(this.vault); break;
           case 'ctx_health': result = handleHealth(this.vault); break;
-          case 'ctx_note': result = handleNote(this.vault, params); break;
           case 'ctx_changelog': result = handleChangelog(); break;
           case 'ctx_link': result = handleLink(this.vault, params); break;
           case 'ctx_quiz': result = handleQuiz(this.vault, params); break;
-          case 'ctx_explain': result = handleExplain(this.vault, params); break;
           case 'ctx_upgrade': result = handleUpgrade(this.vault); break;
           case 'ctx_share': result = handleShare(this.vault, params); break;
           case 'ctx_import': result = handleImport(this.vault, params); break;
           case 'ctx_archive': result = handleArchive(this.vault, params); break;
           case 'ctx_review': result = handleReview(this.vault, params); break;
-          case 'ctx_ask': result = handleAsk(this.vault, params); break;
           default:
             result = { content: [{ type: 'text', text: `Unknown tool: ${name}` }], isError: true };
         }

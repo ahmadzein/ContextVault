@@ -7,24 +7,19 @@ export function handleHelp(_vault: VaultManager): ToolResponse {
 ## Document Your Work
 | Command | Description |
 |---------|-------------|
-| **ctx_doc** | Quick document a learning, feature, or finding |
+| **ctx_doc** | Document learning, intel, or snippet (type=learning/intel/snippet) |
 | **ctx_error** | Document a bug fix (error, cause, solution) |
 | **ctx_decision** | Document a decision with reasoning |
 | **ctx_plan** | Document an implementation plan |
-| **ctx_snippet** | Save a reusable code snippet |
-| **ctx_intel** | Document codebase exploration findings |
 | **ctx_handoff** | Create session handoff summary |
-| **ctx_explain** | Explain a concept and save to vault |
 
 ## Manage Documents
 | Command | Description |
 |---------|-------------|
 | **ctx_search** | Search vault documents by keyword |
 | **ctx_read** | Read a document by ID (P001, G003) |
-| **ctx_ask** | Ask a question, get targeted answers with excerpts |
-| **ctx_update** | Update an existing document |
+| **ctx_update** | Update an existing document (use section="Notes" for quick notes) |
 | **ctx_new** | Create a new document with custom content |
-| **ctx_note** | Add a quick note to existing doc |
 | **ctx_link** | Link two related documents |
 | **ctx_archive** | Archive a deprecated document |
 | **ctx_review** | Run weekly curation review |
