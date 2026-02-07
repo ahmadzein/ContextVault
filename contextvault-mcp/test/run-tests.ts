@@ -1,7 +1,7 @@
 #!/usr/bin/env npx tsx
 /**
  * ContextVault MCP Server - Integration Tests
- * Tests all 28 tools via direct function calls
+ * Tests all 23 tools via direct function calls
  */
 
 import * as fs from 'node:fs';

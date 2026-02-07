@@ -5966,7 +5966,7 @@ check_and_restore_backup() {
             echo -e "${BOLD}📦 What was restored:${NC}"
             echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
             echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
-            echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(25 slash commands)${NC}"
+            echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(23 slash commands)${NC}"
             echo ""
             echo -e "${BOLD}🚀 Quick Start:${NC}"
             echo -e "   1. Start Claude Code: ${CYAN}claude${NC}"
@@ -6178,7 +6178,7 @@ install_contextvault() {
     echo -e "${BOLD}📦 What was installed:${NC}"
     echo -e "   ${CYAN}📄${NC} ~/.claude/CLAUDE.md          ${DIM}(Global brain)${NC}"
     echo -e "   ${CYAN}🏰${NC} ~/.claude/vault/             ${DIM}(Your knowledge vault)${NC}"
-    echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(25 slash commands)${NC}"
+    echo -e "   ${CYAN}⚡${NC} ~/.claude/commands/          ${DIM}(23 slash commands)${NC}"
     echo -e "   ${CYAN}🪝${NC} ~/.claude/hooks/             ${DIM}(4 hook scripts)${NC}"
     echo -e "   ${CYAN}⚙️${NC} ~/.claude/settings.json      ${DIM}(Hook triggers)${NC}"
     echo ""
@@ -6187,12 +6187,12 @@ install_contextvault() {
     echo -e "   ${GREEN}PostToolUse${NC}   → Tracks edits & research, reminds on milestones"
     echo -e "   ${YELLOW}Stop${NC}          → Smart block: catches significant undocumented work"
     echo ""
-    echo -e "${BOLD}🎮 New in v1.8 (25 commands total):${NC}"
+    echo -e "${BOLD}🎮 New in v1.8 (23 commands total):${NC}"
     echo -e "   ${YELLOW}/ctx-bootstrap${NC} 🚀 Auto-scan codebase ${DIM}(NEW!)${NC}"
     echo -e "   ${YELLOW}/ctx-plan${NC}      📋 Multi-step task plans"
     echo -e "   ${YELLOW}/ctx-error${NC}     🐛 Bug fix documentation"
     echo -e "   ${YELLOW}/ctx-decision${NC}  ⚖️  Architecture decisions"
-    echo -e "   ${YELLOW}/ctx-help${NC}      📖 See all 25 commands"
+    echo -e "   ${YELLOW}/ctx-help${NC}      📖 See all 23 commands"
     echo ""
     echo -e "${BOLD}🚀 Quick Start:${NC}"
     echo -e "   1. Start Claude Code: ${CYAN}claude${NC}"
@@ -6290,7 +6290,7 @@ check_status() {
         for cmd in ctx-init ctx-status ctx-mode ctx-help ctx-new ctx-doc ctx-update ctx-search ctx-read ctx-share ctx-import ctx-handoff ctx-error ctx-decision ctx-plan ctx-bootstrap ctx-upgrade ctx-health ctx-changelog ctx-link ctx-quiz ctx-archive ctx-review; do
             [ -f "$COMMANDS_DIR/$cmd.md" ] && ((cmd_count++))
         done
-        [ $cmd_count -eq 25 ] && print_success "  └── All 25 commands ✓" || print_warning "  └── $cmd_count/25 commands"
+        [ $cmd_count -eq 23 ] && print_success "  └── All 23 commands ✓" || print_warning "  └── $cmd_count/23 commands"
     else
         print_error "Commands directory not found"
         installed=false

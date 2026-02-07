@@ -5,7 +5,7 @@ export function handleChangelog(): ToolResponse {
 
 ## v1.0.0 (MCP Server)
 - Initial MCP server release
-- 28 tools mirroring all /ctx-* commands
+- 23 tools mirroring all /ctx-* commands
 - 4 MCP resources (global index, project index, settings, instructions)
 - Resource templates for individual documents
 - Server-side enforcement engine (no hooks needed)

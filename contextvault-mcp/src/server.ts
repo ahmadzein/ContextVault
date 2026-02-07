@@ -60,7 +60,7 @@ export class ContextVaultServer {
   }
 
   private registerTools(): void {
-    // List all 28 tools
+    // List all 23 tools
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
       tools: [
         {

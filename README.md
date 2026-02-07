@@ -20,7 +20,7 @@
 
 **Give AI coding assistants a persistent memory across ALL your projects** 🧠
 
-[![Version](https://img.shields.io/badge/version-1.8.4-blue.svg)](https://github.com/ahmadzein/ContextVault)
+[![Version](https://img.shields.io/badge/version-1.8.7-blue.svg)](https://github.com/ahmadzein/ContextVault)
 [![MCP Server](https://img.shields.io/npm/v/contextvault-mcp?label=MCP%20Server&color=blue)](https://www.npmjs.com/package/contextvault-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude-Code-blueviolet)](https://claude.ai)
@@ -137,7 +137,7 @@ claude mcp add contextvault -- npx -y contextvault-mcp
 
 **Auto-detect:** If you already have the bash installer, the MCP server automatically detects and uses your existing `.claude/vault/` — zero migration needed. Both systems share the same vault.
 
-📦 **npm:** [contextvault-mcp](https://www.npmjs.com/package/contextvault-mcp) • **28 tools** • **4 resources** • **41 KB**
+📦 **npm:** [contextvault-mcp](https://www.npmjs.com/package/contextvault-mcp) • **23 tools** • **4 resources** • **41 KB**
 
 </details>
 
@@ -217,7 +217,7 @@ Global + Project knowledge
 <td align="center" width="25%">
 
 ### ⚡
-**25 Commands**
+**23 Commands**
 
 Full control at your fingertips
 
@@ -332,7 +332,7 @@ your-project/
 
 ## 🎮 Commands Reference
 
-After installation, you get **25 powerful slash commands** in Claude Code:
+After installation, you get **23 powerful slash commands** in Claude Code:
 
 ### 🏠 Setup & Status
 
@@ -407,7 +407,7 @@ Usage: /ctx-help
 ```
 
 When you run this, you'll see a beautiful command reference card with:
-- All 28 commands and their purposes
+- All 23 commands and their purposes
 - Mode options explained
 - Quick reference for limits and rules
 - Routing guide (global vs project)
@@ -770,7 +770,7 @@ ContextVault is a two-tier documentation system:
 - Global tier (~/.claude/vault/) for cross-project knowledge
 - Project tier (./.claude/vault/) for project-specific docs
 - Default mode is "local" (project-focused)
-- 25 slash commands: ctx-init, ctx-status, ctx-mode, ctx-handoff, ctx-bootstrap, etc.
+- 23 slash commands: ctx-init, ctx-status, ctx-mode, ctx-handoff, ctx-bootstrap, etc.
 
 ## Key Commands
 
