@@ -11,7 +11,34 @@ document.addEventListener('DOMContentLoaded', () => {
   initFAQ();
   highlightActiveNav();
   initCopyButtons();
+  initLastUpdated();
 });
+
+// --- Last Updated (from GitHub API) ---
+async function initLastUpdated() {
+  const el = document.querySelector('.last-updated');
+  if (!el) return;
+
+  try {
+    // Fetch last commit to docs/ from GitHub API
+    const res = await fetch('https://api.github.com/repos/ahmadzein/ContextVault/commits?path=docs&per_page=1');
+    if (!res.ok) throw new Error('GitHub API error');
+    const commits = await res.json();
+    if (commits.length > 0) {
+      const date = new Date(commits[0].commit.committer.date);
+      const formatted = date.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).replace(',', ' ·');
+      el.textContent = `Updated ${formatted}`;
+    }
+  } catch (e) {
+    // Keep static fallback if API fails
+    console.warn('Could not fetch last update:', e);
+  }
+}
 
 // --- Search Functionality ---
 async function initSearch() {
