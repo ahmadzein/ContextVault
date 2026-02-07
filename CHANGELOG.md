@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.7] - 2026-02-07
+
+### Changed - Feature Consolidation (28 → 23 commands)
+
+Merged overlapping features into `ctx_doc` with `type` parameter:
+
+| Removed Command | New Approach |
+|-----------------|--------------|
+| `/ctx-snippet` / `ctx_snippet` | `/ctx-doc type=snippet` (default vault: global) |
+| `/ctx-intel` / `ctx_intel` | `/ctx-doc type=intel` |
+| `/ctx-note` / `ctx_note` | `/ctx-update section="Notes"` |
+| `/ctx-explain` / `ctx_explain` | Removed (use `/ctx-doc`) |
+| `/ctx-ask` / `ctx_ask` | Use `/ctx-search` + `/ctx-read` |
+
+### Added - AI Agent Documentation
+
+- **`docs/skill.md`** — Comprehensive documentation for AI agents (similar to Moltbook skill.md)
+  - All 23 commands with parameters and examples
+  - MCP resources reference
+  - Document structure template
+  - Best practices and workflows
+  - Available at https://ctx-vault.com/docs/skill.md
+
+### Technical Details
+
+- **MCP Server v1.0.5**: 23 tools (down from 28), 4 resources
+- 46 tests, all pass
+- Enhanced `ctx_doc` with `type=learning|intel|snippet` parameter
+- Net code reduction: -469 lines
+
+---
+
 ## [1.8.6] - 2026-02-06
 
 ### Added - 3 New Commands (28 total)
@@ -644,6 +676,14 @@ When editing docs (especially History sections):
 
 ---
 
+[1.8.7]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.8.7
+[1.8.6]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.8.6
+[1.8.5]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.8.5
+[1.8.4]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.8.4
+[1.8.3]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.8.3
+[1.8.2]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.8.2
+[1.8.1]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.8.1
+[1.8.0]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.8.0
 [1.7.6]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.7.6
 [1.7.5]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.7.5
 [1.7.4]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.7.4

@@ -298,6 +298,16 @@ a:hover { color: var(--gold-300); text-decoration: underline; }
   background: rgba(212, 168, 83, 0.08);
 }
 
+.sidebar-footer {
+  margin-top: auto;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--stone-800);
+}
+.sidebar-footer .last-updated {
+  font-size: 0.7rem;
+  color: var(--stone-500);
+}
+
 /* --- Main content --- */
 .docs-main {
   margin-left: var(--sidebar-width);

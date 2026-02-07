@@ -67,9 +67,9 @@
       <a href="../index.html">Home</a>
       <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
       <div class="version-badge">
-        <span class="version-mcp">MCP v1.0.4 Beta</span>
+        <span class="version-mcp">MCP v1.0.5 Beta</span>
         <span class="version-sep">|</span>
-        <span class="version-native">Native v1.8.6 Beta</span>
+        <span class="version-native">Native v1.8.7 Beta</span>
       </div>
     </nav>
     <div class="search-wrapper">
@@ -103,7 +103,7 @@
     <div class="sidebar-section">
       <div class="sidebar-title">Reference</div>
       <ul class="sidebar-links">
-        <li><a href="commands.html" class="active">Commands (28)</a></li>
+        <li><a href="commands.html" class="active">Commands (23)</a></li>
         <li><a href="changelog.html">Changelog</a></li>
       </ul>
     </div>
@@ -114,6 +114,7 @@
         <li><a href="faq.html">FAQ</a></li>
       </ul>
     </div>
+    <div class="sidebar-footer"><span class="last-updated">Last updated: Feb 7, 2026</span></div>
   </aside>
 
   <!-- Main Content -->
@@ -234,31 +235,15 @@
       </div>
     </div>
 
-    <div class="command-card" id="ctx-snippet">
-      <div class="command-name">/ctx-snippet <span class="command-mcp">ctx_snippet</span></div>
-      <div class="command-desc">Save a useful code snippet for reuse. Store patterns, utilities, and reusable code.</div>
-      <div class="command-example">
-        /ctx-snippet<br>
-        # Creates: G00X_snippet_name.md (usually global for reuse)
-      </div>
-    </div>
-
-    <div class="command-card" id="ctx-intel">
-      <div class="command-name">/ctx-intel <span class="command-mcp">ctx_intel</span></div>
-      <div class="command-desc">Document codebase exploration findings. Record architecture patterns, code structure, and discoveries.</div>
-      <div class="command-example">
-        /ctx-intel<br>
-        # Creates: P00X_intel_topic.md<br>
-        # Includes: Structure, Patterns, Key files
-      </div>
-    </div>
-
-    <div class="command-card" id="ctx-explain">
-      <div class="command-name">/ctx-explain <span class="command-mcp">ctx_explain</span></div>
-      <div class="command-desc">Explain a concept and save to vault. Document your understanding of topics for future reference.</div>
-      <div class="command-example">
-        /ctx-explain<br>
-        # Creates: G00X_explain_concept.md or P00X_explain_concept.md
+    <div class="command-card deprecated-note" id="consolidated-commands">
+      <div class="command-name">Consolidated Commands <span class="badge">v1.8.7</span></div>
+      <div class="command-desc">
+        The following commands have been consolidated into <code>/ctx-doc</code> with a <code>type</code> parameter:
+        <ul style="margin: 0.5rem 0 0 1rem; padding: 0;">
+          <li><strong>Snippets:</strong> Use <code>/ctx-doc type=snippet</code> (defaults to global vault)</li>
+          <li><strong>Intel:</strong> Use <code>/ctx-doc type=intel</code></li>
+          <li><strong>Notes:</strong> Use <code>/ctx-update section="Notes"</code></li>
+        </ul>
       </div>
     </div>
 
@@ -306,13 +291,10 @@
       </div>
     </div>
 
-    <div class="command-card" id="ctx-ask">
-      <div class="command-name">/ctx-ask <span class="command-mcp">ctx_ask</span></div>
-      <div class="command-desc">Ask a natural language question and get targeted answers from vault documents. Extracts keywords, searches both vaults, and synthesizes relevant excerpts.</div>
-      <div class="command-example">
-        /ctx-ask Why did we choose PostgreSQL?<br>
-        /ctx-ask How does the caching system work?<br>
-        # Returns top 3 relevant documents with excerpts
+    <div class="command-card deprecated-note" id="ctx-ask-deprecated">
+      <div class="command-name">Q&amp;A <span class="badge">Removed in v1.8.7</span></div>
+      <div class="command-desc">
+        Natural language Q&amp;A has been simplified. Use <code>/ctx-search</code> to find relevant docs, then <code>/ctx-read</code> to view them.
       </div>
     </div>
 
@@ -336,14 +318,6 @@
       </div>
     </div>
 
-    <div class="command-card" id="ctx-note">
-      <div class="command-name">/ctx-note <span class="command-mcp">ctx_note</span></div>
-      <div class="command-desc">Add a quick note to existing document. Append information without a full edit.</div>
-      <div class="command-example">
-        /ctx-note P005 "Remember to handle edge case X"<br>
-        # Appends note with timestamp
-      </div>
-    </div>
 
     <div class="command-card" id="ctx-link">
       <div class="command-name">/ctx-link <span class="command-mcp">ctx_link</span></div>
@@ -445,17 +419,14 @@
       </thead>
       <tbody>
         <tr><td><code>/ctx-init</code></td><td>Initialize vault</td><td>index.md</td></tr>
-        <tr><td><code>/ctx-doc</code></td><td>General documentation</td><td>P/G00X_topic.md</td></tr>
+        <tr><td><code>/ctx-doc</code></td><td>Learning/Intel/Snippet</td><td>P/G00X_topic.md</td></tr>
         <tr><td><code>/ctx-error</code></td><td>Bug fix docs</td><td>P00X_error_*.md</td></tr>
         <tr><td><code>/ctx-decision</code></td><td>Architecture decisions</td><td>P00X_decision_*.md</td></tr>
         <tr><td><code>/ctx-plan</code></td><td>Task planning</td><td>P00X_plan_*.md</td></tr>
-        <tr><td><code>/ctx-snippet</code></td><td>Code snippets</td><td>G00X_snippet_*.md</td></tr>
-        <tr><td><code>/ctx-intel</code></td><td>Codebase exploration</td><td>P00X_intel_*.md</td></tr>
         <tr><td><code>/ctx-bootstrap</code></td><td>Auto-document project</td><td>Multiple docs</td></tr>
         <tr><td><code>/ctx-handoff</code></td><td>Session summary</td><td>P00X_handoff_*.md</td></tr>
         <tr><td><code>/ctx-search</code></td><td>Find docs</td><td>&mdash;</td></tr>
         <tr><td><code>/ctx-read</code></td><td>View doc</td><td>&mdash;</td></tr>
-        <tr><td><code>/ctx-ask</code></td><td>Q&amp;A from vault</td><td>&mdash;</td></tr>
         <tr><td><code>/ctx-update</code></td><td>Edit doc</td><td>&mdash;</td></tr>
         <tr><td><code>/ctx-archive</code></td><td>Archive doc</td><td>&mdash;</td></tr>
         <tr><td><code>/ctx-review</code></td><td>Curation review</td><td>&mdash;</td></tr>

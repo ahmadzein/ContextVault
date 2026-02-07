@@ -67,9 +67,9 @@
       <a href="../index.html">Home</a>
       <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
       <div class="version-badge">
-        <span class="version-mcp">MCP v1.0.4 Beta</span>
+        <span class="version-mcp">MCP v1.0.5 Beta</span>
         <span class="version-sep">|</span>
-        <span class="version-native">Native v1.8.6 Beta</span>
+        <span class="version-native">Native v1.8.7 Beta</span>
       </div>
     </nav>
     <div class="search-wrapper">
@@ -103,7 +103,7 @@
     <div class="sidebar-section">
       <div class="sidebar-title">Reference</div>
       <ul class="sidebar-links">
-        <li><a href="commands.html">Commands (28)</a></li>
+        <li><a href="commands.html">Commands (23)</a></li>
         <li><a href="changelog.html" class="active">Changelog</a></li>
       </ul>
     </div>
@@ -114,6 +114,7 @@
         <li><a href="faq.html">FAQ</a></li>
       </ul>
     </div>
+    <div class="sidebar-footer"><span class="last-updated">Last updated: Feb 7, 2026</span></div>
   </aside>
 
   <!-- Main Content -->
@@ -121,13 +122,36 @@
     <h1>Changelog</h1>
     <p class="subtitle">Version history and release notes for ContextVault.</p>
 
-    <h2>v1.8.6 + MCP v1.0.4 <span style="color: var(--gold-500); font-size: 0.8em;">(Latest)</span></h2>
-    <p><strong>Released:</strong> February 2026</p>
-    <h4>New: 3 Commands (28 total)</h4>
+    <h2>v1.8.7 + MCP v1.0.5 <span style="color: var(--gold-500); font-size: 0.8em;">(Latest)</span></h2>
+    <p><strong>Released:</strong> February 7, 2026</p>
+    <h4>Feature Consolidation (28 → 23 commands)</h4>
+    <p>Merged overlapping features into <code>/ctx-doc</code> with a <code>type</code> parameter:</p>
+    <ul>
+      <li><strong>/ctx-snippet</strong> → <code>/ctx-doc type=snippet</code> (defaults to global vault)</li>
+      <li><strong>/ctx-intel</strong> → <code>/ctx-doc type=intel</code></li>
+      <li><strong>/ctx-note</strong> → <code>/ctx-update section="Notes"</code></li>
+      <li><strong>/ctx-explain</strong> → Removed (use <code>/ctx-doc</code>)</li>
+      <li><strong>/ctx-ask</strong> → Use <code>/ctx-search</code> + <code>/ctx-read</code></li>
+    </ul>
+    <h4>New: AI Agent Documentation</h4>
+    <ul>
+      <li><strong><a href="skill.md">docs/skill.md</a></strong>: Comprehensive documentation for AI agents</li>
+      <li>All 23 commands with parameters and examples</li>
+      <li>Best practices and workflows</li>
+    </ul>
+    <h4>Technical</h4>
+    <ul>
+      <li>46 tests, all pass</li>
+      <li>Net code reduction: -469 lines</li>
+    </ul>
+
+    <h2>v1.8.6 + MCP v1.0.4</h2>
+    <p><strong>Released:</strong> February 6, 2026</p>
+    <h4>New: 3 Commands (then 28 total)</h4>
     <ul>
       <li><strong>/ctx-archive</strong>: Archive deprecated docs to <code>archive/</code> folder with reason header</li>
       <li><strong>/ctx-review</strong>: Weekly curation review — finds stale docs, suggests merges, identifies archive candidates</li>
-      <li><strong>/ctx-ask</strong>: Natural language Q&amp;A — extracts keywords, searches vault, synthesizes answers with excerpts</li>
+      <li><strong>/ctx-ask</strong>: Natural language Q&amp;A (removed in v1.8.7)</li>
     </ul>
     <h4>Enhanced: Code-Drift Detection</h4>
     <ul>
@@ -157,7 +181,7 @@
       <li><strong>Second enforcement axis</strong>: Research tracking alongside edit tracking</li>
       <li>Tracks <code>Read</code>, <code>Grep</code>, <code>Glob</code>, <code>WebSearch</code>, <code>WebFetch</code> tool usage</li>
       <li>Non-blocking nudges when significant exploration happens without documentation</li>
-      <li>Suggests <code>/ctx-intel</code> or <code>/ctx-doc</code> to capture findings</li>
+      <li>Suggests <code>/ctx-doc type=intel</code> to capture findings</li>
       <li><strong>MCP v1.0.3</strong>: Same research tracking for <code>ctx_search</code>/<code>ctx_read</code> calls</li>
     </ul>
     <h4>Thresholds</h4>
@@ -194,6 +218,7 @@
       <li>v1.0.2 — Auto-detect <code>.claude/vault/</code> paths, zero-conflict with bash installer</li>
       <li>v1.0.3 — Research insight detection (trackResearch, getResearchReminder)</li>
       <li>v1.0.4 — 3 new tools (ctx_archive, ctx_review, ctx_ask), code-drift detection, semantic clustering</li>
+      <li>v1.0.5 — Feature consolidation (28 → 23 tools), ctx_doc with type parameter</li>
     </ul>
 
     <h2>v1.8.4</h2>
