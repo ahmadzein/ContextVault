@@ -198,10 +198,12 @@
 
     <div class="command-card" id="ctx-doc">
       <div class="command-name">/ctx-doc <span class="command-mcp">ctx_doc</span></div>
-      <div class="command-desc">Quick document a learning, feature, or finding. General-purpose command for capturing knowledge.</div>
+      <div class="command-desc">Document a learning, exploration finding, or code snippet. Supports type=learning|intel|snippet.</div>
       <div class="command-example">
-        /ctx-doc<br>
-        # Prompts for: topic, details, global/project routing
+        <strong>Native:</strong> /ctx-doc<br>
+        <strong>Native:</strong> /ctx-doc type=snippet<br>
+        <strong>MCP:</strong> ctx_doc topic="Auth" content="Uses JWT"<br>
+        <strong>MCP:</strong> ctx_doc topic="Pattern" content="..." type="snippet"
       </div>
     </div>
 
@@ -209,9 +211,8 @@
       <div class="command-name">/ctx-error <span class="command-mcp">ctx_error</span></div>
       <div class="command-desc">Document a bug fix or error resolution. Captures error message, root cause, and solution.</div>
       <div class="command-example">
-        /ctx-error<br>
-        # Creates: P00X_error_description.md<br>
-        # Includes: Error, Cause, Solution, Prevention
+        <strong>Native:</strong> /ctx-error<br>
+        <strong>MCP:</strong> ctx_error error_message="401 error" root_cause="Token expired" solution="Added refresh"
       </div>
     </div>
 
@@ -219,9 +220,8 @@
       <div class="command-name">/ctx-decision <span class="command-mcp">ctx_decision</span></div>
       <div class="command-desc">Document an architectural or technical decision. Records options considered, reasoning, and trade-offs.</div>
       <div class="command-example">
-        /ctx-decision<br>
-        # Creates: P00X_decision_topic.md<br>
-        # Includes: Context, Options, Decision, Trade-offs
+        <strong>Native:</strong> /ctx-decision<br>
+        <strong>MCP:</strong> ctx_decision decision="Use Redis" reasoning="Need persistence" tradeoffs="Slower"
       </div>
     </div>
 
@@ -263,9 +263,8 @@
       <div class="command-name">/ctx-handoff <span class="command-mcp">ctx_handoff</span></div>
       <div class="command-desc">Create session handoff summary for continuity. Summarizes what was done and what's next for the following session.</div>
       <div class="command-example">
-        /ctx-handoff<br>
-        # Creates: P00X_handoff_YYYY-MM-DD.md<br>
-        # Includes: Completed, In Progress, Next Steps
+        <strong>Native:</strong> /ctx-handoff<br>
+        <strong>MCP:</strong> ctx_handoff completed="Auth done" next_steps="Add tests"
       </div>
     </div>
 
@@ -275,9 +274,8 @@
       <div class="command-name">/ctx-search <span class="command-mcp">ctx_search</span></div>
       <div class="command-desc">Search across vault documents. Find existing documentation by topic, keyword, or related terms.</div>
       <div class="command-example">
-        /ctx-search auth<br>
-        /ctx-search "database migration"<br>
-        # Searches both global and project indexes
+        <strong>Native:</strong> /ctx-search auth<br>
+        <strong>MCP:</strong> ctx_search query="database migration"
       </div>
     </div>
 
@@ -285,9 +283,8 @@
       <div class="command-name">/ctx-read <span class="command-mcp">ctx_read</span></div>
       <div class="command-desc">Read a document by ID. View the full content of a vault document.</div>
       <div class="command-example">
-        /ctx-read P001<br>
-        /ctx-read G005<br>
-        # Displays full document content
+        <strong>Native:</strong> /ctx-read P001<br>
+        <strong>MCP:</strong> ctx_read id="P001"
       </div>
     </div>
 
