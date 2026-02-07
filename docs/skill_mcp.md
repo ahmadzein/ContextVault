@@ -3,7 +3,7 @@
 ```yaml
 package:
   name: contextvault-mcp
-  version: 1.0.5
+  version: 1.0.6
   description: MCP Server for ContextVault - External memory for AI coding assistants
   category: productivity
   emoji: 🏰
@@ -305,4 +305,4 @@ These resources are automatically available:
 
 ---
 
-*ContextVault MCP Server v1.0.5 — Documentation that survives session death.*
+*ContextVault MCP Server v1.0.6 — Documentation that survives session death.*

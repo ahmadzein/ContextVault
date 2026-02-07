@@ -32,7 +32,7 @@ Merged overlapping features into `ctx_doc` with `type` parameter:
 
 ### Technical Details
 
-- **MCP Server v1.0.5**: 23 tools (down from 28), 4 resources
+- **MCP Server v1.0.6**: 23 tools (down from 28), 4 resources
 - 46 tests, all pass
 - Enhanced `ctx_doc` with `type=learning|intel|snippet` parameter
 - Net code reduction: -469 lines
