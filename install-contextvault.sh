@@ -4622,7 +4622,7 @@ Enforcement: [LEVEL]
   strict   → Block after 4 edits/2+ files if undocumented
   Change:  /ctx-mode enforcement [level]
 
-25 slash commands • /ctx-bootstrap • Archive mechanism
+23 slash commands • /ctx-bootstrap • Archive mechanism
 
 Your P### docs are SAFE!
 

@@ -21,7 +21,7 @@ export function handleReview(vault: VaultManager, params: Record<string, unknown
     return { content: [{ type: 'text', text: `Error: ${tier} vault not initialized.` }], isError: true };
   }
 
-  const entries = indexMgr.parseEntries();
+  const entries = indexMgr.parseActiveEntries();
   const vaultPath = tier === 'global' ? vault.globalPath : vault.projectPath;
   const today = new Date();
 

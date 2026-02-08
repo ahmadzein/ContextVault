@@ -35,7 +35,10 @@ function extractFileReferences(content: string, docFile: string): FileReference[
 
       // Skip common false positives
       if (refPath.includes('example') || refPath.includes('placeholder')) continue;
-      if (refPath.startsWith('http')) continue;
+      if (refPath.startsWith('http') || refPath.startsWith('www.')) continue;
+      if (refPath.startsWith('window.') || refPath.startsWith('document.') || refPath.startsWith('console.')) continue;
+      if (refPath.includes('your-') || refPath.includes('your_')) continue;
+      if (refPath.match(/^\w+\.\w+$/) && !refPath.includes('/')) continue; // Skip simple dotted names like "content.type"
       if (refPath.length < 5) continue;
 
       const key = `${refPath}:${lineNumber || ''}`;
@@ -84,9 +87,13 @@ export function handleHealth(vault: VaultManager): ToolResponse {
   const driftIssues: string[] = [];
   let score = 100;
 
-  // Check global vault
-  if (vault.globalExists()) {
-    const globalEntries = vault.globalIndex.parseEntries();
+  // Respect mode setting — skip global vault in local mode
+  const mode = vault.settings.load().mode;
+  const checkGlobal = mode !== 'local';
+
+  // Check global vault (only if mode allows)
+  if (checkGlobal && vault.globalExists()) {
+    const globalEntries = vault.globalIndex.parseActiveEntries();
     const globalFiles = vault.listDocFiles('global');
 
     // Check for orphaned files (file exists but not in index)
@@ -125,14 +132,14 @@ export function handleHealth(vault: VaultManager): ToolResponse {
         }
       }
     }
-  } else {
+  } else if (checkGlobal) {
     issues.push('Global vault not initialized');
     score -= 10;
   }
 
   // Check project vault
   if (vault.projectExists()) {
-    const projectEntries = vault.projectIndex.parseEntries();
+    const projectEntries = vault.projectIndex.parseActiveEntries();
     const projectFiles = vault.listDocFiles('project');
 
     for (const file of projectFiles) {

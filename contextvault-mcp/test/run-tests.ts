@@ -446,6 +446,39 @@ function runTests() {
 
   // ctx_ask removed - use ctx_search + ctx_read instead
 
+  // --- parseActiveEntries and health/review bug fix tests ---
+
+  console.log('\n[parseActiveEntries]');
+
+  test('parseActiveEntries excludes archived entries', () => {
+    // After the archive test above, we have archived entries in the index
+    const allEntries = vault.projectIndex.parseEntries();
+    const activeEntries = vault.projectIndex.parseActiveEntries();
+    // Active entries should be fewer than or equal to all entries
+    assert(activeEntries.length <= allEntries.length, `Active (${activeEntries.length}) should be <= all (${allEntries.length})`);
+    // No archived IDs should appear in active entries
+    for (const entry of activeEntries) {
+      // Active entries should still exist as files in the vault (not in archive/)
+      const vaultPath = vault.projectPath;
+      const files = fs.readdirSync(vaultPath).filter(f => f.startsWith(entry.id) && f.endsWith('.md'));
+      assert(files.length > 0, `Active entry ${entry.id} should have a file in vault`);
+    }
+  });
+
+  test('health check does not flag archived entries', () => {
+    const result = handleHealth(vault);
+    const text = getText(result);
+    // Should not contain "Missing file for project index entry" for archived docs
+    assert(!text.includes('Missing file for project index entry'), `Health should not flag archived entries as missing: ${text}`);
+  });
+
+  test('review only counts active documents', () => {
+    const result = handleReview(vault, {});
+    const text = getText(result);
+    const activeCount = vault.projectIndex.parseActiveEntries().length;
+    assertContains(text, `${activeCount}`, `Review should report ${activeCount} active docs`);
+  });
+
   // --- Research Tracking Tests ---
 
   console.log('\n[research tracking]');

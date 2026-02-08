@@ -33,6 +33,10 @@ export class IndexManager {
     return fs.readFileSync(this.indexPath, 'utf-8');
   }
 
+  /**
+   * Parse ALL entries from all tables in the index (Active + Archived).
+   * Use parseActiveEntries() if you only want Active Documents.
+   */
   parseEntries(): IndexEntry[] {
     const content = this.readRaw();
     if (!content) return [];
@@ -65,6 +69,61 @@ export class IndexManager {
       if (inTable && headerPassed && !line.startsWith('|') && line.trim() !== '') {
         inTable = false;
         headerPassed = false;
+      }
+    }
+
+    return entries;
+  }
+
+  /**
+   * Parse only Active Documents table entries (excludes Archived table).
+   * Use this for health checks, reviews, and file validation.
+   */
+  parseActiveEntries(): IndexEntry[] {
+    const content = this.readRaw();
+    if (!content) return [];
+
+    const entries: IndexEntry[] = [];
+    const lines = content.split('\n');
+    let inActiveTable = false;
+    let headerPassed = false;
+    let passedActiveHeader = false;
+
+    for (const line of lines) {
+      // Detect "Active Documents" section header
+      if (line.includes('Active Documents') || line.includes('## Active')) {
+        passedActiveHeader = true;
+        continue;
+      }
+
+      // Detect table start after Active Documents header
+      if (passedActiveHeader && !inActiveTable && line.includes('| ID') && line.includes('| Topic')) {
+        inActiveTable = true;
+        continue;
+      }
+
+      // Skip separator row
+      if (inActiveTable && !headerPassed && line.match(/^\|[-\s|]+\|$/)) {
+        headerPassed = true;
+        continue;
+      }
+
+      // Parse table rows
+      if (inActiveTable && headerPassed && line.startsWith('|')) {
+        const cells = line.split('|').map(c => c.trim()).filter(Boolean);
+        if (cells.length >= 4 && cells[0].match(/^[GP]\d{3}$/)) {
+          entries.push({
+            id: cells[0],
+            topic: cells[1],
+            status: cells[2],
+            summary: cells[3],
+          });
+        }
+      }
+
+      // Stop at end of Active table (non-table line or new section)
+      if (inActiveTable && headerPassed && !line.startsWith('|') && line.trim() !== '') {
+        break; // Stop — we've left the Active Documents table
       }
     }
 
