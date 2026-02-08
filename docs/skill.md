@@ -3,7 +3,7 @@
 ```yaml
 package:
   name: contextvault
-  version: 1.8.7
+  version: 1.8.8
   description: External memory system for AI coding assistants. Persistent documentation that survives session death.
   category: productivity
   emoji: 🏰
@@ -87,8 +87,8 @@ The `ctx_doc` / `/ctx-doc` command supports three types:
 
 | Vault | Prefix | Location | Contains |
 |-------|--------|----------|----------|
-| Global | G### | `~/.claude/vault/` | Reusable patterns, best practices |
-| Project | P### | `./.claude/vault/` | Project-specific architecture, decisions |
+| Global | G### | `~/.contextvault/` (MCP) or `~/.claude/vault/` (native) | Reusable patterns, best practices |
+| Project | P### | `./.contextvault/` (MCP) or `./.claude/vault/` (native) | Project-specific architecture, decisions |
 
 ### Enforcement Levels
 
@@ -115,12 +115,20 @@ The `ctx_doc` / `/ctx-doc` command supports three types:
 
 ## Changelog (Recent)
 
-### v1.8.7 / MCP v1.0.8 - 2026-02-07
+### v1.8.8 / MCP v1.0.8 - 2026-02-08
+- **CLI UX**: TTY detection, `--version`, `--help`, `--check-update` flags
+- **Health score breakdown**: Per-category scoring (Index, Files, Size, Drift)
+- **Smarter merge suggestions**: Content keyword comparison, not type prefix
+- Dynamic version from package.json
+- 54 tests, all pass
+
+### v1.8.7 / MCP v1.0.7 - 2026-02-08
+- **Bug fixes**: Health check no longer flags archived entries, respects mode, filters false positives
 - **Feature Consolidation**: 28 → 23 commands
 - `ctx_snippet` and `ctx_intel` merged into `ctx_doc` with `type` parameter
-- `ctx_note` removed (use `ctx_update section="Notes"`)
-- `ctx_explain` removed (use `ctx_doc`)
-- `ctx_ask` removed (use `ctx_search` + `ctx_read`)
+- `ctx_note`, `ctx_explain`, `ctx_ask` removed
+- Added `parseActiveEntries()`, npm README
+- 49 tests
 
 ### v1.8.6 / MCP v1.0.4 - 2026-02-06
 - Added `ctx_archive`, `ctx_review`

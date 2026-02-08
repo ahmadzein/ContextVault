@@ -25,10 +25,44 @@ Add to your MCP settings (Cursor, Windsurf, Cline, etc.):
 {
   "mcpServers": {
     "contextvault": {
-      "command": "contextvault-mcp"
+      "command": "npx",
+      "args": ["-y", "contextvault-mcp"]
     }
   }
 }
+```
+
+For Claude Code:
+```bash
+claude mcp add contextvault -- npx -y contextvault-mcp
+```
+
+---
+
+## CLI Flags
+
+The MCP server supports CLI flags when run directly:
+
+| Flag | Description |
+|------|-------------|
+| `--version`, `-v` | Print version number and exit |
+| `--help`, `-h` | Print usage info and exit |
+| `--check-update` | Check npm registry for newer versions |
+
+```bash
+npx contextvault-mcp --version        # → 1.0.8
+npx contextvault-mcp --help           # → Usage info + MCP config example
+npx contextvault-mcp --check-update   # → Checks npm for updates
+```
+
+When run in an interactive terminal (TTY), the server shows an informative banner instead of hanging silently.
+
+### Upgrading
+
+```bash
+rm -rf ~/.npm/_npx                    # Clear npx cache
+npx -y contextvault-mcp --version     # Pulls latest, shows version
+# Restart your MCP client
 ```
 
 ---
@@ -170,10 +204,12 @@ Parameters:
 ```
 
 #### ctx_health
-Check vault health: orphaned docs, index mismatches, size limits.
+Check vault health with per-category score breakdown: Index Consistency, File Integrity, Size Compliance, Code Drift. Each category scored out of 25 for a total of 100.
 
 ```
 No parameters required.
+
+Returns: Score table with per-category breakdown + detailed issues list
 ```
 
 #### ctx_bootstrap
@@ -215,12 +251,14 @@ Parameters:
 ```
 
 #### ctx_review
-Run curation review on vault.
+Run curation review on vault. Finds stale docs, suggests merges based on actual content keyword overlap (not just topic names), and identifies archive candidates.
 
 ```
 Parameters:
   vault: "global" | "project" (default: "project")
   stale_days: number (default: 30) - Days to consider stale
+
+Returns: Priority-sorted action items (stale, short, merge candidates)
 ```
 
 #### ctx_quiz
