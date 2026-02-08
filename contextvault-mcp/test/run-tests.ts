@@ -7,6 +7,10 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
+import { execSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+
+const __test_dirname = path.dirname(fileURLToPath(import.meta.url));
 import { VaultManager } from '../src/vault/manager.js';
 import { handleInit } from '../src/tools/init.js';
 import { handleStatus } from '../src/tools/status.js';
@@ -472,11 +476,36 @@ function runTests() {
     assert(!text.includes('Missing file for project index entry'), `Health should not flag archived entries as missing: ${text}`);
   });
 
+  test('health check shows per-category score breakdown', () => {
+    const result = handleHealth(vault);
+    const text = getText(result);
+    assertContains(text, 'Score Breakdown', 'Health output');
+    assertContains(text, 'Index Consistency', 'Health output');
+    assertContains(text, 'File Integrity', 'Health output');
+    assertContains(text, 'Size Compliance', 'Health output');
+    assertContains(text, 'Code Drift', 'Health output');
+  });
+
   test('review only counts active documents', () => {
     const result = handleReview(vault, {});
     const text = getText(result);
     const activeCount = vault.projectIndex.parseActiveEntries().length;
     assertContains(text, `${activeCount}`, `Review should report ${activeCount} active docs`);
+  });
+
+  test('review merge suggestions use content keywords, not type prefix', () => {
+    // Create two docs with same type prefix but completely different content
+    handleDoc(vault, { topic: 'Blog Architecture', content: 'WordPress uses PHP templates with MySQL backend. Theme files in wp-content/themes.', type: 'intel' });
+    handleDoc(vault, { topic: 'PhD Research Notes', content: 'Quantum computing research paper on topological qubits. Published in Nature journal.', type: 'intel' });
+    const result = handleReview(vault, {});
+    const text = getText(result);
+    // Find if there's a merge suggestion specifically pairing these two docs
+    const lines = text.split('\n');
+    const blogPhDMerge = lines.find(l =>
+      l.includes('shared keywords') && l.includes('Blog') && l.includes('PhD')
+    );
+    assert(!blogPhDMerge,
+      `Should not suggest merging unrelated docs. Found: ${blogPhDMerge ?? 'none'}`);
   });
 
   // --- Research Tracking Tests ---
@@ -636,6 +665,28 @@ function runTests() {
     assert(reminder !== null, 'Cross-domain exploration should trigger reminder with diversity weighting');
     assertContains(reminder!, 'domains', 'Should mention domains in reminder');
     vault.resetEnforcement();
+  });
+
+  // --- CLI Tests ---
+  console.log('\n[CLI]');
+
+  const distIndex = path.resolve(__test_dirname, '..', 'dist', 'index.js');
+
+  test('CLI: --version outputs valid semver', () => {
+    const result = execSync(`node ${distIndex} --version`, { encoding: 'utf-8' }).trim();
+    assert(/^\d+\.\d+\.\d+$/.test(result), `Expected semver, got: "${result}"`);
+  });
+
+  test('CLI: --help outputs usage info', () => {
+    const result = execSync(`node ${distIndex} --help`, { encoding: 'utf-8' });
+    assertContains(result, 'contextvault-mcp', 'Help output');
+    assertContains(result, '--version', 'Help output');
+    assertContains(result, 'mcpServers', 'Help output');
+  });
+
+  test('CLI: -v is alias for --version', () => {
+    const result = execSync(`node ${distIndex} -v`, { encoding: 'utf-8' }).trim();
+    assert(/^\d+\.\d+\.\d+$/.test(result), `Expected semver, got: "${result}"`);
   });
 
   // --- Results ---

@@ -26,7 +26,7 @@ export function handleReview(vault: VaultManager, params: Record<string, unknown
   const today = new Date();
 
   const reviewItems: ReviewItem[] = [];
-  const topicGroups: Map<string, string[]> = new Map();
+  const contentKeywords: Map<string, string[]> = new Map();
 
   // Check each document
   for (const entry of entries) {
@@ -61,36 +61,40 @@ export function handleReview(vault: VaultManager, params: Record<string, unknown
       });
     }
 
-    // Check 3: Collect topics for merge suggestions
-    const topicWords = entry.topic.toLowerCase().split(/[\s_-]+/);
-    for (const word of topicWords) {
-      if (word.length > 3) {
-        if (!topicGroups.has(word)) topicGroups.set(word, []);
-        topicGroups.get(word)!.push(entry.id);
-      }
-    }
+    // Check 3: Collect content keywords for merge suggestions
+    const keywords = extractContentKeywords(entry.topic, content);
+    contentKeywords.set(entry.id, keywords);
   }
 
-  // Check 4: Find potentially related documents that could be merged
-  for (const [word, ids] of topicGroups) {
-    if (ids.length >= 2 && ids.length <= 4) {
-      // Only suggest if 2-4 docs share a keyword (not too many)
-      const relevantEntries = entries.filter(e => ids.includes(e.id));
-      const topics = relevantEntries.map(e => `${e.id}: ${e.topic}`).join(', ');
+  // Check 4: Find documents with significant content overlap
+  const entryIds = entries.map(e => e.id);
+  const suggestedPairs = new Set<string>();
 
-      // Avoid duplicate suggestions
-      const existingMergeSuggestion = reviewItems.find(
-        r => r.issue.includes('potential merge') && ids.some(id => r.id === id)
-      );
+  for (let i = 0; i < entryIds.length; i++) {
+    for (let j = i + 1; j < entryIds.length; j++) {
+      const idA = entryIds[i];
+      const idB = entryIds[j];
+      const kwA = contentKeywords.get(idA);
+      const kwB = contentKeywords.get(idB);
+      if (!kwA || !kwB) continue;
 
-      if (!existingMergeSuggestion) {
-        reviewItems.push({
-          id: ids[0],
-          topic: `Related docs: ${word}`,
-          issue: `${ids.length} docs share keyword "${word}"`,
-          suggestion: `Consider merging: ${topics}`,
-          priority: 'low',
-        });
+      const shared = kwA.filter(w => kwB.includes(w));
+      const smaller = Math.min(kwA.length, kwB.length);
+      // Require at least 3 shared keywords AND 30% overlap with the smaller set
+      if (shared.length >= 3 && smaller > 0 && (shared.length / smaller) >= 0.3) {
+        const pairKey = `${idA}-${idB}`;
+        if (!suggestedPairs.has(pairKey)) {
+          suggestedPairs.add(pairKey);
+          const entryA = entries.find(e => e.id === idA)!;
+          const entryB = entries.find(e => e.id === idB)!;
+          reviewItems.push({
+            id: idA,
+            topic: `Related docs`,
+            issue: `${shared.length} shared keywords between ${idA} and ${idB}`,
+            suggestion: `Consider merging: ${idA}: ${entryA.topic}, ${idB}: ${entryB.topic} (shared: ${shared.slice(0, 5).join(', ')})`,
+            priority: 'low',
+          });
+        }
       }
     }
   }
@@ -143,6 +147,35 @@ export function handleReview(vault: VaultManager, params: Record<string, unknown
   return {
     content: [{ type: 'text', text: report }],
   };
+}
+
+// Stop words and type prefixes to exclude from keyword comparison
+const STOP_WORDS = new Set([
+  'the', 'and', 'for', 'from', 'with', 'that', 'this', 'have', 'has', 'had',
+  'are', 'was', 'were', 'been', 'being', 'will', 'would', 'could', 'should',
+  'not', 'but', 'its', 'into', 'than', 'then', 'when', 'what', 'where', 'which',
+  'each', 'every', 'some', 'more', 'also', 'just', 'about', 'over', 'after',
+  'before', 'between', 'under', 'above', 'such', 'only', 'other', 'very',
+  'used', 'use', 'using', 'uses', 'file', 'files', 'code', 'docs', 'document',
+  'current', 'understanding', 'summary', 'last', 'updated', 'date', 'topic',
+  'learning', 'intel', 'snippet', 'error', 'decision', 'plan', 'type',
+  'content', 'section', 'key', 'points', 'details', 'notes', 'history',
+]);
+
+function extractContentKeywords(topic: string, content: string): string[] {
+  const text = `${topic} ${content}`.toLowerCase();
+  // Strip markdown formatting
+  const clean = text
+    .replace(/[#*`_\[\](){}|>~]/g, ' ')
+    .replace(/https?:\/\/\S+/g, ' ')
+    .replace(/[^a-z0-9\s]/g, ' ');
+
+  const words = clean.split(/\s+/).filter(w =>
+    w.length > 3 && !STOP_WORDS.has(w) && !/^\d+$/.test(w)
+  );
+
+  // Deduplicate and return
+  return [...new Set(words)];
 }
 
 function findDocFile(vaultPath: string, id: string): string | null {

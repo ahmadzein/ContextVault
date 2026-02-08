@@ -3,6 +3,14 @@ import { ToolResponse } from '../vault/types.js';
 export function handleChangelog(): ToolResponse {
   const text = `# ContextVault Changelog
 
+## v1.0.8 (MCP Server)
+- Added: CLI UX — TTY detection shows banner when run in terminal
+- Added: --version/-v, --help/-h, --check-update flags
+- Added: Dynamic version from package.json (no more hardcoded strings)
+- Fixed: Merge suggestions use content keywords, not topic type prefix
+- Added: Health score per-category breakdown (Index, Files, Size, Drift)
+- 54 tests, all pass
+
 ## v1.0.7 (MCP Server)
 - Fixed: Health check no longer flags archived entries as "missing file"
 - Fixed: Health check respects mode setting (skips global in local mode)

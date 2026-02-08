@@ -1,3 +1,6 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
@@ -40,12 +43,13 @@ export class ContextVaultServer {
   private server: Server;
   private vault: VaultManager;
 
-  constructor() {
+  constructor(version?: string) {
     this.vault = new VaultManager();
+    const resolvedVersion = version ?? this.readPackageVersion();
     this.server = new Server(
       {
         name: 'contextvault-mcp',
-        version: '1.0.7',
+        version: resolvedVersion,
       },
       {
         capabilities: {
@@ -57,6 +61,16 @@ export class ContextVaultServer {
 
     this.registerTools();
     this.registerResources();
+  }
+
+  private readPackageVersion(): string {
+    try {
+      const dir = path.dirname(fileURLToPath(import.meta.url));
+      const pkgPath = path.resolve(dir, '..', 'package.json');
+      return JSON.parse(fs.readFileSync(pkgPath, 'utf-8')).version ?? '0.0.0';
+    } catch {
+      return '0.0.0';
+    }
   }
 
   private registerTools(): void {

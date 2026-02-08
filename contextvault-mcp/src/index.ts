@@ -1,8 +1,7 @@
 #!/usr/bin/env node
-import { ContextVaultServer } from './server.js';
+import { main } from './cli.js';
 
-const server = new ContextVaultServer();
-server.run().catch((err) => {
+main().catch((err) => {
   console.error('ContextVault MCP Server error:', err);
   process.exit(1);
 });

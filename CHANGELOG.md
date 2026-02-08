@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.8] - 2026-02-08
+
+### Added - MCP Server v1.0.8
+
+- **CLI UX**: TTY detection shows informative banner when run in terminal (instead of silent hang)
+- **CLI flags**: `--version/-v`, `--help/-h`, `--check-update` for version management
+- **Dynamic version**: Version read from package.json at runtime (no more hardcoded strings)
+- **Health score breakdown**: Per-category scoring table (Index Consistency, File Integrity, Size Compliance, Code Drift) — each scored out of 25
+- **Smarter merge suggestions**: Review tool compares actual document content keywords instead of just topic type prefix — no more false positives for unrelated docs sharing "intel:" prefix
+- 54 tests, all pass (up from 49)
+
+---
+
 ## [1.8.7] - 2026-02-08
 
 ### Fixed - MCP Server v1.0.7

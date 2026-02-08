@@ -67,7 +67,7 @@
       <a href="../index.html">Home</a>
       <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
       <div class="version-badge">
-        <span class="version-mcp">MCP v1.0.7 Beta</span>
+        <span class="version-mcp">MCP v1.0.8 Beta</span>
         <span class="version-sep">|</span>
         <span class="version-native">Native v1.8.7 Beta</span>
       </div>
@@ -122,7 +122,19 @@
     <h1>Changelog</h1>
     <p class="subtitle">Version history and release notes for ContextVault.</p>
 
-    <h2>v1.8.7 + MCP v1.0.7 <span style="color: var(--gold-500); font-size: 0.8em;">(Latest)</span></h2>
+    <h2>v1.8.8 + MCP v1.0.8 <span style="color: var(--gold-500); font-size: 0.8em;">(Latest)</span></h2>
+    <p><strong>Released:</strong> February 8, 2026</p>
+    <h4>CLI UX &amp; Quality (MCP v1.0.8)</h4>
+    <ul>
+      <li><strong>CLI UX</strong>: TTY detection — shows informative banner when run in terminal (instead of silent hang)</li>
+      <li><strong>CLI flags</strong>: <code>--version/-v</code>, <code>--help/-h</code>, <code>--check-update</code> for version management</li>
+      <li><strong>Dynamic version</strong>: Version read from package.json at runtime (no more hardcoded strings)</li>
+      <li><strong>Health score breakdown</strong>: Per-category scoring table (Index Consistency, File Integrity, Size Compliance, Code Drift)</li>
+      <li><strong>Smarter merge suggestions</strong>: Compares actual content keywords, not just topic type prefix</li>
+      <li>54 tests, all pass (up from 49)</li>
+    </ul>
+
+    <h2>v1.8.7 + MCP v1.0.7</h2>
     <p><strong>Released:</strong> February 8, 2026</p>
     <h4>Bug Fixes (MCP v1.0.7)</h4>
     <ul>
@@ -228,6 +240,9 @@
       <li>v1.0.3 — Research insight detection (trackResearch, getResearchReminder)</li>
       <li>v1.0.4 — 3 new tools (ctx_archive, ctx_review, ctx_ask), code-drift detection, semantic clustering</li>
       <li>v1.0.5 — Feature consolidation (28 → 23 tools), ctx_doc with type parameter</li>
+      <li>v1.0.6 — Added README for npm display</li>
+      <li>v1.0.7 — Health/review bug fixes, parseActiveEntries, false positive filters</li>
+      <li>v1.0.8 — CLI UX (TTY detection, --version, --help, --check-update), health score breakdown, smarter merge suggestions</li>
     </ul>
 
     <h2>v1.8.4</h2>

@@ -81,11 +81,24 @@ function checkFileReference(ref: FileReference, projectRoot: string): string | n
   return `${ref.docFile}: Referenced file not found: ${ref.refPath}${ref.lineNumber ? ':' + ref.lineNumber : ''}`;
 }
 
+interface CategoryScore {
+  name: string;
+  max: number;
+  score: number;
+  issues: string[];
+}
+
 export function handleHealth(vault: VaultManager): ToolResponse {
-  const issues: string[] = [];
   const fixes: string[] = [];
   const driftIssues: string[] = [];
-  let score = 100;
+
+  // Per-category scoring
+  const categories: Record<string, CategoryScore> = {
+    index: { name: 'Index Consistency', max: 25, score: 25, issues: [] },
+    files: { name: 'File Integrity', max: 25, score: 25, issues: [] },
+    size: { name: 'Size Compliance', max: 25, score: 25, issues: [] },
+    drift: { name: 'Code Drift', max: 25, score: 25, issues: [] },
+  };
 
   // Respect mode setting — skip global vault in local mode
   const mode = vault.settings.load().mode;
@@ -96,45 +109,44 @@ export function handleHealth(vault: VaultManager): ToolResponse {
     const globalEntries = vault.globalIndex.parseActiveEntries();
     const globalFiles = vault.listDocFiles('global');
 
-    // Check for orphaned files (file exists but not in index)
+    // Orphaned files (file exists but not in index)
     for (const file of globalFiles) {
       const id = file.split('_')[0];
       if (!globalEntries.find(e => e.id === id)) {
-        issues.push(`Orphaned file: ${file} (not in global index)`);
-        score -= 5;
+        categories.index.issues.push(`Orphaned file: ${file} (not in global index)`);
+        categories.index.score -= 5;
       }
     }
 
-    // Check for missing files (in index but file missing)
+    // Missing files (in index but file missing)
     for (const entry of globalEntries) {
       if (!globalFiles.find(f => f.startsWith(entry.id + '_'))) {
-        issues.push(`Missing file for global index entry: ${entry.id} - ${entry.topic}`);
-        score -= 10;
+        categories.files.issues.push(`Missing file for global index entry: ${entry.id} - ${entry.topic}`);
+        categories.files.score -= 10;
       }
     }
 
-    // Check doc sizes
+    // Doc sizes + code drift
     for (const file of globalFiles) {
       const content = fs.readFileSync(path.join(vault.globalPath, file), 'utf-8');
       const lines = content.split('\n').length;
       if (lines > 100) {
-        issues.push(`${file}: ${lines} lines (exceeds 100-line limit)`);
-        score -= 3;
+        categories.size.issues.push(`${file}: ${lines} lines (exceeds 100-line limit)`);
+        categories.size.score -= 3;
       }
 
-      // Check for code drift (broken file references)
       const refs = extractFileReferences(content, file);
       for (const ref of refs) {
         const issue = checkFileReference(ref, process.cwd());
         if (issue) {
           driftIssues.push(issue);
-          score -= 2;
+          categories.drift.score -= 2;
         }
       }
     }
   } else if (checkGlobal) {
-    issues.push('Global vault not initialized');
-    score -= 10;
+    categories.files.issues.push('Global vault not initialized');
+    categories.files.score -= 10;
   }
 
   // Check project vault
@@ -145,15 +157,15 @@ export function handleHealth(vault: VaultManager): ToolResponse {
     for (const file of projectFiles) {
       const id = file.split('_')[0];
       if (!projectEntries.find(e => e.id === id)) {
-        issues.push(`Orphaned file: ${file} (not in project index)`);
-        score -= 5;
+        categories.index.issues.push(`Orphaned file: ${file} (not in project index)`);
+        categories.index.score -= 5;
       }
     }
 
     for (const entry of projectEntries) {
       if (!projectFiles.find(f => f.startsWith(entry.id + '_'))) {
-        issues.push(`Missing file for project index entry: ${entry.id} - ${entry.topic}`);
-        score -= 10;
+        categories.files.issues.push(`Missing file for project index entry: ${entry.id} - ${entry.topic}`);
+        categories.files.score -= 10;
       }
     }
 
@@ -161,59 +173,80 @@ export function handleHealth(vault: VaultManager): ToolResponse {
       const content = fs.readFileSync(path.join(vault.projectPath, file), 'utf-8');
       const lines = content.split('\n').length;
       if (lines > 100) {
-        issues.push(`${file}: ${lines} lines (exceeds 100-line limit)`);
-        score -= 3;
+        categories.size.issues.push(`${file}: ${lines} lines (exceeds 100-line limit)`);
+        categories.size.score -= 3;
       }
 
-      // Check for code drift (broken file references)
       const refs = extractFileReferences(content, file);
       for (const ref of refs) {
         const issue = checkFileReference(ref, process.cwd());
         if (issue) {
           driftIssues.push(issue);
-          score -= 2;
+          categories.drift.score -= 2;
         }
       }
     }
   } else {
-    issues.push('Project vault not initialized');
-    score -= 5;
+    categories.files.issues.push('Project vault not initialized');
+    categories.files.score -= 5;
   }
 
   // Check settings
   try {
     vault.settings.load();
   } catch {
-    issues.push('Settings file corrupted or missing');
-    score -= 5;
+    categories.index.issues.push('Settings file corrupted or missing');
+    categories.index.score -= 5;
   }
 
-  score = Math.max(0, score);
+  // Clamp category scores to 0
+  for (const cat of Object.values(categories)) {
+    cat.score = Math.max(0, cat.score);
+  }
+
+  const totalScore = Object.values(categories).reduce((sum, c) => sum + c.score, 0);
+  const allIssues = Object.values(categories).flatMap(c => c.issues);
 
   let text = `# Vault Health Check\n\n`;
-  text += `**Score:** ${score}/100 ${score >= 90 ? 'Healthy' : score >= 70 ? 'Fair' : 'Needs Attention'}\n\n`;
+  text += `**Score:** ${totalScore}/100 ${totalScore >= 90 ? 'Healthy' : totalScore >= 70 ? 'Fair' : 'Needs Attention'}\n\n`;
 
-  if (issues.length === 0) {
+  // Category breakdown
+  text += `## Score Breakdown\n\n`;
+  text += `| Category | Score | Status |\n`;
+  text += `|----------|-------|--------|\n`;
+  for (const cat of Object.values(categories)) {
+    const status = cat.score === cat.max ? 'Pass' : cat.score >= cat.max * 0.7 ? 'Fair' : 'Fail';
+    text += `| ${cat.name} | ${cat.score}/${cat.max} | ${status} |\n`;
+  }
+  text += `\n`;
+
+  if (allIssues.length === 0) {
     text += `No issues found. Vault is in great shape.\n`;
   } else {
-    text += `## Issues Found (${issues.length})\n\n`;
-    for (const issue of issues) {
-      text += `- ${issue}\n`;
+    text += `## Issues Found (${allIssues.length})\n\n`;
+    for (const cat of Object.values(categories)) {
+      if (cat.issues.length > 0) {
+        text += `### ${cat.name}\n`;
+        for (const issue of cat.issues) {
+          text += `- ${issue}\n`;
+        }
+        text += `\n`;
+      }
     }
   }
 
   if (fixes.length > 0) {
-    text += `\n## Auto-Fixed\n\n`;
+    text += `## Auto-Fixed\n\n`;
     for (const fix of fixes) {
       text += `- ${fix}\n`;
     }
   }
 
   if (driftIssues.length > 0) {
-    text += `\n## Code Drift Detected (${driftIssues.length})\n\n`;
+    text += `## Code Drift Detected (${driftIssues.length})\n\n`;
     text += `*These docs reference files or line numbers that no longer exist:*\n\n`;
     for (const drift of driftIssues) {
-      text += `- ⚠️ ${drift}\n`;
+      text += `- ${drift}\n`;
     }
     text += `\n**Tip:** Update or archive these docs to keep documentation accurate.\n`;
   }
