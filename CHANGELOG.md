@@ -7,7 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.8.7] - 2026-02-07
+## [1.8.7] - 2026-02-08
+
+### Fixed - MCP Server v1.0.7
+
+- **Health check**: No longer flags archived entries as "missing file"
+- **Health check**: Respects mode setting — skips global vault when mode is `local`
+- **Code drift detection**: Filters false positives (JS globals `window.*`, URLs `www.*`, example paths)
+- **Review tool**: Only counts active documents, not archived ones
+- **Health score**: Now reflects actual vault health (was tanked by false positives)
+- Added `parseActiveEntries()` to IndexManager for accurate active-only queries
+- Added README to npm package
+- 49 tests, all pass (up from 46)
+- Removed 5 unused legacy functions from installer (-603 lines)
 
 ### Changed - Feature Consolidation (28 → 23 commands)
 
@@ -32,8 +44,8 @@ Merged overlapping features into `ctx_doc` with `type` parameter:
 
 ### Technical Details
 
-- **MCP Server v1.0.6**: 23 tools (down from 28), 4 resources
-- 46 tests, all pass
+- **MCP Server v1.0.7**: 23 tools (down from 28), 4 resources
+- 49 tests, all pass
 - Enhanced `ctx_doc` with `type=learning|intel|snippet` parameter
 - Net code reduction: -469 lines
 

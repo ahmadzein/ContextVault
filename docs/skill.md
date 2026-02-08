@@ -115,7 +115,7 @@ The `ctx_doc` / `/ctx-doc` command supports three types:
 
 ## Changelog (Recent)
 
-### v1.8.7 / MCP v1.0.6 - 2026-02-07
+### v1.8.7 / MCP v1.0.7 - 2026-02-07
 - **Feature Consolidation**: 28 → 23 commands
 - `ctx_snippet` and `ctx_intel` merged into `ctx_doc` with `type` parameter
 - `ctx_note` removed (use `ctx_update section="Notes"`)

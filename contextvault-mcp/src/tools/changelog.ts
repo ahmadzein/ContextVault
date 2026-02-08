@@ -3,6 +3,23 @@ import { ToolResponse } from '../vault/types.js';
 export function handleChangelog(): ToolResponse {
   const text = `# ContextVault Changelog
 
+## v1.0.7 (MCP Server)
+- Fixed: Health check no longer flags archived entries as "missing file"
+- Fixed: Health check respects mode setting (skips global in local mode)
+- Fixed: Code drift filters false positives (JS globals, URLs, example paths)
+- Fixed: Review tool only counts active documents
+- Added: parseActiveEntries() for accurate active-only queries
+- Added: README for npm package
+- 49 tests, all pass
+
+## v1.0.6 (MCP Server)
+- Added README.md for npm display
+- Updated all version references
+
+## v1.0.5 (MCP Server)
+- Feature consolidation: 28 → 23 tools
+- ctx_doc with type=learning|intel|snippet parameter
+
 ## v1.0.0 (MCP Server)
 - Initial MCP server release
 - 23 tools mirroring all /ctx-* commands
