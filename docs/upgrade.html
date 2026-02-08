@@ -129,13 +129,86 @@
       <p>Upgrades <strong>never</strong> delete or modify your vault documents. Only the instructions, commands, and hooks are updated.</p>
     </div>
 
-    <h2>MCP Server Upgrade</h2>
-    <p>If you use the MCP server, it <strong>auto-updates via npx</strong>. Every time your AI tool starts, <code>npx contextvault-mcp</code> fetches the latest version automatically. No manual upgrade step needed.</p>
+    <h2 id="mcp-upgrade">MCP Server Upgrade</h2>
+    <p>The MCP server runs via <code>npx</code>, which <strong>caches</strong> the first version it downloads. It does <strong>not</strong> auto-update. You need to clear the cache to get a new version.</p>
+
+    <h3>Step 1: Check Your Current Version</h3>
+    <p>Run this in your terminal (not inside Claude Code):</p>
+    <pre><code>npx contextvault-mcp --version
+# Example output: 1.0.7</code></pre>
+
+    <h3>Step 2: Clear the npx Cache</h3>
+    <p>This removes the cached package so npx will download the latest on next run:</p>
+    <pre><code># macOS / Linux
+rm -rf ~/.npm/_npx
+
+# Windows (PowerShell)
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\npm-cache\_npx"</code></pre>
+
+    <h3>Step 3: Verify the New Version</h3>
+    <pre><code>npx -y contextvault-mcp --version
+# Should output: 1.0.8 (or latest)</code></pre>
+
+    <h3>Step 4: Restart Your MCP Client</h3>
+    <p>Close and reopen <strong>Claude Code</strong>, <strong>Cursor</strong>, <strong>Windsurf</strong>, or whichever MCP client you use. The MCP server is launched fresh on each session start.</p>
+
+    <h3>Step 5: Confirm Inside Your AI Tool</h3>
+    <p>Inside Claude Code (or your MCP client), run:</p>
+    <pre><code>ctx_changelog    # Should show the latest version at the top
+ctx_status       # Should show vault status without errors</code></pre>
 
     <div class="callout callout-tip">
-      <div class="callout-title">Force a specific MCP version</div>
-      <p>To pin a version: <code>npx contextvault-mcp@1.0.2</code>. To clear the npx cache and force a fresh download: <code>npx --yes contextvault-mcp</code>.</p>
+      <div class="callout-title">Check for Updates Anytime</div>
+      <p>Run <code>npx contextvault-mcp --check-update</code> to see if a newer version is available on npm without upgrading.</p>
     </div>
+
+    <div class="callout callout-info">
+      <div class="callout-title">Pin a Specific Version</div>
+      <p>If you want to stay on a specific version, update your MCP config to pin it:</p>
+      <pre><code>{
+  "mcpServers": {
+    "contextvault": {
+      "command": "npx",
+      "args": ["-y", "contextvault-mcp@1.0.8"]
+    }
+  }
+}</code></pre>
+      <p>Or via CLI: <code>claude mcp remove contextvault && claude mcp add contextvault -- npx -y contextvault-mcp@1.0.8</code></p>
+    </div>
+
+    <h3>MCP Quick Reference</h3>
+    <pre><code># MCP UPGRADE CHECKLIST
+# ─────────────────────────────────────────
+
+# 1. Check current version
+npx contextvault-mcp --version
+
+# 2. Clear npx cache
+rm -rf ~/.npm/_npx
+
+# 3. Pull latest and verify
+npx -y contextvault-mcp --version
+
+# 4. Restart your MCP client (Claude Code, Cursor, etc.)
+
+# 5. Verify inside your AI tool
+ctx_changelog
+ctx_status</code></pre>
+
+    <h3>Troubleshooting MCP Upgrades</h3>
+
+    <h4>Version still shows old number after cache clear</h4>
+    <p><strong>Cause:</strong> npm registry CDN cache (usually resolves within 5 minutes).</p>
+    <p><strong>Fix:</strong> Wait a few minutes, then run <code>npx -y contextvault-mcp --version</code> again.</p>
+
+    <h4>Running <code>npx contextvault-mcp</code> in terminal shows nothing</h4>
+    <p><strong>This is expected.</strong> MCP servers use stdio transport &mdash; they wait silently for JSON-RPC messages from an MCP client. You should see a helpful banner now (v1.0.8+), but the server still waits for input. Press <code>Ctrl+C</code> to exit. You don't need to run it manually &mdash; your MCP client launches it automatically.</p>
+
+    <h4><code>--version</code> flag not recognized</h4>
+    <p><strong>Cause:</strong> You're running an older cached version (pre-1.0.8) that doesn't have CLI flags.</p>
+    <p><strong>Fix:</strong> Clear the npx cache first: <code>rm -rf ~/.npm/_npx</code>, then try again.</p>
+
+    <hr>
 
     <h2>Native Installer Upgrade</h2>
     <p>The native installer has two layers that can be upgraded independently:</p>
@@ -152,7 +225,7 @@
         <tr>
           <td><strong>Global Installation</strong></td>
           <td><code>~/.claude/</code></td>
-          <td>CLAUDE.md, 25 slash commands, hooks, global vault</td>
+          <td>CLAUDE.md, 23 slash commands, hooks, global vault</td>
         </tr>
         <tr>
           <td><strong>Project Installation</strong></td>
@@ -183,7 +256,7 @@
       <div class="callout-title">What Gets Updated</div>
       <ul>
         <li><code>~/.claude/CLAUDE.md</code> &mdash; Global instructions for Claude</li>
-        <li><code>~/.claude/commands/</code> &mdash; All 25 slash commands</li>
+        <li><code>~/.claude/commands/</code> &mdash; All 23 slash commands</li>
         <li><code>~/.claude/settings.json</code> &mdash; Hook configurations</li>
         <li><code>~/.claude/vault/settings.json</code> &mdash; Vault settings</li>
       </ul>
