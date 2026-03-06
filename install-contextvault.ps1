@@ -11,7 +11,7 @@
 #>
 
 $ErrorActionPreference = "Stop"
-$VERSION = "1.8.4"
+$VERSION = "1.9.0"
 
 # Colors
 function Write-Color {

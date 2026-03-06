@@ -336,4 +336,4 @@ The native CLI uses Claude Code hooks for enforcement:
 
 ---
 
-*ContextVault Native CLI v1.8.7 — Documentation that survives session death.*
+*ContextVault Native CLI v1.9.0 — Documentation that survives session death.*

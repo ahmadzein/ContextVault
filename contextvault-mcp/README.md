@@ -36,6 +36,17 @@ npm install -g contextvault-mcp
 
 ---
 
+## What's New in v2.0.0
+
+- **McpServer + registerTool API** — Modern MCP SDK pattern (replaces deprecated Server)
+- **Zod input schemas** — Runtime validation on all 23 tools
+- **Tool annotations** — `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint` on every tool
+- **structuredContent** — Machine-readable stats on `ctx_status`
+- **Self-contained descriptions** — Every tool works standalone with any AI client
+- **MCP Resources** — `registerResource` with `ResourceTemplate` for `contextvault://doc/{id}`
+
+---
+
 ## What It Does
 
 ContextVault solves the **Session Death Problem** — every AI session starts fresh, forgetting what was learned before.
