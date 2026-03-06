@@ -2195,8 +2195,7 @@ CMD_EOF
 }
 
 create_cmd_ctx_status() {
-    # Use unquoted CMD_EOF to allow VERSION substitution
-    cat << CMD_EOF
+    cat << 'CMD_EOF'
 ---
 description: Show vault status and statistics
 ---
@@ -2207,9 +2206,9 @@ Show current ContextVault documentation system status with version and update ch
 
 ## Usage
 
-\`\`\`
+```
 /ctx-status
-\`\`\`
+```
 
 ## Instructions
 
@@ -2217,35 +2216,37 @@ When this command is invoked, perform the following:
 
 ### Step 1: Get Version Info
 
-Current installed version: **v${VERSION}**
+Read the installed version dynamically:
+```bash
+grep -m1 'VERSION=' ~/.claude/hooks/ctx-session-start.sh 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+'
+```
 
-Check for updates by reading \`~/.claude/hooks/ctx-session-start.sh\` and extracting the VERSION.
-Then check if newer version is available at GitHub (optional - only if user asks).
+Use this as the current version for all output below.
 
 ### Step 2: Check Current Mode
 
-Read the mode from \`~/.claude/CLAUDE.md\` (look for MODE: line) or default to "local".
-Modes: \`full\` (both), \`local\` (project only), \`global\` (global only)
+Read the mode from `~/.claude/CLAUDE.md` (look for MODE: line) or default to "local".
+Modes: `full` (both), `local` (project only), `global` (global only)
 
 ### Step 3: Check Global ContextVault
 
-Read \`~/.claude/vault/index.md\` and report:
+Read `~/.claude/vault/index.md` and report:
 - Number of global documents (G### entries in the Active Documents table)
 - Status of global system
 
 ### Step 4: Check Project ContextVault
 
-Check if \`.claude/vault/index.md\` exists in current project:
+Check if `.claude/vault/index.md` exists in current project:
 - If EXISTS: Read and report number of project documents (P### entries)
 - If NOT EXISTS: Report "Not initialized - run /ctx-init"
 
 ### Step 5: Display Status Summary
 
-Format output like:
+Format output like (replace VERSION with value from Step 1):
 
-\`\`\`
+```
 ┌─────────────────────────────────────────────────────────────┐
-│  🏰 CONTEXTVAULT STATUS                          v${VERSION}  │
+│  🏰 CONTEXTVAULT STATUS                          vVERSION  │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  ⚙️  MODE: local (project-focused)                          │
@@ -2260,7 +2261,7 @@ Format output like:
 │  ├── Documents: X / 50 max                                  │
 │  └── Last updated: YYYY-MM-DD                               │
 │                                                              │
-│  🔄 UPDATE: ✅ Up to date / ⬆️ v1.X.X available             │
+│  🔄 UPDATE: ✅ Up to date / ⬆️ vX.Y.Z available             │
 │                                                              │
 │  QUICK ACTIONS:                                              │
 │  • /ctx-mode     - Change mode (full/local/global)          │
@@ -2269,14 +2270,14 @@ Format output like:
 │  • /ctx-search   - Search both indexes                      │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
-\`\`\`
+```
 
 ### Step 6: Check for Updates (Optional)
 
 If checking for updates, fetch the latest version from:
-\`https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh\`
+`https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh`
 
-Look for the VERSION= line and compare with current v${VERSION}.
+Look for the VERSION= line and compare with the installed version from Step 1.
 If newer version available, show upgrade command.
 CMD_EOF
 }
@@ -4389,12 +4390,21 @@ Upgrade ContextVault in the current project to the latest version. Updates instr
 
 ---
 
-## Step 1: Backup Current Instructions (Safety)
+## Step 1: Get Latest Version & Backup
 
-First, note what exists:
+First, fetch the latest version and note what exists:
 ```bash
+LATEST_VERSION=$(curl -sfL --max-time 5 "https://raw.githubusercontent.com/ahmadzein/ContextVault/main/install-contextvault.sh" 2>/dev/null | grep -m1 'VERSION=' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+echo "Latest version: $LATEST_VERSION"
 ls -la ./CLAUDE.md .claude/settings.json .git/hooks/pre-commit 2>/dev/null
 ```
+
+Then update the local session-start hook to match:
+```bash
+sed -i '' "s/^VERSION=\"[0-9.]*\"/VERSION=\"$LATEST_VERSION\"/" ~/.claude/hooks/ctx-session-start.sh 2>/dev/null
+```
+
+**Use this LATEST_VERSION for the rest of the upgrade.**
 
 ---
 
@@ -4607,7 +4617,7 @@ Then: `chmod +x .git/hooks/pre-commit`
 
 ## Step 5: Confirm Upgrade
 
-Output this (replace X.Y.Z with actual version from VERSION variable):
+Output this (replace X.Y.Z with LATEST_VERSION fetched in Step 1):
 ```
 ContextVault vX.Y.Z Upgrade Complete!
 
