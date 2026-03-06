@@ -3,8 +3,8 @@
 ```yaml
 package:
   name: contextvault
-  version: 1.8.7
-  description: Native CLI for ContextVault - External memory for Claude Code
+  version: 1.9.0
+  description: Native CLI for ContextVault - Slash commands and hooks for Claude Code
   category: productivity
   emoji: 🏰
   website: https://ctx-vault.com

@@ -3,7 +3,7 @@
 ```yaml
 package:
   name: contextvault
-  version: 1.8.8
+  version: 1.9.0
   description: External memory system for AI coding assistants. Persistent documentation that survives session death.
   category: productivity
   emoji: 🏰
@@ -30,8 +30,8 @@ ContextVault solves the **Session Death Problem** — every AI coding session st
 
 | Mode | Best For | Syntax | Installation |
 |------|----------|--------|--------------|
-| **MCP Server** | Cursor, Windsurf, Cline, any MCP-compatible tool | `ctx_doc`, `ctx_error`, etc. | `npm install -g contextvault-mcp` |
-| **Native CLI** | Claude Code CLI | `/ctx-doc`, `/ctx-error`, etc. | `curl -fsSL https://ctx-vault.com/install \| bash` |
+| **MCP Server** | Cursor, Windsurf, Cline, OpenCode, any MCP client | `ctx_doc`, `ctx_error`, etc. | `npm install -g contextvault-mcp` |
+| **Native CLI** | Claude Code (slash commands + hooks) | `/ctx-doc`, `/ctx-error`, etc. | `curl -fsSL https://ctx-vault.com/install \| bash` |
 
 **Choose your path:**
 - **[skill_mcp.md](skill_mcp.md)** — Full MCP Server documentation
@@ -115,6 +115,14 @@ The `ctx_doc` / `/ctx-doc` command supports three types:
 
 ## Changelog (Recent)
 
+### v1.9.0 / MCP v2.0.0 - 2026-03-06
+- **McpServer + registerTool API**: Modern MCP SDK pattern with Zod input schemas
+- **Tool annotations**: readOnlyHint, destructiveHint, idempotentHint, openWorldHint on all 23 tools
+- **structuredContent**: Machine-readable stats on ctx_status
+- **Self-contained descriptions**: Every tool works standalone with any AI client
+- **Slash commands rewrite**: ~3,400 → ~477 lines, all delegate to MCP tools
+- SDK ^1.6.1, zod ^3.23.8, 54 tests pass
+
 ### v1.8.8 / MCP v1.0.8 - 2026-02-08
 - **CLI UX**: TTY detection, `--version`, `--help`, `--check-update` flags
 - **Health score breakdown**: Per-category scoring (Index, Files, Size, Drift)
@@ -137,4 +145,4 @@ The `ctx_doc` / `/ctx-doc` command supports three types:
 
 ---
 
-*ContextVault — Documentation that survives session death.*
+*ContextVault v1.9.0 — Documentation that survives session death.*

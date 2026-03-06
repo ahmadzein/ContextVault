@@ -82,4 +82,5 @@ export interface ToolResponse {
   [key: string]: unknown;
   content: { type: 'text'; text: string }[];
   isError?: boolean;
+  structuredContent?: Record<string, unknown>;
 }

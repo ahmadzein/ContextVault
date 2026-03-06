@@ -3,8 +3,8 @@
 ```yaml
 package:
   name: contextvault-mcp
-  version: 1.0.8
-  description: MCP Server for ContextVault - External memory for AI coding assistants
+  version: 2.0.0
+  description: MCP Server for ContextVault - External memory for any AI coding assistant
   category: productivity
   emoji: 🏰
   npm: https://www.npmjs.com/package/contextvault-mcp
@@ -50,7 +50,7 @@ The MCP server supports CLI flags when run directly:
 | `--check-update` | Check npm registry for newer versions |
 
 ```bash
-npx contextvault-mcp --version        # → 1.0.8
+npx contextvault-mcp --version        # → 2.0.0
 npx contextvault-mcp --help           # → Usage info + MCP config example
 npx contextvault-mcp --check-update   # → Checks npm for updates
 ```
@@ -72,12 +72,12 @@ npx -y contextvault-mcp --version     # Pulls latest, shows version
 ### Core Documentation
 
 #### ctx_doc
-Document a learning, exploration finding, or code snippet.
+Save a learning, code snippet, or codebase exploration finding to the vault. Checks for duplicates.
 
 ```
 Parameters:
-  topic: string (required) - Topic name
   content: string (required) - What you learned or the code
+  topic: string - Topic name
   type: "learning" | "intel" | "snippet" (default: "learning")
   vault: "global" | "project" (default: project, snippets default to global)
   language: string (for snippets) - Programming language
@@ -90,12 +90,12 @@ Examples:
 ```
 
 #### ctx_error
-Document a bug fix with error message, root cause, solution.
+Save a bug fix so the same problem never wastes time twice.
 
 ```
 Parameters:
-  error_message: string (required) - The error encountered
-  root_cause: string (required) - What caused it
+  error_message: string (required) - The exact error text or symptom
+  root_cause: string (required) - What actually caused it
   solution: string (required) - How it was fixed
   prevention: string (optional) - How to prevent in future
 
@@ -104,7 +104,7 @@ Example:
 ```
 
 #### ctx_decision
-Document an architectural or technical decision with reasoning.
+Save an architectural or technical decision with reasoning and trade-offs.
 
 ```
 Parameters:
@@ -118,7 +118,7 @@ Example:
 ```
 
 #### ctx_plan
-Document an implementation plan for multi-step tasks.
+Save an implementation plan. Tracks multi-step tasks with goals and progress across sessions.
 
 ```
 Parameters:
@@ -131,7 +131,7 @@ Example:
 ```
 
 #### ctx_handoff
-Create session handoff summary for seamless continuation.
+Create session handoff summary so the next session can pick up seamlessly.
 
 ```
 Parameters:
@@ -178,13 +178,11 @@ Parameters:
 ### Vault Management
 
 #### ctx_init
-Initialize ContextVault in current project.
+Initialize ContextVault in current project. Creates .contextvault/ with index, settings, and archive folder.
 
 ```
 Parameters:
   force: boolean (default: false) - Force reinitialize
-
-Creates: .contextvault/ directory with index.md and settings.json
 ```
 
 #### ctx_status
@@ -195,12 +193,12 @@ No parameters required.
 ```
 
 #### ctx_mode
-Switch vault mode or enforcement level.
+Switch vault mode or enforcement level. Shows current settings if no parameters.
 
 ```
 Parameters:
-  mode: "local" | "global" | "full" (optional)
-  enforcement: "light" | "balanced" | "strict" (optional)
+  mode: "local" | "global" | "full" - Which vaults to read/write
+  enforcement: "light" | "balanced" | "strict" - Documentation reminder frequency
 ```
 
 #### ctx_health
@@ -242,12 +240,12 @@ Parameters:
 ```
 
 #### ctx_archive
-Archive a deprecated document.
+Archive a deprecated or replaced document. Moves to archive folder, preserves for history.
 
 ```
 Parameters:
   id: string (required) - Document ID to archive
-  reason: string (required) - Reason for archiving
+  reason: string (required) - Why this document is being archived
 ```
 
 #### ctx_review
@@ -343,4 +341,4 @@ These resources are automatically available:
 
 ---
 
-*ContextVault MCP Server v1.0.8 — Documentation that survives session death.*
+*ContextVault MCP Server v2.0.0 — Documentation that survives session death.*

@@ -20,7 +20,7 @@
 
 **Give AI coding assistants a persistent memory across ALL your projects** 🧠
 
-[![Version](https://img.shields.io/badge/version-1.8.7-blue.svg)](https://github.com/ahmadzein/ContextVault)
+[![Version](https://img.shields.io/badge/version-1.9.0-blue.svg)](https://github.com/ahmadzein/ContextVault)
 [![MCP Server](https://img.shields.io/npm/v/contextvault-mcp?label=MCP%20Server&color=blue)](https://www.npmjs.com/package/contextvault-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude-Code-blueviolet)](https://claude.ai)

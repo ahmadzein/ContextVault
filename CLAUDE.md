@@ -1,29 +1,23 @@
-# ContextVault Project Instructions
+# Project Instructions
 
-## 📝 Document at Meaningful Milestones
+## 📝 CONTEXTVAULT - Document at Milestones
+
+### When to Document
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  AT NATURAL STOPPING POINTS — ASK YOURSELF:                     │
+│  AT MEANINGFUL MILESTONES:                                       │
 │                                                                 │
 │  ✅ Fixed a bug?        → /ctx-error                            │
 │  ✅ Made a decision?    → /ctx-decision                         │
-│  ✅ Learned something?  → /ctx-doc                              │
+│  ✅ Built a feature?    → /ctx-doc                              │
 │  ✅ Found useful code?  → /ctx-doc type=snippet                 │
 │  ✅ Explored codebase?  → /ctx-doc type=intel                   │
+│  ✅ Ending session?     → /ctx-handoff                          │
 │                                                                 │
-│  WHEN to document:                                              │
-│  • Feature complete (not mid-edit)                              │
-│  • Bug fix solved and verified                                  │
-│  • Architecture decision made                                   │
-│  • Session ending                                               │
-│                                                                 │
-│  WHEN NOT to document:                                          │
-│  • Trivial edits (version bumps, typos, config)                 │
-│  • Mid-refactor (wait until done)                               │
-│  • Nothing meaningful was learned                               │
-│                                                                 │
-│  ✅ Just DO IT. Then say: "Documented to [file]"                │
+│  💭 Not every edit needs documenting                             │
+│  💭 Document at milestones, not mid-edit                         │
+│  💭 Skip if nothing meaningful was learned                       │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -37,7 +31,7 @@
 ### 🏷️ Project Docs
 - Location: `./.claude/vault/`
 - Prefix: P### (P001, P002, etc.)
-- Update index after EVERY change
+- Update index after doc changes
 
 ### Commands
 `/ctx-doc` `/ctx-error` `/ctx-decision` `/ctx-handoff` `/ctx-search` `/ctx-read` `/ctx-bootstrap` `/ctx-plan`

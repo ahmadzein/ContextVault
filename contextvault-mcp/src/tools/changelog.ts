@@ -3,6 +3,17 @@ import { ToolResponse } from '../vault/types.js';
 export function handleChangelog(): ToolResponse {
   const text = `# ContextVault Changelog
 
+## v2.0.0 (MCP Server) — BREAKING
+- **Migrated to McpServer + registerTool API** (replaces deprecated Server + setRequestHandler)
+- **Zod input schemas** for runtime validation on all 23 tools
+- **Tool annotations** on every tool (readOnlyHint, destructiveHint, idempotentHint, openWorldHint)
+- **structuredContent** on ctx_status for machine-readable vault stats
+- **Self-contained tool descriptions** — usable by any AI client (Cursor, Windsurf, Cline, OpenCode, etc.) without Claude-specific context
+- **MCP Resources**: registerResource with ResourceTemplate for contextvault://doc/{id}
+- **Rewrote all 23 slash commands** (~3,400 → ~477 lines) to delegate to MCP tools
+- SDK upgraded to @modelcontextprotocol/sdk ^1.6.1
+- 54 tests, all pass
+
 ## v1.0.8 (MCP Server)
 - Added: CLI UX — TTY detection shows banner when run in terminal
 - Added: --version/-v, --help/-h, --check-update flags

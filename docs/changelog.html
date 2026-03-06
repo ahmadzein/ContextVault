@@ -46,7 +46,7 @@
     "author": {"@type": "Organization", "name": "ContextVault"},
     "publisher": {"@type": "Organization", "name": "ContextVault"},
     "datePublished": "2026-02-03",
-    "dateModified": "2026-02-03",
+    "dateModified": "2026-03-06",
     "mainEntityOfPage": "https://ctx-vault.com/docs/changelog.html"
   }
   </script>
@@ -67,9 +67,9 @@
       <a href="../index.html">Home</a>
       <a href="https://github.com/ahmadzein/ContextVault">GitHub</a>
       <div class="version-badge">
-        <span class="version-mcp">MCP v1.0.8 Beta</span>
+        <span class="version-mcp">MCP v2.0.0 Beta</span>
         <span class="version-sep">|</span>
-        <span class="version-native">Native v1.8.7 Beta</span>
+        <span class="version-native">Native v1.9.0 Beta</span>
       </div>
     </nav>
     <div class="search-wrapper">
@@ -114,7 +114,7 @@
         <li><a href="faq.html">FAQ</a></li>
       </ul>
     </div>
-    <div class="sidebar-footer"><span class="last-updated">Updated 7 Feb · 07:50</span></div>
+    <div class="sidebar-footer"><span class="last-updated">Updated 6 Mar · 2026</span></div>
   </aside>
 
   <!-- Main Content -->
@@ -122,7 +122,27 @@
     <h1>Changelog</h1>
     <p class="subtitle">Version history and release notes for ContextVault.</p>
 
-    <h2>v1.8.8 + MCP v1.0.8 <span style="color: var(--gold-500); font-size: 0.8em;">(Latest)</span></h2>
+    <h2>v1.9.0 + MCP v2.0.0 <span style="color: var(--gold-500); font-size: 0.8em;">(Latest)</span></h2>
+    <p><strong>Released:</strong> March 6, 2026</p>
+    <h4>MCP Server v2.0.0 — Major Refactor</h4>
+    <ul>
+      <li><strong>McpServer + registerTool API</strong>: Migrated from deprecated <code>Server</code> + <code>setRequestHandler</code> to modern SDK pattern</li>
+      <li><strong>Zod input schemas</strong>: Runtime validation on all 23 tools with typed parameters</li>
+      <li><strong>Tool annotations</strong>: Every tool declares <code>readOnlyHint</code>, <code>destructiveHint</code>, <code>idempotentHint</code>, <code>openWorldHint</code></li>
+      <li><strong>structuredContent</strong>: <code>ctx_status</code> returns machine-readable vault stats alongside text</li>
+      <li><strong>Self-contained descriptions</strong>: Every tool description works standalone with any AI client (Cursor, Windsurf, Cline, OpenCode)</li>
+      <li><strong>MCP Resources</strong>: <code>registerResource</code> with <code>ResourceTemplate</code> for <code>contextvault://doc/{id}</code></li>
+      <li>SDK upgraded to <code>@modelcontextprotocol/sdk</code> ^1.6.1, added <code>zod</code> ^3.23.8</li>
+    </ul>
+    <h4>Slash Commands Rewrite</h4>
+    <ul>
+      <li><strong>Rewrote all 23 <code>/ctx-*</code> commands</strong>: ~3,400 → ~477 total lines</li>
+      <li>All commands now delegate to MCP tools instead of manual file operations</li>
+      <li>Trigger-optimized descriptions for Claude's skill auto-triggering system</li>
+      <li>Consistent wording between slash commands (Claude-optimized) and MCP tools (client-agnostic)</li>
+    </ul>
+
+    <h2>v1.8.8 + MCP v1.0.8</h2>
     <p><strong>Released:</strong> February 8, 2026</p>
     <h4>CLI UX &amp; Quality (MCP v1.0.8)</h4>
     <ul>
@@ -243,6 +263,7 @@
       <li>v1.0.6 — Added README for npm display</li>
       <li>v1.0.7 — Health/review bug fixes, parseActiveEntries, false positive filters</li>
       <li>v1.0.8 — CLI UX (TTY detection, --version, --help, --check-update), health score breakdown, smarter merge suggestions</li>
+      <li>v2.0.0 — <strong>BREAKING</strong>: McpServer + registerTool, Zod schemas, tool annotations, structuredContent, self-contained descriptions</li>
     </ul>
 
     <h2>v1.8.4</h2>

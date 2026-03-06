@@ -1,6 +1,6 @@
 {
   "name": "contextvault-mcp",
-  "version": "1.0.8",
+  "version": "2.0.0",
   "description": "ContextVault MCP Server - External context management for any AI coding assistant. Works with Claude Code, Cursor, Windsurf, OpenCode, Cline, Continue, and more.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -52,7 +52,8 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "typescript": "^5.3.0",

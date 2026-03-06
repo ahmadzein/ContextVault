@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.9.0] - 2026-03-06
+
+### Changed - MCP Server v2.0.0 (BREAKING)
+
+- **McpServer + registerTool API**: Migrated from deprecated `Server` + `setRequestHandler` to modern `McpServer` + `registerTool` pattern
+- **Zod input schemas**: Runtime validation on all 23 tools with typed parameters
+- **Tool annotations**: Every tool declares `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint` for smarter MCP client behavior
+- **structuredContent**: `ctx_status` returns machine-readable vault stats alongside text
+- **Self-contained tool descriptions**: Every MCP tool description is fully standalone — works with any AI client (Cursor, Windsurf, Cline, OpenCode, Continue) without Claude-specific context
+- **MCP Resources**: `registerResource` with `ResourceTemplate` for `contextvault://doc/{id}`
+- SDK upgraded to `@modelcontextprotocol/sdk` ^1.6.1, added `zod` ^3.23.8
+- 54 tests, all pass
+
+### Changed - Slash Commands Rewrite
+
+- **Rewrote all 23 `/ctx-*` slash commands** from verbose procedural instructions (~3,400 total lines) to concise MCP tool wrappers (~477 total lines)
+- Commands now delegate to MCP tools instead of doing manual file operations
+- Trigger-optimized descriptions for Claude's skill auto-triggering system
+- Consistent core wording between slash commands (Claude-optimized) and MCP tools (client-agnostic)
+
+---
+
 ## [1.8.8] - 2026-02-08
 
 ### Added - MCP Server v1.0.8
@@ -701,6 +723,8 @@ When editing docs (especially History sections):
 
 ---
 
+[1.9.0]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.9.0
+[1.8.8]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.8.8
 [1.8.7]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.8.7
 [1.8.6]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.8.6
 [1.8.5]: https://github.com/ahmadzein/ContextVault/releases/tag/v1.8.5
